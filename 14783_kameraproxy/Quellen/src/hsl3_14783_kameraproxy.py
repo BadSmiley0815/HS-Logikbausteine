@@ -115,9 +115,10 @@ class LogicModule:
                 continue
             if "://" not in addr:
                 addr = "http://" + addr
-            u = urllib.parse.urlsplit(addr)            # nur Schema://Host[:Port], ein Pfad wird ignoriert
+            u = urllib.parse.urlsplit(addr)            # Schema://Host[:Port]; Pfad wird ignoriert,
             addr = "%s://%s" % (u.scheme or "http", u.netloc or u.path.split("/")[0])
-            cams[name] = {"addr": addr,
+            params = {k: v for k, v in urllib.parse.parse_qsl(u.query) if k in PASS_PARAMS}   # ?resolution=…&camera=… gilt als Vorgabe
+            cams[name] = {"addr": addr, "params": params,
                           "user": self._text(inputs.value("cam%d_user" % i)),
                           "pwd": self._text(inputs.value("cam%d_pwd" % i))}
         with self._lock:
@@ -232,13 +233,16 @@ class LogicModule:
             urllib.request.HTTPDigestAuthHandler(pm),
             urllib.request.HTTPBasicAuthHandler(pm))
 
-    def _open(self, cam, path, extra):
-        url = cam["addr"] + path + ("?" + urllib.parse.urlencode(extra) if extra else "")
+    def _open(self, cam, path, extra, _try=0):
+        q = dict(cam.get("params") or {}) if _try < 2 else {}
+        if _try == 0:
+            q.update(extra)                            # Anfrage aus dem Browser überschreibt die Vorgabe aus der Adresse
+        url = cam["addr"] + path + ("?" + urllib.parse.urlencode(q) if q else "")
         try:
             return self._opener(cam).open(urllib.request.Request(url, headers={"User-Agent": "HS-14783/" + VERSION}), timeout=TIMEOUT)
         except urllib.error.HTTPError as e:
-            if e.code == 400 and extra:                # Kamera kennt einen Parameter nicht (z. B. Auflösung) -> ohne
-                return self._open(cam, path, {})
+            if e.code == 400 and q and _try < 2:      # Kamera kennt einen Parameter nicht -> nur Vorgabe, dann ganz ohne
+                return self._open(cam, path, extra, _try + 1 if (_try or extra) else 2)
             raise
 
     @staticmethod

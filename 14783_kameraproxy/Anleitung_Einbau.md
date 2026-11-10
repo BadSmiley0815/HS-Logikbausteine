@@ -17,7 +17,7 @@ Stand 10.11.2026. Baustein: `14783_kameraproxy.hslz` (HSL3), Kategorie „Visual
 | E2 Port (Zahl) | `8095` (nie 0, nie doppelt) |
 | E3 Schlüssel (Text) | eigenes Kennwort |
 | E4 Neustart / Auslöser (1 Bit) | beliebiges KO (Pflicht im Experten) |
-| E5–E8 Kamera 1 (je Text) | Name `einfahrt`, Adresse `192.168.x.x` oder `https://192.168.x.x` (nur IP, kein Pfad), Benutzer, Passwort |
+| E5–E8 Kamera 1 (je Text) | Name `einfahrt`, Adresse `https://192.168.x.x` oder die ganze Bild-URL, z. B. `https://192.168.1.96/axis-cgi/jpg/image.cgi?resolution=1280x720&compression=25&camera=1` (resolution/compression/camera gelten dann als Vorgabe), Benutzer, Passwort |
 | E9–E12 Kamera 2 | Name `hof`, … |
 | E13–E16 Kamera 3 | Name `hasen`, … |
 
@@ -40,7 +40,7 @@ Die Prüfseite zeigt je Kamera `http` (Antwort der Kamera), `detail` (Fehlertext
 - Fehler ohne `http` – Kamera nicht erreichbar (IP, http/https)
 
 ## Änderungen
-- 0.2: Datentyp in jedem Ein-/Ausgang · keine feste Auflösung mehr · bei HTTP 400 automatisch ohne Zusatz-Parameter · Pfad in der Adresse wird ignoriert · Fehlertext der Kamera auf der Prüfseite
+- 0.2: Datentyp in jedem Ein-/Ausgang · keine feste Auflösung mehr · bei HTTP 400 automatisch ohne Zusatz-Parameter · ganze Kamera-URL als Adresse möglich (resolution/compression/camera als Vorgabe) · Fehlertext der Kamera auf der Prüfseite
 - 0.1: erste Prüffassung
 
 ## Danach im Kamera-Plugin (QC)
