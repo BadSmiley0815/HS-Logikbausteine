@@ -1,0 +1,81 @@
+5000|"Ventilation\14775 AHU air quality control"|0|26|"I1 Enable time schedule (1=ON)"|"I2 Air quality actual"|"I3 Room temperature"|"I4 Room setpoint"|"I5 Outdoor temperature"|"I6 Limit good air quality"|"I7 Limit bad air quality"|"I8 Recirc damper at good %"|"I9 Recirc damper at bad %"|"I10 Outdoor air damper at good %"|"I11 Outdoor air damper at bad %"|"I12 Exhaust damper at good %"|"I13 Exhaust damper at bad %"|"I14 Overtemperature ON above K"|"I15 Overtemperature OFF below K"|"I16 Fan minimum speed %"|"I17 Fan maximum speed %"|"I18 Free cooling min. outdoor temp. degC"|"I19 Free cooling dT start K"|"I20 Free cooling dT end K"|"I21 Free cooling correction at dT end %"|"I22 Supply min. during free cooling %"|"I23 Recirc damper when plant OFF %"|"I24 Traffic light yellow from"|"I25 Traffic light red from"|"I26 Traffic light hysteresis"|12|"O1 Supply fan %"|"O2 Exhaust fan %"|"O3 Recirculation damper %"|"O4 Outdoor air damper %"|"O5 Exhaust air damper %"|"O6 Plant ON / enable temperature control"|"O7 Overtemperature active"|"O8 Free cooling active"|"O9 Free cooling supply correction %"|"O10 Air quality share bad %"|"O11 Status"|"O12 Air quality traffic light (0=green 1=yellow 2=red)"|"1.5"|0|0
+4999|"de"|"L¸ftung\14775 RLT Luftqualit‰tsregelung"|"E1 Freigabe Zeitprogramm (1=EIN)"|"E2 Luftqualit‰t Istwert"|"E3 Raumtemperatur"|"E4 Raumsolltemperatur"|"E5 Auﬂentemperatur"|"E6 Grenze gute Luftqualit‰t"|"E7 Grenze schlechte Luftqualit‰t"|"E8 Umluftklappe bei gut %"|"E9 Umluftklappe bei schlecht %"|"E10 Auﬂenluftklappe bei gut %"|"E11 Auﬂenluftklappe bei schlecht %"|"E12 Fortluftklappe bei gut %"|"E13 Fortluftklappe bei schlecht %"|"E14 ‹bertemperatur EIN ab K"|"E15 ‹bertemperatur AUS unter K"|"E16 Ventilator Mindestdrehzahl %"|"E17 Ventilator Maximaldrehzahl %"|"E18 Freecooling Auﬂentemp. mind. ∞C"|"E19 Freecooling dT Beginn K"|"E20 Freecooling dT Ende K"|"E21 Freecooling Korrektur bei dT Ende %"|"E22 Zuluft Untergrenze bei Freecooling %"|"E23 Umluftklappe bei Anlage AUS %"|"E24 Ampel gelb ab"|"E25 Ampel rot ab"|"E26 Ampel Hysterese"|"A1 Zuluftventilator %"|"A2 Abluftventilator %"|"A3 Umluftklappe %"|"A4 Auﬂenluftklappe %"|"A5 Fortluftklappe %"|"A6 Anlage EIN / Freigabe Temperaturregelung"|"A7 ‹bertemperatur aktiv"|"A8 Freecooling aktiv"|"A9 Freecooling Zuluftkorrektur %"|"A10 Luftqualit‰t Anteil schlecht %"|"A11 Status"|"A12 Ampel Luftqualit‰t (0=gr¸n 1=gelb 2=rot)"
+4999|"en"|"Ventilation\14775 AHU air quality control"|"I1 Enable time schedule (1=ON)"|"I2 Air quality actual"|"I3 Room temperature"|"I4 Room setpoint"|"I5 Outdoor temperature"|"I6 Limit good air quality"|"I7 Limit bad air quality"|"I8 Recirc damper at good %"|"I9 Recirc damper at bad %"|"I10 Outdoor air damper at good %"|"I11 Outdoor air damper at bad %"|"I12 Exhaust damper at good %"|"I13 Exhaust damper at bad %"|"I14 Overtemperature ON above K"|"I15 Overtemperature OFF below K"|"I16 Fan minimum speed %"|"I17 Fan maximum speed %"|"I18 Free cooling min. outdoor temp. degC"|"I19 Free cooling dT start K"|"I20 Free cooling dT end K"|"I21 Free cooling correction at dT end %"|"I22 Supply min. during free cooling %"|"I23 Recirc damper when plant OFF %"|"I24 Traffic light yellow from"|"I25 Traffic light red from"|"I26 Traffic light hysteresis"|"O1 Supply fan %"|"O2 Exhaust fan %"|"O3 Recirculation damper %"|"O4 Outdoor air damper %"|"O5 Exhaust air damper %"|"O6 Plant ON / enable temperature control"|"O7 Overtemperature active"|"O8 Free cooling active"|"O9 Free cooling supply correction %"|"O10 Air quality share bad %"|"O11 Status"|"O12 Air quality traffic light (0=green 1=yellow 2=red)"
+5001|26|12|0|0|1|0|"HSL3.main.ElektroRausch______"
+5002|1|0|0
+5002|2|0|0
+5002|3|20|0
+5002|4|20|0
+5002|5|10|0
+5002|6|800|0
+5002|7|1400|0
+5002|8|80|0
+5002|9|0|0
+5002|10|20|0
+5002|11|100|0
+5002|12|20|0
+5002|13|100|0
+5002|14|1.0|0
+5002|15|0.5|0
+5002|16|30|0
+5002|17|100|0
+5002|18|12|0
+5002|19|0|0
+5002|20|5|0
+5002|21|100|0
+5002|22|0|0
+5002|23|0|0
+5002|24|1000|0
+5002|25|1400|0
+5002|26|50|0
+5004|1|0|0|1|0
+5004|2|0|0|1|0
+5004|3|0|0|1|0
+5004|4|0|0|1|0
+5004|5|0|0|1|0
+5004|6|0|0|1|0
+5004|7|0|0|1|0
+5004|8|0|0|1|0
+5004|9|0|0|1|0
+5004|10|0|0|1|0
+5004|11|""|0|1|1
+5004|12|0|0|1|0
+5012|0|""|"HSL3.set_input_name(1, 'enable')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(2, 'aq')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(3, 't_room')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(4, 't_set')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(5, 't_out')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(6, 'aq_good')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(7, 'aq_bad')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(8, 'rec_good')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(9, 'rec_bad')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(10, 'oa_good')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(11, 'oa_bad')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(12, 'ex_good')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(13, 'ex_bad')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(14, 'ot_on')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(15, 'ot_off')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(16, 'fan_min')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(17, 'fan_max')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(18, 'fc_t_out_min')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(19, 'fc_dt0')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(20, 'fc_dt1')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(21, 'fc_corr_max')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(22, 'fc_supply_min')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(23, 'rec_off')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(24, 'amp_yellow')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(25, 'amp_red')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(26, 'amp_hyst')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(1, 'supply')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(2, 'exhaust')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(3, 'rec')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(4, 'oa')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(5, 'ex')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(6, 'on')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(7, 'ot')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(8, 'fc')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(9, 'fc_corr')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(10, 'aq_level')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(11, 'status')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(12, 'amp')"|""|0|0|0|0
+5012|0|""|"HSL3.load('hsl3_14775_rlt_luftqualitaet', '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')"|""|0|0|0|0

@@ -1,0 +1,400 @@
+{
+  "module": {
+    "category": "Visualisation",
+    "context": "hsl__szenenserver______",
+    "id": "14778",
+    "name": "14778 Scene server",
+    "hsl_filename": "14778_szenenserver.hsl",
+    "version": "4.2",
+    "inputs": [
+      {
+        "type": "string",
+        "identifier": "base_path",
+        "init_value": "szenen",
+        "label": "I1 Base path"
+      },
+      {
+        "type": "number",
+        "identifier": "destination_port",
+        "init_value": 8093,
+        "label": "I2 Port"
+      },
+      {
+        "type": "string",
+        "identifier": "key",
+        "init_value": "",
+        "label": "I3 Access key"
+      },
+      {
+        "type": "number",
+        "identifier": "dusk",
+        "init_value": 0,
+        "label": "I4 Dusk (1 = dark)"
+      },
+      {
+        "type": "number",
+        "identifier": "scene",
+        "init_value": 0,
+        "label": "I5 Scene (DPT 17.001)"
+      },
+      {
+        "type": "number",
+        "identifier": "s1",
+        "init_value": 0,
+        "label": "I6 Scene 1 (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "s2",
+        "init_value": 0,
+        "label": "I7 Scene 2 (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "s3",
+        "init_value": 0,
+        "label": "I8 Scene 3 (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "s4",
+        "init_value": 0,
+        "label": "I9 Scene 4 (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "s5",
+        "init_value": 0,
+        "label": "I10 Scene 5 (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "s6",
+        "init_value": 0,
+        "label": "I11 Scene 6 (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "s7",
+        "init_value": 0,
+        "label": "I12 Scene 7 (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "s8",
+        "init_value": 0,
+        "label": "I13 Scene 8 (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "restart",
+        "init_value": 0,
+        "label": "I14 Restart (1) / trigger"
+      },
+      {
+        "type": "number",
+        "identifier": "rain",
+        "init_value": 0,
+        "label": "I15 Rain (1 = rain)"
+      },
+      {
+        "type": "number",
+        "identifier": "temp",
+        "init_value": -100,
+        "label": "I16 Outdoor temperature"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "identifier": "status",
+        "init_value": "",
+        "label": "O1 Status"
+      },
+      {
+        "type": "number",
+        "identifier": "active",
+        "init_value": 0,
+        "label": "O2 Active scene (DPT 17.001)"
+      },
+      {
+        "type": "number",
+        "identifier": "a1",
+        "init_value": 0,
+        "label": "O3 Scene 1 active (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "a2",
+        "init_value": 0,
+        "label": "O4 Scene 2 active (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "a3",
+        "init_value": 0,
+        "label": "O5 Scene 3 active (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "a4",
+        "init_value": 0,
+        "label": "O6 Scene 4 active (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "a5",
+        "init_value": 0,
+        "label": "O7 Scene 5 active (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "a6",
+        "init_value": 0,
+        "label": "O8 Scene 6 active (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "a7",
+        "init_value": 0,
+        "label": "O9 Scene 7 active (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "a8",
+        "init_value": 0,
+        "label": "O10 Scene 8 active (1 bit)"
+      },
+      {
+        "type": "number",
+        "identifier": "gw_ok",
+        "init_value": 0,
+        "label": "O11 CO gateway connected"
+      },
+      {
+        "type": "number",
+        "identifier": "config_rev",
+        "init_value": 0,
+        "label": "O12 Config revision"
+      },
+      {
+        "type": "number",
+        "identifier": "summer",
+        "init_value": 0,
+        "label": "O13 Summer"
+      },
+      {
+        "type": "number",
+        "identifier": "winter",
+        "init_value": 0,
+        "label": "O14 Winter"
+      },
+      {
+        "type": "number",
+        "identifier": "season_sym",
+        "init_value": 0,
+        "label": "O15 Season symbol"
+      },
+      {
+        "type": "string",
+        "identifier": "season_txt",
+        "init_value": "",
+        "label": "O16 Season text"
+      },
+      {
+        "type": "string",
+        "identifier": "season_dbg",
+        "init_value": "",
+        "label": "O17 Season debug"
+      }
+    ],
+    "stores": [
+      {
+        "type": "string",
+        "identifier": "c01",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c02",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c03",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c04",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c05",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c06",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c07",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c08",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c09",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c10",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "act",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "gw",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "sw",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "hp",
+        "init_value": ""
+      }
+    ],
+    "timers": [],
+    "scripts": [
+      {
+        "filename": "hsl3_14778_szenenserver.py"
+      }
+    ],
+    "translations": [
+      {
+        "language": "de",
+        "name": "14778 Szenen-Server",
+        "category": "Visualisierung",
+        "translation_inputs": [
+          {
+            "label": "E1 Basis-Pfad"
+          },
+          {
+            "label": "E2 Port"
+          },
+          {
+            "label": "E3 Schlüssel"
+          },
+          {
+            "label": "E4 Dämmerung (1 = dunkel)"
+          },
+          {
+            "label": "E5 Szene (DPT 17.001)"
+          },
+          {
+            "label": "E6 Szene 1 (1 Bit)"
+          },
+          {
+            "label": "E7 Szene 2 (1 Bit)"
+          },
+          {
+            "label": "E8 Szene 3 (1 Bit)"
+          },
+          {
+            "label": "E9 Szene 4 (1 Bit)"
+          },
+          {
+            "label": "E10 Szene 5 (1 Bit)"
+          },
+          {
+            "label": "E11 Szene 6 (1 Bit)"
+          },
+          {
+            "label": "E12 Szene 7 (1 Bit)"
+          },
+          {
+            "label": "E13 Szene 8 (1 Bit)"
+          },
+          {
+            "label": "E14 Neustart (1) / Auslöser"
+          },
+          {
+            "label": "E15 Regen (1 = Regen)"
+          },
+          {
+            "label": "E16 Außentemperatur"
+          }
+        ],
+        "translation_outputs": [
+          {
+            "label": "A1 Status"
+          },
+          {
+            "label": "A2 Aktive Szene (DPT 17.001)"
+          },
+          {
+            "label": "A3 Szene 1 aktiv (1 Bit)"
+          },
+          {
+            "label": "A4 Szene 2 aktiv (1 Bit)"
+          },
+          {
+            "label": "A5 Szene 3 aktiv (1 Bit)"
+          },
+          {
+            "label": "A6 Szene 4 aktiv (1 Bit)"
+          },
+          {
+            "label": "A7 Szene 5 aktiv (1 Bit)"
+          },
+          {
+            "label": "A8 Szene 6 aktiv (1 Bit)"
+          },
+          {
+            "label": "A9 Szene 7 aktiv (1 Bit)"
+          },
+          {
+            "label": "A10 Szene 8 aktiv (1 Bit)"
+          },
+          {
+            "label": "A11 Gateway verbunden"
+          },
+          {
+            "label": "A12 Stand Einrichtung"
+          },
+          {
+            "label": "A13 Sommer"
+          },
+          {
+            "label": "A14 Winter"
+          },
+          {
+            "label": "A15 Symbol Sommer/Winter"
+          },
+          {
+            "label": "A16 Text Sommer/Winter"
+          },
+          {
+            "label": "A17 Debug Sommer/Winter"
+          }
+        ]
+      }
+    ]
+  }
+}

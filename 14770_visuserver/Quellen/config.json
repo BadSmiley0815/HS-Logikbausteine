@@ -1,0 +1,173 @@
+{
+  "module": {
+    "category": "Visualisation",
+    "context": "hsl3.visuserver",
+    "id": "14770",
+    "name": "14770 Visu server",
+    "hsl_filename": "14770_visuserver.hsl",
+    "version": "1.10",
+    "inputs": [
+      {
+        "type": "base_path",
+        "identifier": "base_path",
+        "init_value": "visu-daten",
+        "label": "I1 Base path"
+      },
+      {
+        "type": "destination_port",
+        "identifier": "destination_port",
+        "init_value": 8092,
+        "label": "I2 Port"
+      },
+      {
+        "type": "string",
+        "identifier": "key",
+        "init_value": "",
+        "label": "I3 Access key"
+      },
+      {
+        "type": "number",
+        "identifier": "restart",
+        "init_value": 0,
+        "label": "I4 Restart / trigger (any CO)"
+      },
+      {
+        "type": "string",
+        "identifier": "read_key",
+        "init_value": "",
+        "label": "I5 Read-only key (chart page)"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "number",
+        "identifier": "instance_id",
+        "init_value": 0,
+        "label": "O1 Instance ID (to I5 of 14771)"
+      },
+      {
+        "type": "string",
+        "identifier": "status",
+        "init_value": "",
+        "label": "O2 Status"
+      },
+      {
+        "type": "number",
+        "identifier": "requests",
+        "init_value": 0,
+        "label": "O3 Requests"
+      },
+      {
+        "type": "number",
+        "identifier": "history_count",
+        "init_value": 0,
+        "label": "O4 Histories"
+      },
+      {
+        "type": "number",
+        "identifier": "config_rev",
+        "init_value": 0,
+        "label": "O5 Config revision"
+      }
+    ],
+    "stores": [
+      {
+        "type": "string",
+        "identifier": "c01",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c02",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c03",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c04",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c05",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c06",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c07",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c08",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c09",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "c10",
+        "init_value": ""
+      }
+    ],
+    "timers": [],
+    "scripts": [
+      {
+        "filename": "hsl3_14770_visuserver.py"
+      }
+    ],
+    "translations": [
+      {
+        "language": "de",
+        "name": "14770 Visu-Server",
+        "category": "Visualisierung",
+        "translation_inputs": [
+          {
+            "label": "E1 Basis-Pfad"
+          },
+          {
+            "label": "E2 Port"
+          },
+          {
+            "label": "E3 Schlüssel"
+          },
+          {
+            "label": "E4 Neustart / Auslöser (beliebiges KO)"
+          },
+          {
+            "label": "E5 Lese-Schlüssel (Diagrammseite)"
+          }
+        ],
+        "translation_outputs": [
+          {
+            "label": "A1 Instanz-ID (an E5 von 14771)"
+          },
+          {
+            "label": "A2 Status"
+          },
+          {
+            "label": "A3 Abrufe"
+          },
+          {
+            "label": "A4 Verläufe"
+          },
+          {
+            "label": "A5 Stand Einrichtung"
+          }
+        ]
+      }
+    ]
+  }
+}

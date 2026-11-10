@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HomeServer-Visu – Anleitung</title>
+<style>
+:root{--fg:#1d2330;--mu:#5f6b7a;--line:#e1e5ea;--bg:#fff;--soft:#f4f6f9;--acc:#e9a100}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--bg);margin:0;line-height:1.55}
+main{max-width:880px;margin:0 auto;padding:24px 18px 60px}
+h1{font-size:1.7em;margin:.2em 0}h2{margin-top:2em;padding-top:.6em;border-top:1px solid var(--line);font-size:1.3em}
+h3{font-size:1.05em;margin-top:1.5em}
+.mu{color:var(--mu)}code{background:var(--soft);padding:1px 5px;border-radius:4px;font-size:.92em}
+table{border-collapse:collapse;width:100%;margin:.6em 0;font-size:.95em}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--soft)}
+td:first-child{white-space:nowrap;font-weight:600}
+.box{background:var(--soft);border-left:4px solid var(--acc);padding:10px 14px;border-radius:6px;margin:1em 0}
+nav ol{columns:2;gap:30px}nav a{color:inherit}
+ol li,ul li{margin:.25em 0}
+@media print{nav{display:none}h2{break-before:auto}}
+@media (max-width:600px){nav ol{columns:1}}
+</style></head><body><main>
+<h1>HomeServer-Visu – Anleitung</h1>
+<p class="mu">Eigene HTML5-Visualisierung für den Gira HomeServer über das KO-Gateway, mit Visu-Server und Diagrammen. Stand 30.09.2026.</p>
+
+<table>
+<tr><th>Teil</th><th>Version</th><th>Datei</th></tr>
+<tr><td>14770 Visu-Server (bisher 19107)</td><td>1.7</td><td><code>Bausteine/14770_visuserver.hslz</code></td></tr>
+<tr><td>14771 Verlaufsspeicher für Diagramme (bisher 19105)</td><td>2.6</td><td><code>Bausteine/14771_verlauf.hslz</code></td></tr>
+<tr><td>19106 Pfad- und Speichertest (Test, keine offizielle ID)</td><td>0.2</td><td><code>Bausteine/Test/19106_pfadtest.hslz</code> – nur Test, nicht nötig</td></tr>
+<tr><td>WebApp (Visualisierung)</td><td>30.09.2026</td><td><code>WebApp/homeserver-webapp/</code></td></tr>
+</table>
+
+<nav><ol>
+<li><a href="#ueberblick">Überblick</a></li><li><a href="#gateway">KO-Gateway einschalten</a></li>
+<li><a href="#webapp">WebApp auf den HomeServer</a></li><li><a href="#server">Baustein 14770 Visu-Server</a></li>
+<li><a href="#verlauf">Baustein 14771 Verläufe</a></li><li><a href="#visu">Visu einrichten</a></li>
+<li><a href="#diagramme">Diagramme</a></li><li><a href="#uebersicht">Übersichtsseite</a></li>
+<li><a href="#loeschen">Werte löschen</a></li><li><a href="#sicherung">Sicherung</a></li>
+<li><a href="#update">Update</a></li><li><a href="#fehler">Fehlersuche</a></li>
+</ol></nav>
+
+<h2 id="ueberblick">1 · Überblick</h2>
+<ul>
+<li><b>WebApp</b> – liegt im hsupload-Ordner des HomeServers, läuft in jedem Browser und kann als App auf den Startbildschirm. Sie schaltet und zeigt über das <b>KO-Gateway</b> (WebSocket).</li>
+<li><b>14770 Visu-Server</b> – speichert die Einrichtung der Visu (Kacheln, Räume, Favoriten, Titel) für alle Geräte und liefert die Verläufe für Diagramme. Erreichbar unter <code>https://&lt;HS&gt;/visu-daten/</code>.</li>
+<li><b>14771 Verlaufsspeicher</b> – je Messwert ein Baustein; zeichnet Minute, Stunde, Tag, Woche, Monat und Jahr auf und meldet sich beim Visu-Server an.</li>
+</ul>
+<p>Beide Bausteine laufen im gemeinsamen Kontext <code>hsl3.visuserver</code> und speichern remanent (Neustart und Projektübertragung bleiben ohne Datenverlust).</p>
+
+<h2 id="gateway">2 · KO-Gateway einschalten</h2>
+<ol>
+<li>Experte → Projekteinstellungen → <b>KO-Gateway</b>: aktivieren, Benutzer mit Passwort anlegen.</li>
+<li>Die KOs, die die Visu schalten oder anzeigen soll, in eine <b>WebSocket-Gruppe</b> mit Lesen + Schreiben aufnehmen.</li>
+<li>Für den KO-Import in der Visu: „XML-Struktur der K.-Objekte auf Gerät laden“ anhaken.</li>
+</ol>
+
+<h2 id="webapp">3 · WebApp auf den HomeServer</h2>
+<ol>
+<li>Experte → Projekteinstellungen → <b>Oberfläche</b> → bei „Zusätzliche Ordner und Dateien“ auf <b>Projekt</b> klicken – der hsupload-Ordner öffnet sich.</li>
+<li>Den Ordner <code>homeserver-webapp</code> aus <code>WebApp/</code> dort hineinkopieren (Kleinbuchstaben, keine Leerzeichen).</li>
+<li>Liste im Experten aktualisieren, Übertragung auf „Alle“ oder den Ordner anhaken, Projekt übertragen.</li>
+<li>Aufrufen: <code>https://&lt;HS-IP&gt;/opt/homeserver-webapp/index.html</code> – Zertifikatswarnung einmal bestätigen.</li>
+<li>Als App: Android/Chrome Menü ⋮ → „App installieren“, iPhone Teilen → „Zum Home-Bildschirm“, PC Installieren-Symbol in der Adresszeile.</li>
+</ol>
+<p>Bei späteren Updates nur <code>index.html</code> ersetzen und das Projekt übertragen. Die App lädt neue Versionen automatisch.</p>
+
+<h2 id="server">4 · Baustein 14770 Visu-Server (v1.7)</h2>
+<p>Einmal pro Projekt auf eine Logikseite ziehen.</p>
+<table>
+<tr><th>Ein-/Ausgang</th><th>Bedeutung</th></tr>
+<tr><td>E1 Basis-Pfad</td><td><code>visu-daten</code> → <code>https://&lt;HS&gt;/visu-daten/</code></td></tr>
+<tr><td>E2 Port</td><td><b>8092 eintragen</b> – steht er auf 0, leitet der HomeServer nicht weiter („503 Service Unavailable“).</td></tr>
+<tr><td>E3 Schlüssel</td><td>eigenes Kennwort; wird in der Visu und auf der Übersichtsseite eingegeben. Leer = ohne Schutz (nicht empfohlen).</td></tr>
+<tr><td>E4 Neustart / Auslöser</td><td>beliebiges KO anschließen – der Experte verlangt mindestens einen mit einem KO belegten Eingang. 1 = Server neu starten, anderer Wert = Ausgänge neu senden.</td></tr>
+<tr><td>A1 Instanz-ID</td><td>an <b>E5 aller 14771</b> anschließen.</td></tr>
+<tr><td>A2 Status</td><td>z. B. „Bereit: /visu-daten/ (Port 8092)“</td></tr>
+<tr><td>A3 / A4 / A5</td><td>Anzahl Abrufe / angemeldete Verläufe / Stand der Einrichtung</td></tr>
+</table>
+
+<h2 id="verlauf">5 · Baustein 14771 Verlaufsspeicher (v2.6)</h2>
+<p>Je Messwert (Temperatur, Leistung, Zählerstand …) einen Baustein.</p>
+<table>
+<tr><th>Ein-/Ausgang</th><th>Bedeutung</th></tr>
+<tr><td>E1 Wert</td><td>der aufzuzeichnende Wert</td></tr>
+<tr><td>E2 Nachkommastellen</td><td>0–4, gilt in der Visu, wenn dort „automatisch“ gewählt ist</td></tr>
+<tr><td>E3 Modus</td><td>0 = Mittelwert, 1 = letzter Wert, 2 = Differenz (Zählerstand → Verbrauch, als Balken), 3 = Maximum. Ein Wechsel behält die vorhandenen Werte.</td></tr>
+<tr><td>E4 Reset</td><td>1 = ganzen Verlauf löschen</td></tr>
+<tr><td>E5 Visu-Server</td><td>A1 von 14770</td></tr>
+<tr><td>E6 Kennung</td><td>eindeutig, ohne Leerzeichen, z. B. <code>pool_temp</code> → in der Visu Quelle <code>VS@pool_temp</code></td></tr>
+<tr><td>E7 Name / E8 Einheit</td><td>Anzeige in Visu und Übersicht (Umlaute und °C sind möglich)</td></tr>
+<tr><td>E9 A1 an</td><td>1 = A1 als Text für ein 14-Byte-KO (nur ohne Visu-Server nötig), sonst 0</td></tr>
+<tr><td>E10 Zeile löschen</td><td>Zeilennummer von der Übersichtsseite, <code>-1</code> = alle Werte (siehe <a href="#loeschen">Werte löschen</a>)</td></tr>
+<tr><td>A1 / A2 / A3</td><td>Verlauf als Text (optional) / Anzahl Werte / Status</td></tr>
+</table>
+<p><b>Speicher je Verlauf:</b> 24 h Minutenwerte, 1 Jahr Stundenwerte, 10 Jahre Tages- und Wochenwerte, 20 Jahre Monatswerte, 50 Jahre Jahreswerte. Kalendergrenzen in Ortszeit, Woche ab Montag. Gesichert wird alle 10 Minuten – bei einem Neustart fehlen höchstens die letzten Minuten.</p>
+
+<h2 id="visu">6 · Visu einrichten</h2>
+<ol>
+<li>Zahnrad → <b>Verbindung KO-Gateway</b>: Adresse (vorbelegt), Benutzer, Passwort, verschlüsselt.</li>
+<li><b>Visu-Server</b>: Häkchen setzen, Pfad <code>/visu-daten/</code>, Schlüssel (E3) → „Verbindung testen“ → speichern.</li>
+<li>Kacheln anlegen: „Aus HomeServer importieren“ (liest die KO-Struktur, Namen aus „Raum - Funktion“) oder einzeln.</li>
+<li><b>Allgemein → Titel</b>: statt „HomeServer“ ein eigener Name oben links.</li>
+</ol>
+<p>Die Einrichtung liegt auf dem Visu-Server; jedes weitere Gerät braucht nur Verbindung und Schlüssel. Adresse, Benutzer, Passwort und Schlüssel bleiben pro Gerät und werden nie auf den Server geschrieben.</p>
+<p class="mu">Alternative ohne Visu-Server: internes 14-Byte-KO <code>VISU_CONFIG</code> (remanent, WebSocket Lesen + Schreiben) – Details in der Hilfe (?) der Visu.</p>
+
+<h2 id="diagramme">7 · Diagramme</h2>
+<ul>
+<li>Einstellungen → Visu-Server → <b>„Diagramme für alle Verläufe anlegen“</b>: je 14771 eine Kachel.</li>
+<li>Ansichten Minute, Stunde, Tag, Woche, Monat, Jahr per Knopf in der Kachel.</li>
+<li><b>Mehrere Verläufe in einer Kachel:</b> Quelle <code>VS@*</code> (alle, mit Auswahlliste) oder <code>VS@pool_temp, VS@wz_temp</code>. Beim Eintippen schlägt die Visu die vorhandenen Verläufe vor.</li>
+<li><b>Datenquelle:</b> das Tabellen-Symbol oben in der Kachel öffnet die Übersichtsseite mit diesem Verlauf und dieser Ansicht; „← Zurück zum Diagramm“ führt an dieselbe Stelle zurück.</li>
+<li><b>Nachkommastellen:</b> Auswahlliste „automatisch“ (= E2 des Bausteins) oder fest 0–3.</li>
+</ul>
+
+<h2 id="uebersicht">8 · Übersichtsseite <code>https://&lt;HS&gt;/visu-daten/</code></h2>
+<ul>
+<li>Schlüssel eingeben → „Anzeigen“. Aus der Visu (Tabellen-Symbol im Diagramm) wird der Schlüssel automatisch übernommen.</li>
+<li>Auswahllisten <b>Verlauf</b> und <b>Ansicht</b>; die Werte erscheinen als Tabelle mit <b>Nr.</b>, Zeit und Wert. „↻ Aktualisieren“ lädt neu, „CSV“ speichert die Tabelle für Excel.</li>
+<li>Sicherung herunterladen und einspielen (siehe <a href="#sicherung">Sicherung</a>).</li>
+</ul>
+
+<h2 id="loeschen">9 · Werte löschen</h2>
+<p>Die Nummer vor jeder Zeile der Übersichtsseite an <b>E10</b> des passenden 14771 senden – die Zeile wird zur Lücke. Ein Klick auf die Nummer kopiert sie.</p>
+<table>
+<tr><th>Nummer</th><th>Ansicht</th></tr>
+<tr><td>1xxxx</td><td>Minute</td></tr><tr><td>2xxxx</td><td>Stunde</td></tr><tr><td>3xxxx</td><td>Tag</td></tr>
+<tr><td>4xxxx</td><td>Woche</td></tr><tr><td>5xxxx</td><td>Monat</td></tr><tr><td>6xxxx</td><td>Jahr</td></tr>
+<tr><td>-1</td><td>alle Werte dieses Verlaufs</td></tr>
+</table>
+<p>Die Nummer zählt ab dem ältesten Wert und bleibt daher lange gleich (Stunden: ein Jahr). Für E10 ein KO wählen, das 60050 und −1 kann – 4 Byte mit Vorzeichen oder Gleitkomma. Ergebnis an A3.</p>
+
+<h2 id="sicherung">10 · Sicherung</h2>
+<ul>
+<li><b>Herunterladen:</b> Übersichtsseite oder Visu → Einstellungen → Visu-Server → „Sicherung herunterladen“. Enthält Einrichtung und alle Verläufe.</li>
+<li><b>Einspielen</b> mit Auswahl:
+ <ul><li><b>nur fehlende Werte ergänzen</b> – vorhandene Werte und Kacheln bleiben; Lücken und ältere Werte kommen aus der Sicherung (nur bei gleichem Modus E3).</li>
+ <li><b>alles überschreiben</b> – Stand der Sicherung wird wiederhergestellt.</li></ul></li>
+<li>Die Verläufe werden innerhalb einer Minute übernommen. Nur Verläufe, deren Baustein am Visu-Server angemeldet ist (gleiche Kennung E6), können eingespielt werden.</li>
+</ul>
+
+<h2 id="update">11 · Update</h2>
+<ol>
+<li>Sicherung herunterladen.</li>
+<li>Neue .hslz im Experten importieren, Projekt übertragen.</li>
+<li><code>index.html</code> im hsupload-Ordner ersetzen, übertragen.</li>
+</ol>
+<p>Innerhalb derselben Baustein-ID bleiben Werte und Einrichtung beim Update erhalten.</p>
+
+<h3>Umstieg von 19107/19105 auf die offiziellen IDs 14770/14771</h3>
+<p>Eine neue ID ist für den HomeServer ein neuer Baustein – die Daten wandern über die Sicherung:</p>
+<ol><li>Übersichtsseite <code>/visu-daten/</code> → „Sicherung herunterladen“.</li>
+<li>14770 einfügen und wie 19107 belegen (E1 visu-daten, E2 8092, E3 Schlüssel, E4 KO); je Verlauf einen 14771 mit denselben Eingängen wie der alte 19105 (vor allem gleiche Kennung E6), E5 = A1 von 14770.</li>
+<li>Die alten 19107/19105 löschen – nicht parallel betreiben, sie nutzen denselben Port und Pfad.</li>
+<li>Projekt übertragen, dann die Sicherung mit „alles überschreiben“ einspielen.</li></ol>
+<p>Die Visu, ihre Kacheln (<code>VS@…</code>) und der Pfad <code>/visu-daten/</code> bleiben unverändert.</p>
+
+<h2 id="fehler">12 · Fehlersuche</h2>
+<table>
+<tr><th>Anzeige</th><th>Ursache / Lösung</th></tr>
+<tr><td>503 Service Unavailable</td><td>E2 Port von 14770 steht auf 0 → 8092 eintragen, übertragen.</td></tr>
+<tr><td>401 / „Schlüssel falsch“</td><td>Schlüssel in Visu/Übersicht muss E3 entsprechen.</td></tr>
+<tr><td>„Einrichtung vom –“</td><td>Visu hat noch nichts gespeichert → in der Visu Visu-Server anhaken und speichern.</td></tr>
+<tr><td>Verlauf fehlt in der Liste</td><td>E5 von 14771 nicht mit A1 von 14770 verbunden oder E6 leer; A3 von 14771 zeigt „Angemeldet am Visu-Server“.</td></tr>
+<tr><td>Experte: „kein belegter Eingang“</td><td>E4 von 14770 mit einem beliebigen KO verbinden.</td></tr>
+<tr><td>Visu: keine Verbindung</td><td>KO-Gateway aktiv? Benutzer/Passwort? Zertifikat einmal unter <code>https://&lt;HS-IP&gt;</code> akzeptieren. Debug-Symbol in der Visu zeigt Details.</td></tr>
+</table>
+
+<h2>Versionen</h2>
+<p><b>14770</b> v1.7 offizielle ID (bisher 19107) · v1.6 Aufruf aus dem Diagramm mit Zurück-Knopf · v1.5 Zeilennummern, Einspielen ergänzen/überschreiben · v1.4 UTF-8, Aktualisieren · v1.3 Übersicht mit Auswahllisten, CSV, Upload · v1.2 Port-Prüfung · v1.1 E4 · v1.0 erste Version.<br>
+<b>14771</b> v2.6 offizielle ID (bisher 19105) · v2.5 Werte bleiben nach Neustart, Sicherung alle 10 min · v2.4 Löschen per Zeilennummer, Ergänzen beim Einspielen · v2.3 UTF-8 (°C) · v2.2 Löschen · v2.1 Status ohne Umlaute · v2.0 Visu-Server, Kalenderansichten.</p>
+<p class="mu">Symbole teilweise nach Feather Icons (MIT) bzw. Lucide (ISC); Lizenzhinweis in index.html.</p>
+</main></body></html>

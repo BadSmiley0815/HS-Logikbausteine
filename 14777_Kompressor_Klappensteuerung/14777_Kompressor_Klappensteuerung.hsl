@@ -1,0 +1,166 @@
+################################################################################
+# 14777 Kompressor-Klappensteuerung  Version 1.2  (04.11.2026)
+# BadSmiley0815 · GPL-3.0
+#
+# Ersetzt eine Klappen- und Raumtemperatursteuerung aus Einzelbausteinen
+# (Sommer/Winter 19830, 2x PID 19211, Sperren, Telegrammgeneratoren).
+#
+# Sommer/Winter: Mittelwert der Außentemperatur wie 19830 aus den Werten um
+#   7, 14 und 22 Uhr: (T7 + T14 + 2*T22)/4, remanent. Mittel >= E4 -> Sommer.
+# Sommer: M1..M7 = Sommer-Vorgaben E14..E20 (gesendet bei Verdichter EIN,
+#   Umschaltung, Auto EIN oder Änderung einer Vorgabe). A11/A12 = 0.
+# Winter: M3 Kanal 2 außen und M5 Lager = Winter-Vorgaben E23/E25 (M5 Standard 50 %)
+#   (Abwärme geht in den Nebenraum).
+#   PI-Regler Kompressorraum (Fühler T1): M4 Umluft = y1, M6 = M7 = 100 - y1.
+#   PI-Regler Halle 1.OG (Fühler T4):     M2 innen  = y4, M1     = 100 - y4.
+#   Die Regler laufen im Winter immer (auch bei Verdichter AUS), Start stoßfrei
+#   ab Winter-Vorgabe M4 bzw. M2. Integrator auf 0..100 begrenzt.
+#   Fühler außerhalb -30..80 °C: Regler hält den letzten Wert.
+# Betriebsart E2<>1: Baustein sendet keine Klappenwerte (Hand), Status 0.
+# Ausgänge M1..M7 senden ganzzahlig und nur bei Änderung (bzw. erzwungen).
+# A13 Status: 0 = Hand, 1 = Sommer, 2 = Winter.
+# V1.2: Kühlregler (E28..E30, A14) entfernt; A11/A12 im Sommer 0;
+#       Pin-Namen Regler Kompressorraum (T1) / Halle 1.OG (T4).
+# V1.1: Kühlregler T1 (M3/M5 gegenläufig).  V1.0: erste Version.
+################################################################################
+
+5000|"Rausch\14777 Kompressor-Klappensteuerung V1.2"|1|27|"E1 Verdichter läuft"|"E2 Betriebsart Klappen 1=Auto"|"E3 Außentemperatur [°C]"|"E4 Schwelle Sommer/Winter [°C]"|"E5 Raumtemp. Kompressorraum T1 [°C]"|"E6 Sollwert Kompressorraum [°C]"|"E7 Verstärkung Regler Kompressorraum [%/K]"|"E8 Nachstellzeit Regler Kompressorraum [s]"|"E9 Raumtemp. Halle 1.OG T4 [°C]"|"E10 Sollwert Halle 1.OG [°C]"|"E11 Verstärkung Regler Halle 1.OG [%/K]"|"E12 Nachstellzeit Regler Halle 1.OG [s]"|"E13 Taktzeit [s]"|"E14 Sommer M1 [%]"|"E15 Sommer M2 [%]"|"E16 Sommer M3 [%]"|"E17 Sommer M4 [%]"|"E18 Sommer M5 [%]"|"E19 Sommer M6 [%]"|"E20 Sommer M7 [%]"|"E21 Winter M1 [%]"|"E22 Winter M2 [%]"|"E23 Winter M3 [%]"|"E24 Winter M4 [%]"|"E25 Winter M5 [%]"|"E26 Winter M6 [%]"|"E27 Winter M7 [%]"|13|"A1 M1 Kanal 1 außen [%]"|"A2 M2 Kanal 1 innen [%]"|"A3 M3 Kanal 2 außen [%]"|"A4 M4 Umluft [%]"|"A5 M5 Lager [%]"|"A6 M6 Fenster außen [%]"|"A7 M7 Fenster [%]"|"A8 Sommer 1/0"|"A9 Winter 1/0"|"A10 Mittelwert Außentemp. [°C]"|"A11 Stellgröße Regler Kompressorraum [%]"|"A12 Stellgröße Regler Halle 1.OG [%]"|"A13 Status"
+
+5001|27|13|1|32|1
+
+5002|1|0|0   # E1 Verdichter läuft
+5002|2|1|0   # E2 Betriebsart Klappen 1=Auto
+5002|3|10|0   # E3 Außentemperatur [°C]
+5002|4|10|0   # E4 Schwelle Sommer/Winter [°C]
+5002|5|20|0   # E5 Raumtemp. Kompressorraum T1 [°C]
+5002|6|20|0   # E6 Sollwert Kompressorraum [°C]
+5002|7|7|0   # E7 Verstärkung Regler Kompressorraum [%/K]
+5002|8|600|0   # E8 Nachstellzeit Regler Kompressorraum [s]
+5002|9|20|0   # E9 Raumtemp. Halle 1.OG T4 [°C]
+5002|10|20|0   # E10 Sollwert Halle 1.OG [°C]
+5002|11|7|0   # E11 Verstärkung Regler Halle 1.OG [%/K]
+5002|12|600|0   # E12 Nachstellzeit Regler Halle 1.OG [s]
+5002|13|30|0   # E13 Taktzeit [s]
+5002|14|100|0   # E14 Sommer M1 [%]
+5002|15|0|0   # E15 Sommer M2 [%]
+5002|16|100|0   # E16 Sommer M3 [%]
+5002|17|0|0   # E17 Sommer M4 [%]
+5002|18|0|0   # E18 Sommer M5 [%]
+5002|19|100|0   # E19 Sommer M6 [%]
+5002|20|100|0   # E20 Sommer M7 [%]
+5002|21|0|0   # E21 Winter M1 [%]
+5002|22|100|0   # E22 Winter M2 [%]
+5002|23|0|0   # E23 Winter M3 [%]
+5002|24|0|0   # E24 Winter M4 [%]
+5002|25|50|0   # E25 Winter M5 [%]
+5002|26|100|0   # E26 Winter M6 [%]
+5002|27|100|0   # E27 Winter M7 [%]
+
+5003|1|0|0   # SN1 Stunde
+5003|2|0|0   # SN2 Minute
+5003|3|-999|1   # SN3 Außentemp. 7 Uhr
+5003|4|-999|1   # SN4 Außentemp. 14 Uhr
+5003|5|-999|1   # SN5 Außentemp. 22 Uhr
+5003|6|0|0   # SN6 Mittelwert
+5003|7|0|0   # SN7 Sommer=1
+5003|8|-1|0   # SN8 Sommer vorher
+5003|9|0|0   # SN9 Anlauf
+5003|10|0|0   # SN10 Senden erzwingen
+5003|11|0|0   # SN11 I Regler Kompressorraum
+5003|12|0|0   # SN12 y Regler Kompressorraum
+5003|13|0|0   # SN13 I Regler Halle
+5003|14|0|0   # SN14 y Regler Halle
+5003|15|0|0   # SN15 e Regler Kompressorraum
+5003|16|0|0   # SN16 e Regler Halle
+5003|17|0|0   # SN17 Ziel M1
+5003|18|0|0   # SN18 Ziel M2
+5003|19|0|0   # SN19 Ziel M3
+5003|20|0|0   # SN20 Ziel M4
+5003|21|0|0   # SN21 Ziel M5
+5003|22|0|0   # SN22 Ziel M6
+5003|23|0|0   # SN23 Ziel M7
+5003|24|-1|0   # SN24 gesendet M1
+5003|25|-1|0   # SN25 gesendet M2
+5003|26|-1|0   # SN26 gesendet M3
+5003|27|-1|0   # SN27 gesendet M4
+5003|28|-1|0   # SN28 gesendet M5
+5003|29|-1|0   # SN29 gesendet M6
+5003|30|-1|0   # SN30 gesendet M7
+5003|31|0|0   # SN31 Verdichter vorher
+5003|32|0|0   # SN32 Status
+
+5004|1|0|0|1|0   # A1 M1 Kanal 1 außen [%]
+5004|2|0|0|1|0   # A2 M2 Kanal 1 innen [%]
+5004|3|0|0|1|0   # A3 M3 Kanal 2 außen [%]
+5004|4|0|0|1|0   # A4 M4 Umluft [%]
+5004|5|0|0|1|0   # A5 M5 Lager [%]
+5004|6|0|0|1|0   # A6 M6 Fenster außen [%]
+5004|7|0|0|1|0   # A7 M7 Fenster [%]
+5004|8|0|0|2|0   # A8 Sommer 1/0
+5004|9|0|0|2|0   # A9 Winter 1/0
+5004|10|0|0|2|0   # A10 Mittelwert Außentemp. [°C]
+5004|11|0|0|2|0   # A11 Stellgröße Regler Kompressorraum [%]
+5004|12|0|0|2|0   # A12 Stellgröße Regler Halle 1.OG [%]
+5004|13|0|0|2|0   # A13 Status
+
+5012|0|"(EI==1) or OC[1] or EC[13]"|"1"|"max(10,EN[13])"|0|1|0|0   # Takt-Timer
+5012|0|"EC[1] or EC[2] or EC[14] or EC[15] or EC[16] or EC[17] or EC[18] or EC[19] or EC[20] or EC[21] or EC[22] or EC[23] or EC[24] or EC[25] or EC[26] or EC[27]"|"1"|""|0|0|10|0   # Senden erzwingen
+5012|1|"not (OC[1] or (EI==1) or (SN[10]==1))"|""|""|0|0|0|0   # sonst nichts rechnen
+5012|0|"EN[1]==EN[1]"|"__import__('time').localtime()[3]"|""|0|0|1|0
+5012|0|"EN[1]==EN[1]"|"__import__('time').localtime()[4]"|""|0|0|2|0
+5012|0|"SN[3]<-500"|"EN[3]"|""|0|0|3|0   # erster Start
+5012|0|"SN[4]<-500"|"EN[3]"|""|0|0|4|0   # erster Start
+5012|0|"SN[5]<-500"|"EN[3]"|""|0|0|5|0   # erster Start
+5012|0|"(SN[1]==7) and (SN[2]<=10) and (EN[3]>-50) and (EN[3]<60)"|"EN[3]"|""|0|0|3|0   # Wert 7 Uhr
+5012|0|"(SN[1]==14) and (SN[2]<=10) and (EN[3]>-50) and (EN[3]<60)"|"EN[3]"|""|0|0|4|0   # Wert 14 Uhr
+5012|0|"(SN[1]==22) and (SN[2]<=10) and (EN[3]>-50) and (EN[3]<60)"|"EN[3]"|""|0|0|5|0   # Wert 22 Uhr
+5012|0|"EN[1]==EN[1]"|"(SN[3]+SN[4]+2.0*SN[5])/4.0"|""|0|0|6|0
+5012|0|"EN[1]==EN[1]"|"int(SN[6]>=EN[4])"|""|0|0|7|0   # Sommer=1
+5012|0|"SN[7]!=SN[8]"|"1"|""|0|0|10|0
+5012|0|"(SN[7]==0) and (SN[8]!=0)"|"max(0,min(100,EN[24]))"|""|0|0|11|0   # Winterstart: I T1 = Vorgabe M4
+5012|0|"(SN[7]==0) and (SN[8]!=0)"|"SN[11]"|""|0|0|12|0
+5012|0|"(SN[7]==0) and (SN[8]!=0)"|"max(0,min(100,EN[22]))"|""|0|0|13|0   # Winterstart: I T4 = Vorgabe M2
+5012|0|"(SN[7]==0) and (SN[8]!=0)"|"SN[13]"|""|0|0|14|0
+5012|0|"EN[1]==EN[1]"|"SN[7]"|""|0|0|8|0
+5012|0|"OC[1]"|"min(2,SN[9]+1)"|""|0|0|9|0   # Anlauf
+5012|1|"SN[9]<1"|""|""|0|0|0|0   # beim Start einen Takt warten
+5012|0|"EN[1]==EN[1]"|"round(SN[6],1)"|""|10|0|0|0
+5012|0|"EN[1]==EN[1]"|"SN[7]"|""|8|0|0|0
+5012|0|"EN[1]==EN[1]"|"1-SN[7]"|""|9|0|0|0
+5012|0|"EN[2]!=1"|"0"|""|13|0|32|0
+5012|1|"EN[2]!=1"|""|""|0|0|0|0   # Hand
+5012|0|"EN[1]==EN[1]"|"2-SN[7]"|""|13|0|32|0
+5012|0|"SN[7]==1"|"0"|""|11|0|0|0   # Sommer: Stellgröße Kompressorraum 0
+5012|0|"SN[7]==1"|"0"|""|12|0|0|0   # Sommer: Stellgröße Halle 0
+5012|0|"OC[1] and (SN[7]==0) and (EN[5]>-30) and (EN[5]<80)"|"EN[6]-EN[5]"|""|0|0|15|0   # e = Soll - Ist
+5012|0|"OC[1] and (SN[7]==0) and (EN[5]>-30) and (EN[5]<80)"|"max(0.0,min(100.0,SN[11]+EN[7]*max(10,EN[13])*1.0/max(1,EN[8])*SN[15]))"|""|0|0|11|0
+5012|0|"OC[1] and (SN[7]==0) and (EN[5]>-30) and (EN[5]<80)"|"max(0.0,min(100.0,EN[7]*SN[15]+SN[11]))"|""|0|0|12|0
+5012|0|"SN[7]==0"|"int(SN[12]+0.5)"|""|11|0|0|0
+5012|0|"OC[1] and (SN[7]==0) and (EN[9]>-30) and (EN[9]<80)"|"EN[10]-EN[9]"|""|0|0|16|0   # e = Soll - Ist
+5012|0|"OC[1] and (SN[7]==0) and (EN[9]>-30) and (EN[9]<80)"|"max(0.0,min(100.0,SN[13]+EN[11]*max(10,EN[13])*1.0/max(1,EN[12])*SN[16]))"|""|0|0|13|0
+5012|0|"OC[1] and (SN[7]==0) and (EN[9]>-30) and (EN[9]<80)"|"max(0.0,min(100.0,EN[11]*SN[16]+SN[13]))"|""|0|0|14|0
+5012|0|"SN[7]==0"|"int(SN[14]+0.5)"|""|12|0|0|0
+5012|0|"SN[7]==1"|"max(0,min(100,EN[14]))"|""|0|0|17|0
+5012|0|"SN[7]==1"|"max(0,min(100,EN[15]))"|""|0|0|18|0
+5012|0|"SN[7]==1"|"max(0,min(100,EN[16]))"|""|0|0|19|0
+5012|0|"SN[7]==1"|"max(0,min(100,EN[17]))"|""|0|0|20|0
+5012|0|"SN[7]==1"|"max(0,min(100,EN[18]))"|""|0|0|21|0
+5012|0|"SN[7]==1"|"max(0,min(100,EN[19]))"|""|0|0|22|0
+5012|0|"SN[7]==1"|"max(0,min(100,EN[20]))"|""|0|0|23|0
+5012|0|"SN[7]==0"|"100-SN[14]"|""|0|0|17|0
+5012|0|"SN[7]==0"|"SN[14]"|""|0|0|18|0
+5012|0|"SN[7]==0"|"max(0,min(100,EN[23]))"|""|0|0|19|0   # Winter M3 = Vorgabe
+5012|0|"SN[7]==0"|"SN[12]"|""|0|0|20|0
+5012|0|"SN[7]==0"|"max(0,min(100,EN[25]))"|""|0|0|21|0   # Winter M5 = Vorgabe (Nebenraum)
+5012|0|"SN[7]==0"|"100-SN[12]"|""|0|0|22|0
+5012|0|"SN[7]==0"|"100-SN[12]"|""|0|0|23|0
+5012|0|"((SN[7]==0) or (EN[1]==1)) and ((int(SN[17]+0.5)!=SN[24]) or (SN[10]==1))"|"int(SN[17]+0.5)"|""|1|0|24|0   # M1 senden
+5012|0|"((SN[7]==0) or (EN[1]==1)) and ((int(SN[18]+0.5)!=SN[25]) or (SN[10]==1))"|"int(SN[18]+0.5)"|""|2|0|25|0   # M2 senden
+5012|0|"((SN[7]==0) or (EN[1]==1)) and ((int(SN[19]+0.5)!=SN[26]) or (SN[10]==1))"|"int(SN[19]+0.5)"|""|3|0|26|0   # M3 senden
+5012|0|"((SN[7]==0) or (EN[1]==1)) and ((int(SN[20]+0.5)!=SN[27]) or (SN[10]==1))"|"int(SN[20]+0.5)"|""|4|0|27|0   # M4 senden
+5012|0|"((SN[7]==0) or (EN[1]==1)) and ((int(SN[21]+0.5)!=SN[28]) or (SN[10]==1))"|"int(SN[21]+0.5)"|""|5|0|28|0   # M5 senden
+5012|0|"((SN[7]==0) or (EN[1]==1)) and ((int(SN[22]+0.5)!=SN[29]) or (SN[10]==1))"|"int(SN[22]+0.5)"|""|6|0|29|0   # M6 senden
+5012|0|"((SN[7]==0) or (EN[1]==1)) and ((int(SN[23]+0.5)!=SN[30]) or (SN[10]==1))"|"int(SN[23]+0.5)"|""|7|0|30|0   # M7 senden
+5012|0|"SN[10]==1"|"0"|""|0|0|10|0
+
+### 14777 Kompressor-Klappensteuerung.End

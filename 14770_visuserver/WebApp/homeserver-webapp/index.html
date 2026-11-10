@@ -1,0 +1,2938 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<!--
+  Symbole: Ein Teil der Linien-Icons (z. B. Glühbirne, Zahnrad, Thermometer, Tropfen, Sonne, Blitz,
+  Warndreieck, Download, Stift, Stern, Regler, Aktualisieren, Flamme) entspricht den freien Icon-Sets
+  Feather Icons und Lucide. Beide sind für private und gewerbliche Nutzung frei:
+
+  Feather Icons – MIT License – Copyright (c) 2013-2023 Cole Bemis
+  Lucide – ISC License – Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022
+           as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+  associated documentation files, to deal in the Software without restriction, including without
+  limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies,
+  subject to the condition that the above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT
+  WARRANTY OF ANY KIND.
+
+  Übrige Symbole (Fenster, Tür, Behang, Griff, Bewegung, App-Symbol) sind eigene Zeichnungen.
+-->
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111418">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>HomeServer</title>
+<style>
+  :root {
+    --bg: #111418; --panel: #1b2027; --panel2: #232a33; --line: #2e3640;
+    --text: #e8ecf1; --muted: #8a96a3; --accent: #ffc53d; --accent-dim: #3a3220;
+    --ok: #3ecf8e; --warn: #f5a524; --err: #f2555a; --info: #6cb6ff; --radius: 18px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#eef1f4; --panel:#fff; --panel2:#f3f5f8; --line:#dde2e8; --text:#1a1f25; --muted:#6b7682; --accent:#f0a500; --accent-dim:#fff4d6; --info:#1f6feb; }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px;
+    padding: calc(12px + env(safe-area-inset-top)) 16px 12px; background: var(--bg);
+    border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 18px; margin: 0; flex: 1; font-weight: 600; }
+  .conn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); margin-right: 4px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--err); }
+  .conn.ok .dot { background: var(--ok); } .conn.wait .dot { background: var(--warn); }
+  @media (max-width: 420px) { #connText { display: none; } }
+  .sdot { width: 16px; height: 16px; display: inline-grid; place-items: center; margin-left: 4px; font-size: 13px; line-height: 1; }
+  .sdot::before { content: "☁"; color: var(--muted); }
+  .sdot.ok::before { color: var(--ok); } .sdot.warn::before { color: var(--warn); } .sdot.err::before { color: var(--err); }
+  .sdot.off { display: none; }
+  .altsave > summary { font-size: 13px; color: var(--muted); padding: 4px 2px; }
+  .altsave[open] > summary { margin-bottom: 10px; }
+  .iconbtn { background: none; border: 0; color: var(--muted); padding: 6px; cursor: pointer; border-radius: 10px; line-height: 0; }
+  .iconbtn:hover { color: var(--text); background: var(--panel2); }
+  .iconbtn.active { color: var(--accent); }
+  #floors { position: sticky; top: calc(58px + env(safe-area-inset-top)); z-index: 4; background: var(--bg);
+    display: flex; gap: 6px; padding: 10px 16px; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+  #floors button { flex: none; border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 999px;
+    padding: 6px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+  #floors button.act { background: var(--accent); border-color: var(--accent); color: #1a1400; font-weight: 600; }
+  main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+  .room { margin: 8px 0 24px; }
+  .room h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+    margin: 0 0 10px 2px; font-weight: 600; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  @media (max-width: 480px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+
+  /* Kacheln */
+  .tile { position: relative; min-height: 138px; border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--panel); color: var(--text); padding: 14px; text-align: left;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    transition: background .2s, border-color .2s, transform .08s; font: inherit; user-select: none; }
+  .tile { min-width: 0; }
+  .tile input[type=range] { min-width: 0; }
+  .setrow .setv span { white-space: nowrap; font-size: 15px; }
+  @media (max-width: 480px) { .tile.heating, .tile.blind { grid-column: span 2; } }
+  .tile.click { cursor: pointer; }
+  .tile.click:active { transform: scale(.97); }
+  .tile .ico { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--panel2); color: var(--muted); transition: all .2s; flex: none; }
+  .tile .name { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
+  .tile .state { font-size: 13px; color: var(--muted); }
+  .tile.on { background: var(--accent-dim); border-color: var(--accent); }
+  .tile.on .ico { background: var(--accent); color: #1a1400; box-shadow: 0 0 22px var(--accent); }
+  .tile.on .state { color: var(--accent); }
+  .tile .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .tile .top.click { cursor: pointer; }
+  .tile.unknown { opacity: .55; }
+  .tile .big { font-size: 26px; font-weight: 600; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .tile .big.txt { font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
+  .tile .big small { font-size: 15px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+  .tile.value .ico { color: var(--info); }
+  .tile input[type=range] { width: 100%; accent-color: var(--accent); margin: 0; height: 26px; cursor: pointer; }
+
+  /* Jalousie / Heizung / Wertgeber */
+  .tile .pos, .tile .chip { font-size: 13px; color: var(--muted); padding-top: 4px; }
+  .tile .chip { background: var(--panel2); border-radius: 999px; padding: 3px 10px; }
+  .btns, .setrow, .modes, .numrow { display: flex; gap: 6px; align-items: center; }
+  .bbtn { flex: 1; min-width: 0; height: 38px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2);
+    color: var(--text); font: 600 18px/1 inherit; display: grid; place-items: center; cursor: pointer; padding: 0; }
+  .bbtn:active { transform: scale(.94); background: var(--accent-dim); border-color: var(--accent); }
+  .bbtn:disabled { opacity: .3; cursor: default; }
+  .tile .rl { grid-template-columns: auto 1fr; align-items: center; gap: 8px; font-size: 12px; }
+  .tile.blind.on .ico { background: var(--panel2); color: var(--info); box-shadow: none; }
+  .tile.blind.on { background: var(--panel); border-color: var(--line); }
+  .tile.blind .ico { color: var(--info); }
+  .setrow .setv { flex: 1.4; text-align: center; display: grid; line-height: 1.15; }
+  .setrow .setv small { font-size: 11px; color: var(--muted); }
+  .setrow .setv span { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .setrow .setv.pending span { color: var(--accent); }
+  .modes .mbtn { flex: 1; height: 30px; border-radius: 10px; border: 1px solid var(--line); background: none; color: var(--muted);
+    cursor: pointer; font-size: 15px; padding: 0; }
+  .modes .mbtn.act { background: var(--accent); color: #1a1400; border-color: var(--accent); }
+  .tile.heating .ico { color: var(--muted); }
+  .tile.heating.on { background: var(--panel); border-color: #e8733a; }
+  .tile.heating.on .ico { background: #e8733a; color: #fff; box-shadow: 0 0 20px rgba(232,115,58,.6); }
+  .tile.heating.on .state { color: var(--muted); }
+  .tile.slider .ico { color: var(--info); }
+  .numrow input[type=number] { flex: 1; min-width: 0; padding: 7px 9px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel2); color: var(--text); font: inherit; }
+  .numrow .bbtn { height: 32px; }
+
+  /* Kontakte, Szenen */
+  .tile.contact .ico, .tile.scene .ico { color: var(--muted); }
+  .tile.contact.act-open { border-color: var(--warn); }
+  .tile.contact.act-open .ico { background: var(--warn); color: #1a1200; }
+  .tile.contact.act-open .state { color: var(--warn); font-weight: 600; }
+  .tile.contact.act-alarm { border-color: var(--err); background: color-mix(in srgb, var(--err) 14%, var(--panel)); }
+  .tile.contact.act-alarm .ico { background: var(--err); color: #fff; animation: pulse 1.2s ease-in-out infinite; }
+  .tile.contact.act-alarm .state { color: var(--err); font-weight: 700; }
+  .tile.scene .ico { color: var(--accent); }
+  .tile.scene.on { background: var(--accent-dim); border-color: var(--accent); }
+  .tile.scene.busy .ico { animation: pulse .9s ease-in-out infinite; }
+
+  /* Diagramm */
+  .tile.chart { grid-column: span 2; }
+  .tile.chart .ico { color: var(--info); }
+  .rng { display: flex; gap: 4px; align-items: center; }
+  .tile.flash { box-shadow: 0 0 0 3px var(--accent, #e9a100); transition: box-shadow .3s; }
+  .csrc { flex: 1 1 auto; min-width: 0; max-width: 60%; margin: 0 8px; font: inherit; font-size: 13px; padding: 3px 6px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--panel2); color: var(--text); }
+  .rng button { border: 1px solid var(--line); background: none; color: var(--muted); border-radius: 8px; padding: 3px 8px;
+    font: inherit; font-size: 12px; cursor: pointer; line-height: 1.2; display: grid; place-items: center; min-height: 26px; }
+  .rng.units { gap: 4px; flex-wrap: wrap; }
+  .rng.units button { flex: 1 1 0; min-width: 0; padding: 4px 2px; }
+  .rng button.act { background: var(--panel2); color: var(--text); border-color: var(--muted); }
+  .cbox { position: relative; height: 150px; margin: 4px 0 18px 34px; }
+  .cbox.loading { opacity: .5; }
+  .cbox svg { width: 100%; height: 100%; display: block; overflow: visible; touch-action: pan-y; cursor: crosshair; }
+  .cbox .grid { stroke: var(--line); stroke-width: 1; fill: none; }
+  .cbox .line { stroke: var(--info); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  .cbox .area { fill: var(--info); opacity: .10; }
+  .cbox .bar { fill: var(--info); }
+  .cbox .ylab { position: absolute; left: -34px; width: 30px; text-align: right; transform: translateY(-50%); font-size: 11px; color: var(--muted);
+    font-variant-numeric: tabular-nums; }
+  .cbox .xlab { position: absolute; left: 0; right: 0; top: 100%; display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding-top: 3px; }
+  .cbox .cmsg { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; color: var(--muted); text-align: center; }
+  .cbox .vline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--muted); pointer-events: none; }
+  .cbox .cdot { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--info); border: 2px solid var(--panel);
+    transform: translate(-50%, -50%); pointer-events: none; }
+  .cbox .ctip { position: absolute; top: -8px; transform: translate(-50%, -100%); background: var(--panel2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 3px 8px; font-size: 12px; white-space: nowrap; pointer-events: none; font-variant-numeric: tabular-nums; }
+
+  /* Startseite */
+  .summary { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 20px; }
+  .summary:empty { display: none; }
+  .schip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text);
+    border-radius: 999px; padding: 7px 14px 7px 10px; font: inherit; font-size: 14px; cursor: pointer; }
+  .schip svg { width: 18px; height: 18px; color: var(--muted); }
+  .schip.warn { border-color: var(--warn); } .schip.warn svg { color: var(--warn); }
+  .schip.crit { border-color: var(--err); color: var(--err); font-weight: 600; } .schip.crit svg { color: var(--err); }
+  .schip.lit svg { color: var(--accent); }
+  .schip.okc svg { color: var(--ok); }
+  .schip.act { background: var(--panel2); box-shadow: inset 0 0 0 1px var(--muted); }
+  .room.filtered h2 { color: var(--text); }
+  .room h2.trh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .room h2.trh span { flex: 1; color: var(--text); }
+  .room h2.trh .btn { text-transform: none; letter-spacing: 0; font-weight: 500; }
+  .schip .cnt { font-size: 12px; color: var(--muted); background: var(--panel2); border-radius: 999px; padding: 0 7px; }
+  .empty.small { padding: 24px 16px; font-size: 14px; }
+  #alarmBar { display: flex; align-items: center; gap: 10px; background: var(--err); color: #fff; border-radius: 12px;
+    padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
+  #alarmBar svg { flex: none; animation: pulse 1.2s ease-in-out infinite; }
+  #alarmBar[hidden] { display: none; }
+
+  /* Bearbeiten */
+  #editBar { position: sticky; top: calc(108px + env(safe-area-inset-top)); z-index: 4; display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; background: var(--accent-dim); border-bottom: 1px solid var(--accent); font-size: 13px; }
+  #editBar[hidden] { display: none; }
+  #editBar span { flex: 1; }
+  .tile .ed { display: none; }
+  body.editing .tile .ed { display: flex; position: absolute; inset: 0; border-radius: inherit; z-index: 2;
+    justify-content: space-between; align-items: flex-start; padding: 6px;
+    background: color-mix(in srgb, var(--panel) 35%, transparent); outline: 2px dashed var(--line); outline-offset: -2px; }
+  .edb { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--muted);
+    display: grid; place-items: center; cursor: pointer; padding: 0; }
+  .edb.grip { cursor: grab; touch-action: none; }
+  .edb.fav svg { fill: none; }
+  .edb.fav.on { color: var(--accent); border-color: var(--accent); } .edb.fav.on svg { fill: currentColor; }
+  .startview .edb.grip { opacity: .3; }
+  .tile.dragging { opacity: .6; box-shadow: 0 10px 30px rgba(0,0,0,.4); z-index: 5; animation: none; }
+  .tile.dragging .ed { cursor: grabbing; }
+  body.dragmode { user-select: none; touch-action: none; }
+
+  /* Elastischer Minimal-Toggle */
+  .sw { --w: 62px; --h: 34px; --p: 4px; --k: calc(var(--h) - 2 * var(--p));
+    position: relative; width: var(--w); height: var(--h); border-radius: var(--h); flex: none;
+    background: var(--sw-off, #3a434f); transition: background .3s ease; }
+  .sw i { position: absolute; top: 50%; transform: translate(-50%, -50%); }
+  .sw .bar  { left: 28%; width: 2px; height: 12px; border-radius: 2px; background: #fff; opacity: .9; }
+  .sw .ring { left: 72%; width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; opacity: .7; }
+  .sw .knob { position: absolute; top: var(--p); bottom: var(--p);
+    left: var(--p); right: calc(var(--w) - var(--p) - var(--k));
+    border-radius: var(--h); background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    transition: left .28s cubic-bezier(.3,1.5,.6,1), right .28s .1s cubic-bezier(.3,1.5,.6,1), transform .2s; }
+  .tile.on .sw { background: var(--accent); }
+  .tile.on .sw .knob { left: calc(var(--w) - var(--p) - var(--k)); right: var(--p);
+    transition: right .28s cubic-bezier(.3,1.5,.6,1), left .28s .1s cubic-bezier(.3,1.5,.6,1), transform .2s; }
+  .click:active .sw .knob { transform: scaleY(.85); }
+  .tile.busy .sw .knob { animation: pulse .9s ease-in-out infinite; }
+  .tile.unknown .sw .knob { left: calc(50% - var(--k) / 2); right: calc(50% - var(--k) / 2); }
+  @keyframes pulse { 50% { opacity: .55; } }
+  @media (prefers-color-scheme: light) { .sw { --sw-off: #c3cbd4; } }
+
+  .empty { text-align: center; color: var(--muted); padding: 60px 16px; display: grid; gap: 12px; justify-items: center; }
+  .empty .actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+  /* Dialoge */
+  dialog { width: min(600px, calc(100vw - 16px)); max-height: calc(100dvh - 16px); border: 1px solid var(--line);
+    border-radius: var(--radius); background: var(--panel); color: var(--text); padding: 0; }
+  dialog[open] { display: flex; flex-direction: column; }
+  dialog form { display: contents; }
+  dialog.wide { width: min(980px, calc(100vw - 16px)); }
+  dialog::backdrop { background: rgba(0,0,0,.55); }
+  .dlg-head { padding: 14px 18px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 17px;
+    display: flex; align-items: center; gap: 8px; }
+  .dlg-head span { flex: 1; }
+  .dlg-body { padding: 14px 18px; display: grid; gap: 14px; overflow: auto; flex: 1; min-height: 0; }
+  .dlg-foot { padding: 12px 18px; border-top: 1px solid var(--line); display: flex; gap: 8px; justify-content: flex-end;
+    flex-wrap: wrap; align-items: center; }
+  .dlg-foot .grow { flex: 1; font-size: 13px; color: var(--muted); }
+  fieldset { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin: 0; display: grid; gap: 10px; min-width: 0; }
+  legend { color: var(--muted); font-size: 13px; padding: 0 6px; }
+  label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+  input[type=text], input[type=password], input[type=search], select {
+    width: 100%; padding: 9px 11px; border-radius: 10px; min-width: 0;
+    border: 1px solid var(--line); background: var(--panel2); color: var(--text); font: inherit; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) { .row, .row3 { grid-template-columns: 1fr; } }
+  .check { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; }
+  .btn { border: 1px solid var(--line); background: var(--panel2); color: var(--text); padding: 9px 16px;
+    border-radius: 10px; font: inherit; cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-block; }
+  .btn.primary { background: var(--accent); color: #1a1400; border-color: var(--accent); font-weight: 600; }
+  .btn.small { padding: 5px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .hint.warn { color: var(--warn); } .hint.ok { color: var(--ok); } .hint.err { color: var(--err); }
+  .btn.danger { color: var(--err); }
+  .btn.danger:not(:disabled):hover { background: var(--err); color: #fff; border-color: var(--err); }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  .cat { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .cat > summary { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--panel2); flex-wrap: wrap; }
+  .cat > summary::before { content: "›"; display: inline-block; width: 12px; color: var(--muted); transition: transform .15s; font-size: 18px; line-height: 1; }
+  .cat[open] > summary::before { transform: rotate(90deg); }
+  .cat .cn { font-weight: 600; font-size: 14px; }
+  .cat .cc { font-size: 12px; color: var(--muted); background: var(--panel); border-radius: 999px; padding: 1px 8px; margin-right: auto; }
+  .cat.empty .catdel, .cat.empty .catsel { visibility: hidden; }
+  .cat-body { display: grid; }
+  .cat-body:empty::after { content: "Keine Kacheln in dieser Kategorie."; font-size: 12px; color: var(--muted); padding: 10px 14px; }
+  .tile-edit { border-top: 1px solid var(--line); }
+  .tile-edit > summary { display: grid; grid-template-columns: auto minmax(0, auto) 1fr auto; align-items: center; gap: 8px; padding: 6px 10px 6px 14px; }
+  .tile-edit .sn { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile-edit .sm { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile-edit[open] > summary { background: var(--accent-dim); }
+  .tile-edit .rm { padding: 4px 6px; line-height: 1; }
+  .tile-edit .rm:hover { color: var(--err); }
+  .te-body { padding: 10px 14px 14px; display: grid; gap: 10px; }
+  @media (max-width: 520px) { .tile-edit .sm { display: none; } .tile-edit > summary { grid-template-columns: auto 1fr auto; } }
+
+  /* Import */
+  .imp-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .imp-tools input[type=search] { flex: 1 1 200px; width: auto; }
+  .imp-tools select { width: auto; }
+  .grp { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .grp > .gh { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--panel2);
+    font-size: 13px; font-weight: 600; position: sticky; top: 0; }
+  .grp > .gh span { flex: 1; }
+  .dev { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; align-items: center;
+    padding: 8px 12px; border-top: 1px solid var(--line); }
+  .dev .dn { font-size: 14px; overflow: hidden; text-overflow: ellipsis; }
+  .dev .dr { color: var(--muted); font-size: 13px; }
+  .dev .dk { grid-column: 2 / 4; font-size: 12px; color: var(--muted); font-family: ui-monospace, Menlo, Consolas, monospace;
+    overflow-wrap: anywhere; }
+  .dev select { width: 118px; padding: 5px 8px; font-size: 13px; }
+  .dev.nokey { opacity: .45; }
+  input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+
+  /* Debug-Panel */
+  #dbg { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; max-height: 55vh; display: none;
+    flex-direction: column; background: var(--panel); border-top: 1px solid var(--line);
+    box-shadow: 0 -8px 24px rgba(0,0,0,.35); padding-bottom: env(safe-area-inset-bottom); }
+  #dbg.open { display: flex; }
+  #dbg .bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  #dbg .bar b { flex: 1; font-size: 14px; }
+  #dbgLog { flex: 1; overflow: auto; margin: 0; padding: 8px 12px; font: 12px/1.45 ui-monospace, Menlo, Consolas, monospace;
+    white-space: pre-wrap; word-break: break-all; }
+  #dbgLog .out { color: var(--info); } #dbgLog .in { color: var(--ok); } #dbgLog .err { color: var(--err); }
+  #dbgLog .hint { color: var(--warn); } #dbgLog .t { color: var(--muted); }
+  body.dbg-open main { padding-bottom: 56vh; }
+  .help details { border: 1px solid var(--line); border-radius: 12px; }
+  .help summary { padding: 10px 14px; font-weight: 600; background: var(--panel2); border-radius: 12px; }
+  .help details[open] summary { border-radius: 12px 12px 0 0; }
+  .help ol, .help ul, .help p { margin: 10px 14px 12px; padding-left: 20px; font-size: 14px; line-height: 1.5; }
+  .help p { padding-left: 0; }
+  .help li { margin-bottom: 6px; }
+  .help code { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; font-size: 13px; }
+  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+    background: var(--panel2); border: 1px solid var(--line); padding: 10px 16px; border-radius: 12px; z-index: 30;
+    font-size: 14px; opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 90vw; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="appTitle">HomeServer</h1>
+  <div class="conn" id="conn"><span class="dot"></span><span id="connText">getrennt</span><span id="syncDot" class="sdot off" title=""></span></div>
+  <button class="iconbtn" id="btnEdit" title="Bearbeiten: sortieren & Favoriten" aria-label="Bearbeiten">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+  </button>
+  <button class="iconbtn" id="btnImport" title="Aus HS importieren" aria-label="Aus HS importieren">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+  </button>
+  <button class="iconbtn" id="btnDebug" title="Debug" aria-label="Debug">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M19 7l-3 2M5 7l3 2M19 19l-3-2M5 19l3-2M20 13h-4M4 13h4M10 4l1 2M14 4l-1 2"/></svg>
+  </button>
+  <button class="iconbtn" id="btnHelp" title="Hilfe" aria-label="Hilfe">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>
+  </button>
+  <button class="iconbtn" id="btnSettings" title="Einstellungen" aria-label="Einstellungen">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+</header>
+
+<nav id="floors" hidden></nav>
+<div id="editBar" hidden><span><b>Bearbeiten:</b> Kacheln am Griff ziehen (auch in einen anderen Raum), Stern = Favorit auf der Startseite.</span><button class="btn small primary" id="editDone">Fertig</button></div>
+<main id="main"></main>
+
+<!-- ===================== Einstellungen ===================== -->
+<dialog id="dlg">
+  <form method="dialog">
+    <div class="dlg-head"><span>Einstellungen</span></div>
+    <div class="dlg-body">
+      <fieldset>
+        <legend>Allgemein</legend>
+        <label>Titel oben links <input type="text" id="cfgTitle" placeholder="HomeServer" maxlength="40" autocomplete="off"></label>
+        <div class="hint">Gilt für alle Geräte, wenn der Visu-Server oder die KO-Speicherung aktiv ist.</div>
+      </fieldset>
+      <fieldset>
+        <legend>Verbindung KO-Gateway</legend>
+        <label>HomeServer (IP oder Hostname, optional :Port)
+          <input type="text" id="cfgHost" placeholder="192.168.1.10" autocomplete="off"></label>
+        <div class="row">
+          <label>Benutzer <input type="text" id="cfgUser" autocomplete="username"></label>
+          <label>Passwort <input type="password" id="cfgPass" autocomplete="current-password"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="cfgSsl"> Verschlüsselt (wss:// / https://)</label>
+        <div class="hint">Bei selbstsigniertem Zertifikat einmal https://&lt;HS-IP&gt; im Browser öffnen und das Zertifikat akzeptieren.</div>
+      </fieldset>
+      <fieldset>
+        <legend>Kacheln</legend>
+        <div class="imp-tools">
+          <input type="search" id="tileSearch" placeholder="Suchen (Name, Raum, Etage, KO) …">
+          <span class="hint" id="tileTotal"></span>
+        </div>
+        <div class="imp-tools">
+          <button type="button" class="btn small" id="btnSelAll">Sichtbare auswählen</button>
+          <button type="button" class="btn small danger" id="btnDelSel" disabled>Ausgewählte löschen (0)</button>
+          <button type="button" class="btn small danger" id="btnClearTiles">Alle löschen</button>
+          <button type="button" class="btn small" id="btnExpand">Alle aufklappen</button>
+        </div>
+        <div id="tileList" style="display:grid;gap:8px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn small" data-add="switch">+ Schalter</button>
+          <button type="button" class="btn small" data-add="dimmer">+ Dimmer</button>
+          <button type="button" class="btn small" data-add="blind">+ Jalousie/Rollo</button>
+          <button type="button" class="btn small" data-add="heating">+ Heizung</button>
+          <button type="button" class="btn small" data-add="slider-pct">+ Wertgeber 0–100 %</button>
+          <button type="button" class="btn small" data-add="slider-u16">+ Wertgeber 0–65535</button>
+          <button type="button" class="btn small" data-add="value">+ Wertanzeige</button>
+          <button type="button" class="btn small" data-add="contact">+ Kontakt/Melder</button>
+          <button type="button" class="btn small" data-add="scene">+ Szene</button>
+          <button type="button" class="btn small" data-add="chart">+ Diagramm</button>
+        </div>
+        <div class="hint">Szenen und Verlaufs-KOs stehen nicht in der KO-Liste des HS – deren Endpunkt-ID (z. B. <b>SC@WOHNEN</b>, <b>VERLAUF_WZ_TEMP</b>) bitte von Hand eintragen. Diagramme: siehe Hilfe → „Diagramme“.</div>
+        <div class="hint">KO-Adresse z.&nbsp;B. <b>CO@1_2_3</b> (oder nur 1_2_3). Löschen wird erst mit „Speichern“ wirksam – „Abbrechen“ verwirft alles.</div>
+      </fieldset>
+      <fieldset>
+        <legend>Visu-Server (Baustein 14770) – empfohlen</legend>
+        <label class="check"><input type="checkbox" id="cfgSrvOn"> Einrichtung und Diagramme über den Visu-Server</label>
+        <div class="row">
+          <label>Pfad auf dem HomeServer <input type="text" id="cfgSrvPath" placeholder="/visu-daten/"></label>
+          <label>Schlüssel (E3 des Bausteins) <input type="password" id="cfgSrvKey" autocomplete="off"></label>
+        </div>
+        <div class="hint" id="srvState"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn small" id="btnSrvTest">Verbindung testen</button>
+          <button type="button" class="btn small" id="btnSrvCharts">Diagramme für alle Verläufe anlegen</button>
+          <button type="button" class="btn small" id="btnSrvBackup">Sicherung herunterladen</button>
+          <select id="srvRestoreMode" aria-label="Art der Wiederherstellung" style="width:auto"><option value="merge">nur fehlende Werte ergänzen</option><option value="replace">alles überschreiben</option></select>
+          <label class="btn small">Sicherung einspielen … <input type="file" id="srvRestoreFile" accept=".json,application/json" hidden></label>
+        </div>
+        <div class="hint">Ist der Visu-Server aktiv, wird das Konfigurations-KO darunter nicht mehr benutzt. Schlüssel, Adresse und Passwort bleiben nur in diesem Browser.</div>
+      </fieldset>
+      <fieldset>
+        <legend>Einrichtung auf dem HomeServer per KO (Alternative)</legend>
+        <label class="check"><input type="checkbox" id="cfgSyncOn"> Kacheln auf dem HomeServer speichern und live abgleichen</label>
+        <label>Konfigurations-KO (Endpunkt-ID eines internen KOs, Typ „14 Byte“, remanent)
+          <input type="text" id="cfgSyncKey" placeholder="VISU_CONFIG"></label>
+        <div class="hint" id="syncState"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn small" id="btnSyncPush">Jetzt hochladen</button>
+          <button type="button" class="btn small" id="btnSyncHelp">So lege ich das KO an</button>
+        </div>
+        <div class="hint">Adresse, Benutzer und Passwort bleiben immer nur in diesem Browser.</div>
+      </fieldset>
+      <details class="altsave">
+        <summary>Alternative ohne Konfigurations-KO: Einrichtung in die Seite schreiben</summary>
+      <fieldset>
+        <legend>Für alle Browser speichern</legend>
+        <div class="hint" id="embState"></div>
+        <label class="check"><input type="checkbox" id="embPass"> Passwort mit in die Seite schreiben</label>
+        <div class="hint warn" id="embPassWarn" hidden>Achtung: Jeder, der die Seite im Netz aufrufen kann, kann das Passwort dann im Quelltext lesen. Am besten einen eigenen WebSocket-Benutzer nur mit den nötigen Rechten verwenden.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn small primary" id="btnEmbed">In Seite speichern …</button>
+        </div>
+        <div class="hint">Speichert die aktuelle Einrichtung (inkl. ungespeicherter Änderungen in diesem Fenster) in eine neue <code>index.html</code>.
+          Diese Datei im <code>hsupload</code>-Ordner ersetzen und das Projekt übertragen – danach startet jeder Browser mit dieser Einrichtung.
+          Änderungen in einem Browser bleiben lokal, bis du wieder „In Seite speichern“ machst.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+          <button type="button" class="btn small" id="btnExport">Als Datei exportieren</button>
+          <label class="btn small">Importieren … <input type="file" id="cfgFile" accept=".json,application/json" hidden></label>
+          <button type="button" class="btn small" id="btnReset" hidden>Auf Stand der Seite zurücksetzen</button>
+        </div>
+      </fieldset>
+      </details>
+      <fieldset hidden>
+        <div class="hint">KO-Adresse z.&nbsp;B. <b>CO@1_2_3</b> (oder nur 1_2_3). Status-KO optional – leer = Steuer-KO wird auch als Status verwendet.</div>
+      </fieldset>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn" value="cancel" formnovalidate>Abbrechen</button>
+      <button class="btn primary" value="save">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ===================== Import ===================== -->
+<dialog id="imp" class="wide">
+  <div class="dlg-head"><span>Aus HomeServer importieren</span>
+    <button class="iconbtn" id="impClose" aria-label="Schließen">✕</button></div>
+  <div class="dlg-body">
+    <fieldset>
+      <legend>1 · KO-Struktur laden</legend>
+      <div class="imp-tools">
+        <button class="btn small primary" id="impFetch">Vom HomeServer laden</button>
+        <label class="btn small" style="display:inline-block">XML-Datei wählen …
+          <input type="file" id="impFile" accept=".xml,text/xml" hidden></label>
+        <a class="btn small" id="impOpen" target="_blank" rel="noopener">XML im Browser öffnen</a>
+      </div>
+      <div class="hint" id="impSrcHint">Quelle: https://&lt;HS&gt;/hscl?sys/cobjects.xml – dafür muss „XML-Struktur der K.-Objekte auf Gerät laden“ aktiv sein.
+        Blockiert der Browser das direkte Laden, die XML über „XML im Browser öffnen“ anzeigen, mit Strg+S speichern und hier als Datei wählen.</div>
+    </fieldset>
+    <fieldset id="impStep2" hidden>
+      <legend>2 · Adressierung im KO-Gateway</legend>
+      <div class="imp-tools">
+        <select id="impMode">
+          <option value="ga">Gruppenadresse → CO@1_2_3</option>
+          <option value="id">KO-ID → CO@12345</option>
+        </select>
+        <button class="btn small" id="impProbe">Automatisch erkennen</button>
+      </div>
+      <div class="hint" id="impProbeHint">„Automatisch erkennen“ fragt bei bestehender Verbindung ein paar KOs in beiden Schreibweisen ab und nimmt die, die der HS kennt.</div>
+    </fieldset>
+    <fieldset id="impStep3" hidden>
+      <legend>3 · Geräte auswählen</legend>
+      <div class="imp-tools">
+        <input type="search" id="impSearch" placeholder="Suchen (Name, Raum, GA) …">
+        <select id="impFilter">
+          <option value="ctrl">Alles außer Anzeigen</option>
+          <option value="all">Alle</option>
+          <option value="switch">nur Schalter</option>
+          <option value="dimmer">nur Dimmer</option>
+          <option value="blind">nur Jalousie/Rollo</option>
+          <option value="heating">nur Heizung</option>
+          <option value="slider">nur Wertgeber</option>
+          <option value="contact">nur Kontakte/Melder</option>
+          <option value="value">nur Wertanzeigen</option>
+        </select>
+        <label class="check" style="font-size:13px"><input type="checkbox" id="impUnused"> unbenutzte KOs</label>
+      </div>
+      <div class="imp-tools">
+        <button class="btn small" id="impSelAll">Sichtbare auswählen</button>
+        <button class="btn small" id="impSelNone">Auswahl aufheben</button>
+      </div>
+      <div id="impList" style="display:grid;gap:10px"></div>
+    </fieldset>
+  </div>
+  <div class="dlg-foot">
+    <div class="grow" id="impCount"></div>
+    <label class="check" style="font-size:13px"><input type="checkbox" id="impReplace"> bestehende Kacheln ersetzen</label>
+    <button class="btn primary" id="impApply" disabled>Übernehmen</button>
+  </div>
+</dialog>
+
+<!-- ===================== Hilfe ===================== -->
+<dialog id="help" class="wide">
+  <div class="dlg-head"><span>Hilfe</span><button class="iconbtn" id="helpClose" aria-label="Schließen">✕</button></div>
+  <div class="dlg-body help">
+    <details open><summary>Erste Schritte</summary>
+      <ol>
+        <li>Im Experten unter <b>Projekteinstellungen → Netzwerk → KO-Gateway</b> „WebSocket aktivieren“ und „XML-Struktur der K.-Objekte auf Gerät laden“ anhaken.</li>
+        <li>Einen Benutzer (z. B. <i>websocket</i>) anlegen, unter <b>Benutzerrechte → Endpunkte</b> die passende Benutzergruppe für Lesen und Schreiben eintragen – und dieselbe Gruppe bei den gewünschten KOs im Reiter <b>Endpunkt</b>.</li>
+        <li>Für die gemeinsame Einrichtung aller Geräte ein internes 14-Byte-KO mit der Endpunkt-ID <code>VISU_CONFIG</code> anlegen – siehe
+            <a href="#" data-help="helpSync">„Einstellungen auf dem HomeServer speichern“</a> – oder besser den
+            <a href="#" data-help="helpServer">Visu-Server</a> verwenden.</li>
+        <li>Projekt übertragen.</li>
+        <li>Hier unter <b>Einstellungen</b> (Zahnrad) HS-Adresse, Benutzer und Passwort eintragen, „Verschlüsselt“ anhaken.</li>
+        <li>Über <b>Import</b> (Pfeil nach unten) die KO-Struktur laden und die gewünschten Geräte übernehmen.</li>
+      </ol>
+    </details>
+    <details id="helpUpload"><summary>Dateien auf den HomeServer übertragen</summary>
+      <p>Der HomeServer kann diese Seite selbst ausliefern. Vorteile: kein zusätzlicher Webserver, Adresse und Zertifikat passen automatisch,
+         die KO-Liste lässt sich direkt laden, und die Seite lässt sich als App installieren.</p>
+      <ol>
+        <li>Die Dateien aus <b>homeserver-webapp.zip</b> entpacken (<code>index.html</code>, <code>manifest.json</code>, <code>sw.js</code>, <code>icon-*.png</code>).
+            Wer nur die Einzeldatei nutzt: <code>homeserver.html</code> in <code>index.html</code> umbenennen.</li>
+        <li>Im Experten <b>Projekteinstellungen → Oberfläche</b> öffnen. Unter „Zusätzliche Ordner und Dateien auf das Gerät laden“
+            mit <b>„Projekt“</b> den <code>hsupload</code>-Ordner dieses Projekts öffnen („Global“ wäre der gemeinsame Ordner für alle Projekte).</li>
+        <li>Darin einen Unterordner anlegen, z. B. <code>visu</code> (Kleinbuchstaben, keine Leer- oder Sonderzeichen), und alle Dateien hineinkopieren.</li>
+        <li>Im Experten auf das <b>Aktualisieren-Symbol</b> neben der Liste klicken – <code>visu</code> erscheint jetzt in der Liste.
+            Steht die Übertragung auf „Nur die markierten Ordner/Dateien“, <code>visu</code> anhaken; bei „Alle“ wird es automatisch mitgenommen.</li>
+        <li>Projekt übertragen.</li>
+        <li>Im Browser öffnen: <code>https://&lt;HS-IP&gt;/opt/visu/index.html</code> – also <b>/opt/</b> statt <i>hsupload</i> (so wie beim HS-Monitor unter <code>/opt/hsmonitor/</code>).</li>
+        <li>Beim ersten Aufruf die Zertifikatswarnung bestätigen. HS-Adresse ist dann schon vorbelegt; Benutzer und Passwort eintragen oder die exportierte Konfiguration importieren.</li>
+        <li>Als App: Android/Chrome Menü ⋮ → „App installieren“, iPhone/Safari Teilen → „Zum Home-Bildschirm“, PC/Edge/Chrome Installieren-Symbol in der Adresszeile.</li>
+      </ol>
+      <p class="hint">Nach jeder Änderung an den Dateien das Projekt erneut übertragen. Die Einstellungen (Kacheln) liegen im Browser und bleiben dabei erhalten.
+         Bei einem selbstsignierten Zertifikat verlangen manche Browser für die App-Installation ein vertrauenswürdiges Zertifikat – dann bleibt „Zum Home-Bildschirm“ bzw. ein Lesezeichen.</p>
+    </details>
+    <details id="helpSync"><summary>Einstellungen auf dem HomeServer speichern per 14-Byte-iKO (Alternative zum Visu-Server)</summary>
+      <p><b>Wozu?</b> Ohne dieses KO merkt sich jeder Browser seine Kacheln selbst – am Handy wäre dann alles leer.
+         Mit dem KO liegt die Einrichtung (Kacheln, Räume, Etagen, Favoriten, Reihenfolge) <b>im HomeServer</b>:
+         jedes Gerät lädt sie beim Öffnen, und eine Änderung an einem Gerät erscheint nach ca. 1 Sekunde auf allen anderen.</p>
+
+      <p><b>Warum ein 14-Byte-KO?</b> Laut Gira-Hilfe kann ein K.-Objekt vom Datentyp <i>14 Byte</i> innerhalb des HS bis zu
+         <b>30.000 Zeichen</b> aufnehmen (nur auf den KNX-Bus gehen 14 Byte) – <b>remanent</b> gespeichert bis zu <b>10.000 Zeichen</b>.
+         Die Seite speichert ihre Einrichtung komprimiert; ein KO reicht damit für einige hundert Kacheln.</p>
+
+      <p><b>So wird das iKO angelegt (Experte):</b></p>
+      <ol>
+        <li>Neues <b>internes K.-Objekt</b> (iKO) anlegen – <b>ohne Gruppenadresse</b>. Name frei, z. B. „Visu Konfiguration“.</li>
+        <li><b>Datentyp: 14 Byte</b> (Text).</li>
+        <li><b>Remanent</b> anhaken, damit die Einrichtung einen Neustart des HS übersteht.</li>
+        <li>Reiter <b>Endpunkt</b>: bei ID <code>VISU_CONFIG</code> eintragen (genau so, Groß-/Kleinschreibung beachten).</li>
+        <li>Im selben Reiter die Benutzergruppe des WebSocket-Benutzers bei <b>Lesen</b> und bei <b>Schreiben</b> anhaken.</li>
+        <li>Projekt übertragen.</li>
+      </ol>
+
+      <p><b>Danach:</b></p>
+      <ul>
+        <li>Seite auf dem Gerät öffnen, auf dem die Kacheln schon eingerichtet sind (z. B. PC). Die Einrichtung wird automatisch hochgeladen.</li>
+        <li>Auf allen anderen Geräten nur Adresse, Benutzer und Passwort eintragen – die Kacheln kommen vom HomeServer.</li>
+        <li>Einstellungen → „Einrichtung auf dem HomeServer“ zeigt den Stand; „Jetzt hochladen“ erzwingt das Speichern.</li>
+      </ul>
+
+      <p><b>Wolken-Symbol oben neben „verbunden“:</b></p>
+      <ul>
+        <li><span style="color:var(--ok)">☁ grün</span> – Einrichtung liegt auf dem HS, alle Geräte synchron.</li>
+        <li><span style="color:var(--warn)">☁ gelb</span> – wird gerade gespeichert, oder offline (wird nachgeholt, sobald die Verbindung steht).</li>
+        <li><span style="color:var(--err)">☁ rot</span> – KO fehlt oder ist nicht freigegeben. Details in den Einstellungen bzw. im Debug-Protokoll (Käfer).</li>
+      </ul>
+
+      <p><b>Sehr große Anlagen:</b> Meldet die Seite „Einrichtung braucht 2 KOs“, zusätzlich <code>VISU_CONFIG_2</code> anlegen
+         (gleiche Einstellungen wie oben), bei Bedarf bis <code>VISU_CONFIG_5</code>.</p>
+
+      <p><b>Anderer KO-Name:</b> Wer eine andere Endpunkt-ID verwenden will, trägt sie unter Einstellungen → „Konfigurations-KO“ auf <b>jedem</b> Gerät ein.</p>
+
+      <p class="hint">Sicherheit: Adresse, Benutzer und Passwort werden <b>nicht</b> im KO gespeichert. Geht der KO-Inhalt einmal verloren
+         (z. B. Projektübertragung ohne Remanentdaten), lädt das nächste Gerät, das die Einrichtung noch kennt, sie automatisch wieder hoch.
+         Zusätzlich lohnt sich ab und zu Einstellungen → „Als Datei exportieren“ als Sicherung.</p>
+    </details>
+    <details id="helpServer"><summary>Visu-Server und Diagramme (Bausteine 14770 v1.7 + 14771 v2.6) – empfohlen</summary>
+      <p>Der Logikbaustein <b>14770 „Visu-Server“ (v1.7, bisher 19107)</b> speichert die Einrichtung der Visu und liefert die Verläufe für die Diagramme.
+         Der HomeServer leitet <code>https://&lt;HS&gt;/visu-daten/</code> an ihn weiter – gleiche Adresse und gleiches Zertifikat wie die Visu.
+         Die Bausteine <b>14771 „Verlaufsspeicher für Diagramme“ (v2.6, bisher 19105)</b> zeichnen je einen Wert auf und melden sich beim Visu-Server an.</p>
+      <p><b>Einrichten im Experten:</b></p>
+      <ol>
+        <li><code>14770_visuserver.hslz</code> und <code>14771_verlauf.hslz</code> importieren.</li>
+        <li><b>14770</b> einmal auf eine Logikseite ziehen. E1 Basis-Pfad <code>visu-daten</code>, E2 Port <code>8092</code> (frei wählbar, <b>muss aber eingetragen sein</b> – steht er auf 0, meldet der Browser „503 Service Unavailable“),
+            <b>E3 Schlüssel</b>: ein eigenes Kennwort – ohne Schlüssel kann jeder im Netz die Einrichtung ändern.<br><b>E4 Neustart/Auslöser</b>: mit einem beliebigen KO verbinden, weil der Experte mindestens einen belegten Eingang verlangt (1 = Server neu starten).</li>
+        <li>Je aufzuzeichnendem Wert einen <b>14771</b> einfügen: E1 mit dem KO des Werts verbinden, <b>E5 mit A1 von 14770</b> verbinden,
+            E6 Kennung (z. B. <code>wz_temp</code>, eindeutig), E7 Name, E8 Einheit, E3 Modus (0 = Mittelwert, 2 = Verbrauch aus Zählerstand; ein Wechsel behält die Werte).
+            E9 = 0, wenn kein 14-Byte-KO an A1 hängt. E10 „Zeile löschen“ (Zahl) bleibt meist frei (siehe unten).</li>
+        <li>Projekt übertragen.</li>
+      </ol>
+      <p><b>Umstieg von 19107/19105 auf die offiziellen IDs 14770/14771:</b> neue ID = neuer Baustein, die Daten wandern über die Sicherung.
+         1. Übersichtsseite <code>/visu-daten/</code> → „Sicherung herunterladen“. 2. 14770 und je Verlauf 14771 einfügen, Eingänge wie bisher belegen
+         (gleiche Kennung E6), die alten 19107/19105 löschen – nicht parallel betreiben, sie nutzen denselben Port. 3. Übertragen. 4. Sicherung mit
+         „alles überschreiben“ einspielen. Die Visu selbst und ihre Kacheln (<code>VS@…</code>) bleiben unverändert.</p>
+      <p><b>In der Visu:</b> Einstellungen → „Visu-Server“: Häkchen setzen, Schlüssel eintragen, „Verbindung testen“, speichern.
+         Dann „Diagramme für alle Verläufe anlegen“ – je Verlauf entsteht eine Diagramm-Kachel (Quelle <code>VS@kennung</code>).
+         Die Einrichtung liegt ab jetzt auf dem Visu-Server; andere Geräte brauchen nur Adresse, Benutzer, Passwort und Schlüssel.</p>
+      <p><b>Mehrere Verläufe in einer Kachel:</b> als Quelle <code>VS@*</code> eintragen – die Kachel bekommt eine Auswahlliste mit allen Verläufen.
+         Oder gezielt mehrere mit Komma: <code>VS@wz_temp, VS@sz_temp</code>. Beim Eintippen der Quelle schlägt die Visu die vorhandenen Verläufe vor.
+         Die Auswahl merkt sich jedes Gerät selbst.</p>
+      <p><b>Datenquelle:</b> das Tabellen-Symbol oben in einer Diagramm-Kachel öffnet die Übersichtsseite mit genau diesem Verlauf und dieser Ansicht
+         (Schlüssel wird übernommen). „← Zurück zum Diagramm“ führt wieder an dieselbe Stelle der Visu.</p>
+      <p><b>Übersichtsseite</b> <code>https://&lt;HS&gt;/visu-daten/</code>: Schlüssel eingeben, Verlauf und Ansicht in den Auswahllisten wählen – die Werte
+         erscheinen als Tabelle (mit CSV-Export). Dort lässt sich die Sicherung auch herunterladen und wieder einspielen.</p>
+      <p><b>Falsche Werte löschen:</b> auf der Übersichtsseite steht vor jeder Zeile eine Nummer (erste Ziffer = Ansicht: 1 Minute, 2 Stunde, 3 Tag,
+         4 Woche, 5 Monat, 6 Jahr). Diese Nummer an E10 von 14771 senden – die Zeile wird gelöscht und erscheint als Lücke. <code>-1</code> löscht alle Werte.
+         Ein Klick auf die Nummer kopiert sie.</p>
+      <p><b>Sicherung einspielen:</b> wahlweise „nur fehlende Werte ergänzen“ (vorhandene Werte und Kacheln bleiben, Lücken und ältere Werte werden aus der
+         Sicherung aufgefüllt) oder „alles überschreiben“.</p>
+      <p><b>Speicher:</b> je Verlauf 24 h Minutenwerte, 1 Jahr Stundenwerte, 10 Jahre Tages- und Wochenwerte, 20 Jahre Monatswerte, 50 Jahre Jahreswerte –
+         komprimiert in remanenten Speichervariablen (getestet: je Variable bleiben 10.000 Zeichen erhalten, Neustart und Projektübertragung
+         übersteht alles). Gespeichert wird alle 10 Minuten. <b>Achtung:</b> ein Update eines Bausteins, das seine Speichervariablen ändert, kann die
+         Werte löschen – vorher „Sicherung herunterladen“ und danach „Sicherung einspielen“.</p>
+      <p class="hint">Ohne Visu-Server funktionieren Diagramme weiterhin über ein 14-Byte-KO an A1 von 14771 (Quelle <code>CO@…</code>, kürzere Verläufe)
+         oder über ein Datenarchiv des HS (<code>DA@…</code>).</p>
+    </details>
+    <details><summary>Bedienung</summary>
+      <ul>
+        <li><b>Start</b>: Übersicht (Alarme, offene Fenster, Lichter an, Rollos zu) und Favoriten. Ein Tipp auf eine Übersicht zeigt die betroffenen Kacheln.</li>
+        <li><b>Gewerke</b>: alles nach Licht, Rollo, Heizung … sortiert, mit „Alle aus“ / „Alle auf/zu“.</li>
+        <li><b>Stift</b>: Bearbeiten – Kacheln am Griff verschieben (auch in andere Räume), Stern = Favorit.</li>
+        <li><b>Einstellungen</b>: Kacheln nach Kategorie bearbeiten, suchen, einzeln/ausgewählt/kategorieweise löschen.</li>
+        <li><b>Für alle Browser</b> (ohne Konfigurations-KO): Einstellungen → „In Seite speichern …“ schreibt die Einrichtung in eine neue <code>index.html</code>.
+            Diese im <code>hsupload</code>-Ordner ersetzen und das Projekt übertragen – jeder Browser startet dann mit dieser Einrichtung.
+            In Chrome/Edge am PC kann die Datei direkt im <code>hsupload</code>-Ordner überschrieben werden.</li>
+      </ul>
+    </details>
+    <details><summary>Wenn etwas nicht geht</summary>
+      <ul>
+        <li><b>Keine Verbindung</b>: Käfer-Symbol öffnet das Debug-Protokoll. „Zertifikat prüfen“ zeigt, ob der Browser dem HS vertraut.</li>
+        <li><b>KO-Liste lädt nicht</b> (Seite läuft nicht auf dem HS): „XML im Browser öffnen“, speichern, als Datei wählen.</li>
+        <li><b>Diagramm leer</b>: Die Rohantwort des Archivs steht im Debug-Protokoll.</li>
+      </ul>
+    </details>
+  </div>
+</dialog>
+
+<div id="dbg">
+  <div class="bar">
+    <b>Debug</b>
+    <button class="btn small" id="dbgReconnect">Neu verbinden</button>
+    <button class="btn small" id="dbgCert">Zertifikat prüfen</button>
+    <button class="btn small" id="dbgCopy">Log kopieren</button>
+    <button class="btn small" id="dbgClear">Leeren</button>
+    <button class="iconbtn" id="dbgClose" aria-label="Schließen">✕</button>
+  </div>
+  <pre id="dbgLog"></pre>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- In die Seite eingebaute Konfiguration (wird über Einstellungen → „In Seite speichern“ geschrieben) -->
+<script id="hsEmbedded" type="application/json">{}</script>
+<script>
+"use strict";
+/* unveränderte Kopie der Seite für „In Seite speichern“ – vor jeder Änderung am DOM festhalten */
+const PRISTINE = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+
+/* ===================== Hilfsfunktionen ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const normKey = (k, pfx) => {
+  k = String(k || "").trim(); if (!k) return "";
+  k = /^[A-Z]{2}@/i.test(k) ? k.replace(/^([a-z]{2})@/i, (m, p) => p.toUpperCase() + "@") : (pfx || "CO@") + k;
+  // Gruppenadresse mit Schrägstrichen (1/2/3) → CO@1_2_3
+  return /^CO@\d+\/\d+(\/\d+)?$/.test(k) ? k.replace(/\//g, "_") : k;
+};
+const fmtNum = (n, d) => Number(n).toLocaleString("de-DE", { maximumFractionDigits: d ?? 1 });
+
+/* ===================== Konfiguration ===================== */
+const STORE = "hs-visu-config-v1";
+const DEFAULTS = { title: "", host: "", user: "", pass: "", ssl: true, tiles: [], syncOn: true, syncKey: "VISU_CONFIG", srvOn: false, srvPath: "/visu-daten/", srvKey: "" };
+let EMBEDDED = {};
+try { EMBEDDED = JSON.parse(document.getElementById("hsEmbedded").textContent || "{}"); } catch (e) {}
+function loadCfg() {
+  let local = null;
+  try { local = JSON.parse(localStorage.getItem(STORE) || "null"); } catch (e) {}
+  const emb = EMBEDDED && Array.isArray(EMBEDDED.tiles) ? EMBEDDED : null;
+  // Eingebaute Konfiguration gewinnt, wenn der Browser noch nichts hat oder die Seite neuer ist
+  if (emb && (!local || (emb.rev || 0) > (local.rev || 0))) {
+    const c = Object.assign({}, DEFAULTS, emb);
+    if (!c.pass && local && local.pass && (!local.host || local.host === c.host)) c.pass = local.pass;   // lokales Passwort behalten
+    c.fromEmbedded = true;
+    try { localStorage.setItem(STORE, JSON.stringify(c)); } catch (e) {}
+    return c;
+  }
+  return Object.assign({}, DEFAULTS, local || {});
+}
+let applyingRemote = false, lastTilesSig = null;
+function applyTitle() {
+  const t = String(cfg.title || "").trim() || "HomeServer";
+  const h = document.getElementById("appTitle"); if (h) h.textContent = t;
+  document.title = t;
+}
+function saveCfg(c) {
+  const sig = JSON.stringify(c.tiles || []) + "|" + (c.title || "");
+  if (lastTilesSig !== null && sig !== lastTilesSig && !applyingRemote) {
+    c.rev = Date.now();                      // lokale Änderung → neuer Stand
+    if (typeof schedulePush === "function") schedulePush();
+  }
+  lastTilesSig = sig;
+  try { localStorage.setItem(STORE, JSON.stringify(c)); } catch (e) {}
+}
+let cfg = loadCfg();
+lastTilesSig = JSON.stringify(cfg.tiles || []) + "|" + (cfg.title || "");
+const hostBase = () => cfg.host.replace(/^\w+:\/\//, "").replace(/\/+$/, "");
+
+/* ===================== Kacheltypen ===================== */
+/* Feld: [Name, Beschriftung, istKO(true)/Einstellung(false), Platzhalter] */
+const SCHEMA = {
+  switch:  { label: "Schalter", fields: [["key", "Schalt-KO", 1, "CO@1_1_1"], ["status", "Status-KO (opt.)", 1, "CO@1_1_2"]] },
+  dimmer:  { label: "Dimmer", fields: [["key", "Wert-KO (%)", 1, "CO@1_1_3"], ["status", "Status Wert (opt.)", 1, "CO@1_1_4"],
+             ["sw", "Schalten (opt.)", 1, "CO@1_1_1"], ["swStatus", "Status Ein/Aus (opt.)", 1, "CO@1_1_2"]] },
+  blind:   { label: "Jalousie/Rollo", fields: [["move", "Auf/Ab (1 Bit)", 1, "CO@2_1_0"], ["stop", "Stopp/Schritt (1 Bit)", 1, "CO@2_1_1"],
+             ["key", "Position (%)", 1, "CO@2_1_2"], ["status", "Status Position", 1, "CO@2_1_3"],
+             ["slat", "Lamelle (%) (opt.)", 1, "CO@2_1_4"], ["slatStatus", "Status Lamelle", 1, "CO@2_1_5"]] },
+  heating: { label: "Heizung", fields: [["actual", "Istwert", 1, "CO@3_1_0"], ["key", "Sollwert", 1, "CO@3_1_1"],
+             ["status", "Status Sollwert", 1, "CO@3_1_2"], ["mode", "Betriebsart (opt.)", 1, "CO@3_1_3"],
+             ["modeStatus", "Status Betriebsart", 1, "CO@3_1_4"], ["valve", "Stellgröße % (opt.)", 1, "CO@3_1_5"],
+             ["step", "Schrittweite (K)", 0, "0,5"]] },
+  slider:  { label: "Wertgeber", fields: [["key", "KO", 1, "CO@4_0_0"], ["status", "Status (opt.)", 1, "CO@4_0_1"],
+             ["min", "Min", 0, "0"], ["max", "Max", 0, "100"], ["step", "Schritt", 0, "1"], ["unit", "Einheit", 0, "%"]] },
+  value:   { label: "Wertanzeige", fields: [["key", "KO", 1, "CO@3_1_0"], ["unit", "Einheit", 0, "°C"], ["dec", "Nachkommastellen", 0, "1"]] },
+  contact: { label: "Kontakt/Melder", fields: [["key", "Kontakt-KO (1 Bit)", 1, "CO@6_1_0"], ["kind", "Art: fenster, tuer, alarm, wasser, rauch, bewegung", 0, "fenster"],
+             ["invert", "Invertiert (1 = ja)", 0, ""]] },
+  scene:   { label: "Szene/Sequenz", fields: [["key", "Szene SC@… oder Sequenz SQ@…", 1, "SC@WOHNEN", "SC@"], ["method", "Methode (call / start / stop)", 0, "call"]] },
+  chart:   { label: "Diagramm", fields: [["key", "Quelle: VS@kennung, VS@* (alle, mit Auswahlliste), mehrere mit Komma, Verlaufs-KO oder DA@…", 1, "VS@wz_temp", "CO@"],
+             ["live", "Aktueller Wert (KO, opt.)", 1, "CO@3_1_0"], ["unit", "Einheit", 0, "°C"], ["dec", "Nachkommastellen", 0, "1"],
+             ["range", "Start-Ansicht: Minute, Stunde, Tag, Woche, Monat oder Jahr", 0, "Stunde"], ["col", "Nur Datenarchiv: Spalte (opt.)", 0, ""], ["size", "Nur Datenarchiv: Rasterminuten", 0, ""]] }
+};
+const TYPE_LABEL = Object.fromEntries(Object.entries(SCHEMA).map(([k, v]) => [k, v.label]));
+const HVAC = { 1: "Komfort", 2: "Standby", 3: "Nacht", 4: "Frost" };
+const HVAC_ICON = { 1: "☀", 2: "⌂", 3: "☾", 4: "❄" };
+
+/* ===================== Zustand ===================== */
+const values = new Map();     // KO-Key -> Rohwert
+const busy = new Map();       // Tile-Index -> Soll-Ein/Aus, solange Rückmeldung aussteht
+const lastLevel = new Map();  // Tile-Index -> letzter Dimmwert > 0
+const pendingSet = new Map(); // Tile-Index -> {v, timer} (Heizung-Sollwert, Wertgeber)
+
+function isOn(v) {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v === "boolean") return v;
+  const n = Number(v);
+  return isNaN(n) ? undefined : n !== 0;
+}
+function num(v) { if (v === undefined || v === null || v === "") return undefined; const n = Number(String(v).replace(",", ".")); return isNaN(n) ? undefined : n; }
+function decodeText(v) {
+  try { return new TextDecoder().decode(Uint8Array.from(atob(v), c => c.charCodeAt(0))); } catch (e) { return String(v); }
+}
+const val = k => k ? values.get(normKey(k)) : undefined;
+const nval = k => num(val(k));
+
+/* Welche KOs gehören zu einer Kachel (für Abo und Push-Zuordnung) */
+function tileKeys(t) {
+  const s = SCHEMA[t.type] || SCHEMA.switch;
+  return s.fields.filter(f => f[2]).flatMap(f => String(t[f[0]] || "").split(/[,;]/)).map(k => normKey(k)).filter(Boolean);
+}
+
+/* ===================== Rendering ===================== */
+const ICONS = {
+  bulb: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>',
+  temp: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>',
+  drop: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>',
+  sun:  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>',
+  bolt: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+  gauge:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>',
+  text: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>',
+  sliders: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>',
+  flame: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>',
+  up:   '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
+  down: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  stop: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  window: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M12 3v18M4 12h16"/></svg>',
+  door: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v17M3 21h18"/><circle cx="15" cy="12" r="1"/></svg>',
+  alarm: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  motion: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="m7 21 3-6 3 2v4M10 15l1-6 4 3 3 1M8 10l3-1"/></svg>',
+  play: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8L20 9l-4.9 3.6L17 19l-5-3.7L7 19l1.9-6.4L4 9l6.1-.2z"/></svg>',
+  chart: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-6"/></svg>',
+  table: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg>',
+  refresh: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg>',
+  star: '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/></svg>',
+  grip: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>'
+};
+const CONTACT = {
+  fenster:  { icon: "window", on: "offen", off: "geschlossen", cls: "open", group: "open", label: "Fenster" },
+  tuer:     { icon: "door", on: "offen", off: "geschlossen", cls: "open", group: "open", label: "Tür" },
+  alarm:    { icon: "alarm", on: "ALARM", off: "OK", cls: "alarm", group: "alarm", label: "Alarm" },
+  wasser:   { icon: "alarm", on: "Wasser!", off: "trocken", cls: "alarm", group: "alarm", label: "Wasser" },
+  rauch:    { icon: "alarm", on: "Rauch!", off: "OK", cls: "alarm", group: "alarm", label: "Rauch" },
+  bewegung: { icon: "motion", on: "Bewegung", off: "ruhig", cls: "open", group: "", label: "Bewegung" }
+};
+const contactDef = t => CONTACT[(t.kind || "fenster").toLowerCase().replace("ü", "ue")] || CONTACT.fenster;
+function contactActive(t) {
+  const v = isOn(val(t.key));
+  if (v === undefined) return undefined;
+  return String(t.invert || "") === "1" || String(t.invert).toLowerCase() === "ja" ? !v : v;
+}
+/* Fenster mit Behang – Höhe wird per JS gesetzt */
+const BLIND_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect class="shade" x="4" y="4" width="16" height="0" fill="currentColor" stroke="none" opacity=".55"/><path d="M3 4h18"/></svg>';
+
+function valueIcon(t) {
+  const u = (t.unit || "").toLowerCase();
+  if (t.fmt === "text") return ICONS.text;
+  if (u.includes("°")) return ICONS.temp;
+  if (u === "%" ) return ICONS.drop;
+  if (u === "lx") return ICONS.sun;
+  if (/^(w|kw|kwh|wh|a|v)$/.test(u)) return ICONS.bolt;
+  return ICONS.gauge;
+}
+const TOGGLE = '<span class="sw" aria-hidden="true"><i class="bar"></i><i class="ring"></i><span class="knob"></span></span>';
+const sliderRange = t => {
+  const min = num(t.min) ?? 0, max = num(t.max) ?? 100;
+  const step = num(t.step) ?? (max - min > 1000 ? 1 : max - min > 100 ? 1 : 1);
+  return { min, max, step };
+};
+
+function tileHtml(t, i) {
+  // auf der Startseite fehlt die Raum-Überschrift → Raum vor den Namen setzen
+  const base = t.name || TYPE_LABEL[t.type] || "Kachel";
+  const withRoom = (view === "__start" || view === "__trades") && t.room && !base.toLowerCase().startsWith(t.room.toLowerCase());
+  const nm = esc((withRoom ? t.room + " · " : "") + base);
+  switch (t.type) {
+    case "dimmer": return `<div class="tile dimmer" data-i="${i}">
+        <div class="top click" role="button" tabindex="0"><span class="ico">${ICONS.bulb}</span>${TOGGLE}</div>
+        <div><div class="name">${nm}</div><div class="state">–</div></div>
+        <input type="range" min="0" max="100" step="1" value="0" aria-label="Helligkeit ${nm}">
+      </div>`;
+    case "value": return `<div class="tile value" data-i="${i}">
+        <div class="top"><span class="ico">${valueIcon(t)}</span></div>
+        <div><div class="big">–</div><div class="name">${nm}</div></div>
+      </div>`;
+    case "blind": return `<div class="tile blind" data-i="${i}">
+        <div class="top"><span class="ico">${BLIND_SVG}</span><span class="pos">–</span></div>
+        <div class="name">${nm}</div>
+        <div class="btns">
+          <button class="bbtn" data-a="up" aria-label="Auf" ${t.move || t.key ? "" : "disabled"}>${ICONS.up}</button>
+          <button class="bbtn" data-a="stop" aria-label="Stopp" ${t.stop ? "" : "disabled"}>${ICONS.stop}</button>
+          <button class="bbtn" data-a="down" aria-label="Ab" ${t.move || t.key ? "" : "disabled"}>${ICONS.down}</button>
+        </div>
+        ${t.key ? `<label class="rl">Position <input type="range" class="rPos" min="0" max="100" step="1" value="0"></label>` : ""}
+        ${t.slat ? `<label class="rl">Lamelle <input type="range" class="rSlat" min="0" max="100" step="1" value="0"></label>` : ""}
+      </div>`;
+    case "heating": return `<div class="tile heating" data-i="${i}">
+        <div class="top"><span class="ico">${ICONS.flame}</span><span class="chip mode">–</span></div>
+        <div><div class="big act">–</div><div class="name">${nm}</div></div>
+        <div class="setrow">
+          <button class="bbtn" data-a="minus" aria-label="Sollwert senken">−</button>
+          <div class="setv"><small>Soll</small><span class="sv">–</span></div>
+          <button class="bbtn" data-a="plus" aria-label="Sollwert erhöhen">+</button>
+        </div>
+        ${t.mode ? `<div class="modes">${[1, 2, 3, 4].map(m => `<button class="mbtn" data-m="${m}" title="${HVAC[m]}">${HVAC_ICON[m]}</button>`).join("")}</div>` : ""}
+        ${t.valve ? `<div class="state valve">Ventil –</div>` : ""}
+      </div>`;
+    case "slider": {
+      const r = sliderRange(t), wide = r.max - r.min > 200;
+      return `<div class="tile slider" data-i="${i}">
+        <div class="top"><span class="ico">${ICONS.sliders}</span></div>
+        <div><div class="big">–</div><div class="name">${nm}</div></div>
+        <input type="range" min="${r.min}" max="${r.max}" step="${r.step}" value="${r.min}" aria-label="${nm}">
+        ${wide ? `<div class="numrow"><input type="number" min="${r.min}" max="${r.max}" step="${r.step}" inputmode="numeric" aria-label="Wert ${nm}"><button class="btn small" data-a="setnum">Setzen</button></div>`
+               : `<div class="numrow"><button class="bbtn" data-a="dec">−</button><button class="bbtn" data-a="inc">+</button></div>`}
+      </div>`;
+    }
+    case "contact": { const c = contactDef(t);
+      return `<div class="tile contact" data-i="${i}">
+        <div class="top"><span class="ico">${ICONS[c.icon]}</span></div>
+        <div><div class="name">${nm}</div><div class="state">–</div></div>
+      </div>`; }
+    case "scene": return `<div class="tile scene click" data-i="${i}" role="button" tabindex="0">
+        <div class="top"><span class="ico">${ICONS.play}</span></div>
+        <div><div class="name">${nm}</div><div class="state">${/^SQ@/i.test(t.key) ? "Sequenz " + esc(t.method || "start") : "Szene abrufen"}</div></div>
+      </div>`;
+    case "chart": return `<div class="tile chart" data-i="${i}">
+        <div class="top"><span class="ico">${ICONS.chart}</span>
+          ${chartMulti(t) ? '<select class="csrc" aria-label="Daten auswählen"><option>lädt …</option></select>' : ""}
+          <div class="rng">${chartHasSource(t) ? `<button data-h="src" title="Datenquelle: Werte als Tabelle" aria-label="Datenquelle öffnen">${ICONS.table}</button>` : ""}<button data-h="r" title="Neu laden" aria-label="Neu laden">${ICONS.refresh}</button></div></div>
+        <div class="rng units">${CHART_UNITS.map(([u, l]) => `<button data-u="${u}">${l}</button>`).join("")}</div>
+        <div><div class="big">–</div><div class="name">${nm}</div></div>
+        <div class="cbox"><div class="cmsg">lädt …</div></div>
+      </div>`;
+    default: return `<div class="tile switch click" data-i="${i}" role="button" tabindex="0">
+        <div class="top"><span class="ico">${ICONS.bulb}</span>${TOGGLE}</div>
+        <div><div class="name">${nm}</div><div class="state">–</div></div>
+      </div>`;
+  }
+}
+
+function render() {
+  applyTitle();
+  const main = $("#main");
+  if (!cfg.host || !cfg.tiles.length) {
+    $("#floors").hidden = true;
+    main.innerHTML = `<div class="empty">${cfg.host ? "Noch keine Kacheln." : "Noch nicht eingerichtet."}
+      <div class="actions">
+        <button class="btn primary" id="eSet">Einstellungen</button>
+        ${cfg.host ? '<button class="btn" id="eImp">Aus HS importieren</button>' : ""}
+      </div></div>`;
+    $("#eSet").onclick = openSettings;
+    if ($("#eImp")) $("#eImp").onclick = openImport;
+    return;
+  }
+  // Ansichten: Start (Favoriten + Übersicht), Alle, einzelne Etagen
+  const floors = [...new Set(cfg.tiles.map(t => t.floor || ""))].filter(Boolean);
+  const nav = $("#floors");
+  let cur = null;
+  try { cur = localStorage.getItem("hs-visu-floor"); } catch (e) {}
+  if (cur === null) cur = cfg.tiles.some(t => t.fav || t.type === "contact") ? "__start" : "";
+  if (cur && !cur.startsWith("__") && !floors.includes(cur)) cur = "";
+  view = cur;
+  nav.hidden = false;
+  nav.innerHTML = [["__start", "Start"], ["__trades", "Gewerke"], ["", "Alle"], ...floors.map(f => [f, f])]
+    .map(([f, l]) => `<button data-f="${esc(f)}" class="${f === cur ? "act" : ""}">${esc(l)}</button>`).join("");
+  nav.querySelectorAll("button").forEach(b => b.onclick = () => { try { localStorage.setItem("hs-visu-floor", b.dataset.f); } catch (e) {} startFilter = ""; render(); });
+
+  const sect = (title, idx, room, floor) => `<section class="room" data-room="${esc(room ?? "")}" data-floor="${esc(floor ?? "")}"><h2>${esc(title)}</h2>
+    <div class="grid">${idx.map(i => tileHtml(cfg.tiles[i], i)).join("")}</div></section>`;
+  let html = '<div id="alarmBar" hidden></div>';
+  if (cur === "__trades") {
+    // Gewerke: nach Funktion zusammengefasst, innerhalb nach Etage/Raum sortiert
+    const present = TRADES.map(tr => ({ tr, idx: cfg.tiles.map((t, i) => tr.types.includes(t.type) ? i : -1).filter(i => i >= 0) })).filter(x => x.idx.length);
+    if (tradeSel && !present.some(x => x.tr.id === tradeSel)) tradeSel = "";
+    html += `<div class="summary trades">${[["", "Alle Gewerke", cfg.tiles.length], ...present.map(x => [x.tr.id, x.tr.label, x.idx.length])]
+      .map(([id, l, n]) => `<button class="schip ${id === tradeSel ? "act" : ""}" data-tr="${id}">${esc(l)} <span class="cnt">${n}</span></button>`).join("")}</div>`;
+    const floorOrder = f => { const k = floors.indexOf(f); return k < 0 ? 999 : k; };
+    for (const { tr, idx } of present) {
+      if (tradeSel && tr.id !== tradeSel) continue;
+      idx.sort((a, b) => floorOrder(cfg.tiles[a].floor || "") - floorOrder(cfg.tiles[b].floor || "")
+        || (cfg.tiles[a].room || "").localeCompare(cfg.tiles[b].room || "", "de") || a - b);
+      const acts = (tr.actions || []).map(([a, l]) => `<button class="btn small" data-ta="${a}" data-tr="${tr.id}">${esc(l)}</button>`).join("");
+      html += sect(tr.label, idx, null, null).replace("<h2>", `<h2 class="trh"><span>`).replace("</h2>", `</span>${acts}</h2>`);
+    }
+  } else if (cur === "__start") {
+    html += '<div id="summary" class="summary"></div>';
+    const favs = cfg.tiles.map((t, i) => t.fav ? i : -1).filter(i => i >= 0);
+    if (startFilter) {
+      const f = SUMMARY_FILTERS[startFilter];
+      const idx = cfg.tiles.map((t, i) => f.test(t, i) ? i : -1).filter(i => i >= 0);
+      html += sect(f.title, idx, null, null).replace('<section class="room"', '<section class="room filtered"');
+      lastFilterSig = idx.join(",");
+    }
+    html += favs.length ? sect("Favoriten", favs, null, null)
+      : `<div class="empty small">Noch keine Favoriten. Tippe oben auf <b>✎</b> und markiere Kacheln mit dem Stern.</div>`;
+  } else {
+    const rooms = new Map();
+    cfg.tiles.forEach((t, i) => {
+      if (cur && (t.floor || "") !== cur) return;
+      const r = (!cur && t.floor ? t.floor + " · " : "") + (t.room || "Allgemein");
+      if (!rooms.has(r)) rooms.set(r, { idx: [], room: t.room || "", floor: t.floor || "" });
+      rooms.get(r).idx.push(i);
+    });
+    for (const [title, r] of rooms) html += sect(title, r.idx, r.room, r.floor);
+  }
+  main.innerHTML = html;
+  main.classList.toggle("startview", cur === "__start" || cur === "__trades");
+  main.querySelectorAll(".trades .schip").forEach(b => b.onclick = () => { tradeSel = b.dataset.tr; render(); });
+  main.querySelectorAll("[data-ta]").forEach(b => b.onclick = () => tradeAction(b.dataset.ta));
+  // Bearbeiten-Overlay (Ziehen + Favorit) in jede Kachel
+  main.querySelectorAll(".tile").forEach(el => {
+    const t = cfg.tiles[+el.dataset.i];
+    el.insertAdjacentHTML("beforeend", `<div class="ed"><button class="edb grip" aria-label="Verschieben">${ICONS.grip}</button>
+      <button class="edb fav ${t.fav ? "on" : ""}" aria-label="Favorit">${ICONS.star}</button></div>`);
+  });
+  bindEdit(main);
+
+  const onKey = fn => e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } };
+  main.querySelectorAll(".tile").forEach(el => {
+    const i = +el.dataset.i, t = cfg.tiles[i];
+    if (t.type === "switch" || !SCHEMA[t.type]) { el.onclick = () => toggleSwitch(i); el.onkeydown = onKey(() => toggleSwitch(i)); }
+    if (t.type === "dimmer") {
+      const top = el.querySelector(".top"), rng = el.querySelector("input");
+      top.onclick = () => toggleDimmer(i); top.onkeydown = onKey(() => toggleDimmer(i));
+      rng.oninput = () => { el.dataset.drag = "1"; el.querySelector(".state").textContent = rng.value + " %"; };
+      rng.onchange = () => { delete el.dataset.drag; setDim(i, +rng.value); };
+    }
+    if (t.type === "blind") {
+      el.querySelectorAll(".bbtn").forEach(b => b.onclick = () => blindAction(i, b.dataset.a));
+      const rp = el.querySelector(".rPos"), rs = el.querySelector(".rSlat");
+      if (rp) { rp.oninput = () => { el.dataset.drag = "1"; el.querySelector(".pos").textContent = rp.value + " %"; };
+                rp.onchange = () => { delete el.dataset.drag; call(t.key, "set", rp.value) || toast("Keine Verbindung zum HomeServer"); }; }
+      if (rs) { rs.oninput = () => { el.dataset.dragSlat = "1"; };
+                rs.onchange = () => { delete el.dataset.dragSlat; call(t.slat, "set", rs.value) || toast("Keine Verbindung zum HomeServer"); }; }
+    }
+    if (t.type === "heating") {
+      el.querySelectorAll(".bbtn").forEach(b => b.onclick = () => heatStep(i, b.dataset.a === "plus" ? 1 : -1));
+      el.querySelectorAll(".mbtn").forEach(b => b.onclick = () => { call(t.mode, "set", b.dataset.m) ? markBusy(i, null) : toast("Keine Verbindung zum HomeServer"); });
+    }
+    if (t.type === "slider") {
+      const rng = el.querySelector("input[type=range]"), nb = el.querySelector("input[type=number]");
+      rng.oninput = () => { el.dataset.drag = "1"; showSlider(el, t, +rng.value); };
+      rng.onchange = () => { delete el.dataset.drag; sliderSet(i, +rng.value); };
+      el.querySelectorAll(".bbtn").forEach(b => b.onclick = () => {
+        const r = sliderRange(t), cur = pendingSet.get(i)?.v ?? nval(t.status || t.key) ?? r.min;
+        sliderSet(i, Math.min(r.max, Math.max(r.min, cur + (b.dataset.a === "inc" ? r.step : -r.step))), true);
+      });
+      if (nb) {
+        const go = () => { const v = num(nb.value); if (v === undefined) return; const r = sliderRange(t); sliderSet(i, Math.min(r.max, Math.max(r.min, v))); nb.blur(); };
+        el.querySelector("[data-a=setnum]").onclick = go;
+        nb.onkeydown = e => { if (e.key === "Enter") go(); };
+      }
+    }
+    if (t.type === "scene") { el.onclick = () => runScene(i, el); el.onkeydown = onKey(() => runScene(i, el)); }
+    if (t.type === "chart") {
+      el.querySelectorAll(".rng button").forEach(b => b.onclick = () => {
+        if (b.dataset.h === "r") return loadChart(i, true);
+        if (b.dataset.h === "src") return openChartSource(i);
+        chartRange.set(i, b.dataset.u); loadChart(i);
+      });
+      if (chartMulti(t)) fillChartSelect(el, i, t); else loadChart(i);
+    }
+  });
+  updateTiles();
+}
+
+function dimLevel(t) { return nval(t.status || t.key); }
+const hasDec = t => t && t.dec !== undefined && t.dec !== null && t.dec !== "" && !isNaN(+t.dec);
+const decOr = (t, fb) => hasDec(t) ? +t.dec : fb;
+/* feste Nachkommastellen, wenn eingestellt (auch 18,0); sonst automatisch */
+function fmtVal(t, n) {
+  if (hasDec(t)) return Number(n).toLocaleString("de-DE", { minimumFractionDigits: +t.dec, maximumFractionDigits: +t.dec });
+  return fmtNum(n, Number.isInteger(n) ? 0 : 1);
+}
+function showSlider(el, t, n) {
+  el.querySelector(".big").innerHTML = n === undefined ? "–" : fmtVal(t, n) + (t.unit ? `<small>${esc(t.unit)}</small>` : "");
+}
+
+function updateTiles() {
+  document.querySelectorAll(".tile").forEach(el => {
+    const i = +el.dataset.i, t = cfg.tiles[i];
+    if (!t) return;
+    switch (t.type) {
+      case "value": {
+        const raw = val(t.key);
+        let txt = "–";
+        if (raw !== undefined) {
+          if (t.fmt === "text") txt = esc(decodeText(raw));
+          else if (t.fmt === "bool") txt = isOn(raw) ? "Ein" : "Aus";
+          else { const n = num(raw); txt = n === undefined ? esc(raw) : fmtVal(t, n) + (t.unit ? `<small>${esc(t.unit)}</small>` : ""); }
+        }
+        el.querySelector(".big").innerHTML = txt;
+        el.querySelector(".big").classList.toggle("txt", t.fmt === "text");
+        el.classList.toggle("unknown", raw === undefined);
+        return;
+      }
+      case "blind": {
+        const pos = nval(t.status || t.key), slat = nval(t.slatStatus || t.slat);
+        if (!el.dataset.drag) el.querySelector(".pos").textContent = pos === undefined ? "" : pos <= 0 ? "offen" : pos >= 100 ? "zu" : fmtNum(pos, 0) + " %";
+        el.querySelector(".shade").setAttribute("height", 16 * Math.min(1, Math.max(0, (pos ?? 0) / 100)));
+        const rp = el.querySelector(".rPos"), rs = el.querySelector(".rSlat");
+        if (rp && !el.dataset.drag && pos !== undefined) rp.value = pos;
+        if (rs && !el.dataset.dragSlat && slat !== undefined) rs.value = slat;
+        el.classList.toggle("on", pos > 0);
+        el.classList.toggle("unknown", t.key && pos === undefined);
+        return;
+      }
+      case "heating": {
+        const act = nval(t.actual), set = pendingSet.has(i) ? pendingSet.get(i).v : nval(t.status || t.key);
+        const mode = nval(t.modeStatus || t.mode), valve = nval(t.valve);
+        el.querySelector(".act").innerHTML = act === undefined ? "–" : fmtNum(act, 1) + "<small>°C</small>";
+        el.querySelector(".sv").textContent = set === undefined ? "–" : fmtNum(set, 1) + " °C";
+        el.querySelector(".setv").classList.toggle("pending", pendingSet.has(i));
+        const chip = el.querySelector(".mode");
+        chip.textContent = HVAC[mode] || (t.mode ? "–" : "");
+        chip.hidden = !t.mode;
+        el.querySelectorAll(".mbtn").forEach(b => b.classList.toggle("act", +b.dataset.m === mode));
+        if (t.valve) el.querySelector(".valve").textContent = "Ventil " + (valve === undefined ? "–" : fmtNum(valve, 0) + " %");
+        el.classList.toggle("on", valve > 0 || (act !== undefined && set !== undefined && act < set - 0.2));
+        el.classList.toggle("unknown", act === undefined && set === undefined);
+        return;
+      }
+      case "contact": {
+        const c = contactDef(t), a = contactActive(t);
+        el.querySelector(".state").textContent = a === undefined ? "unbekannt" : a ? c.on : c.off;
+        el.classList.toggle("unknown", a === undefined);
+        el.classList.toggle("act-" + c.cls, a === true);
+        return;
+      }
+      case "chart": if (normKey(t.key, "DA@").startsWith("CO@")) loadChart(i); else if (t.live) { const v = nval(t.live); if (v !== undefined) el.querySelector(".big").innerHTML = fmtVal(t, v) + (t.unit ? `<small>${esc(t.unit)}</small>` : ""); } return;
+      case "scene": return;
+      case "slider": {
+        const n = pendingSet.has(i) ? pendingSet.get(i).v : nval(t.status || t.key);
+        if (!el.dataset.drag) {
+          showSlider(el, t, n);
+          if (n !== undefined) el.querySelector("input[type=range]").value = n;
+          const nb = el.querySelector("input[type=number]");
+          if (nb && document.activeElement !== nb && n !== undefined) nb.value = n;
+        }
+        el.classList.toggle("unknown", n === undefined);
+        return;
+      }
+    }
+    // Schalter / Dimmer
+    let real, stateTxt;
+    if (t.type === "dimmer") {
+      const lvl = dimLevel(t);
+      const swState = t.sw ? isOn(val(t.swStatus || t.sw)) : undefined;
+      real = lvl !== undefined ? lvl > 0 : swState;
+      if (lvl > 0) lastLevel.set(i, lvl);
+      const rng = el.querySelector("input");
+      if (!el.dataset.drag && lvl !== undefined) rng.value = lvl;
+      stateTxt = lvl !== undefined ? (lvl > 0 ? fmtNum(lvl, 0) + " %" : "Aus") : (real === undefined ? "unbekannt" : real ? "Ein" : "Aus");
+      if (el.dataset.drag) stateTxt = rng.value + " %";
+    } else {
+      real = isOn(val(t.status || t.key));
+      stateTxt = real === undefined ? "unbekannt" : real ? "Ein" : "Aus";
+    }
+    const on = busy.has(i) && busy.get(i) !== null ? busy.get(i) : real;
+    el.classList.toggle("on", on === true);
+    el.classList.toggle("unknown", on === undefined);
+    el.classList.toggle("busy", busy.has(i));
+    el.setAttribute("aria-pressed", on === true);
+    el.querySelector(".state").textContent = busy.has(i) ? "schaltet …" : stateTxt;
+  });
+  updateSummary();
+}
+
+/* ===================== Gewerke ===================== */
+const TRADES = [
+  { id: "licht", label: "Licht", types: ["switch", "dimmer"], actions: [["lightsOff", "Alle aus"]] },
+  { id: "beschattung", label: "Jalousie / Rollo", types: ["blind"], actions: [["blindsUp", "Alle auf"], ["blindsDown", "Alle zu"]] },
+  { id: "heizung", label: "Heizung", types: ["heating"] },
+  { id: "sicherheit", label: "Fenster, Türen & Melder", types: ["contact"] },
+  { id: "szenen", label: "Szenen", types: ["scene"] },
+  { id: "werte", label: "Wertgeber & Anzeigen", types: ["slider", "value"] },
+  { id: "diagramme", label: "Diagramme", types: ["chart"] }
+];
+let tradeSel = "";
+function tradeAction(a) {
+  if (!isConnected()) return toast("Keine Verbindung zum HomeServer");
+  let n = 0;
+  cfg.tiles.forEach(t => {
+    if (a === "lightsOff" && tileOn(t)) {
+      if (t.type === "dimmer" && t.sw) call(t.sw, "set", 0); else call(t.key, "set", 0);
+      n++;
+    }
+    if ((a === "blindsUp" || a === "blindsDown") && t.type === "blind" && (t.move || t.key)) {
+      const down = a === "blindsDown";
+      if (t.move) call(t.move, "set", down ? 1 : 0); else call(t.key, "set", down ? 100 : 0);
+      n++;
+    }
+  });
+  toast(n ? n + (a === "lightsOff" ? " Lichter ausgeschaltet" : a === "blindsUp" ? " Rollos fahren auf" : " Rollos fahren zu") : "Nichts zu tun");
+}
+
+/* ===================== Startseite: Übersicht & Warnungen ===================== */
+let view = "", startFilter = "", lastFilterSig = "";
+function tileOn(t) {
+  if (t.type === "switch") return isOn(val(t.status || t.key)) === true;
+  if (t.type === "dimmer") { const l = nval(t.status || t.key); return l !== undefined ? l > 0 : isOn(val(t.swStatus || t.sw)) === true; }
+  return false;
+}
+const SUMMARY_FILTERS = {
+  alarm: { title: "Aktive Alarme", test: t => t.type === "contact" && contactDef(t).group === "alarm" && contactActive(t) === true },
+  open:  { title: "Offene Fenster & Türen", test: t => t.type === "contact" && contactDef(t).group === "open" && contactActive(t) === true },
+  on:    { title: "Eingeschaltete Lichter", test: t => tileOn(t) },
+  blind: { title: "Geschlossene Rollos/Jalousien", test: t => t.type === "blind" && (nval(t.status || t.key) ?? 0) > 0 }
+};
+function updateSummary() {
+  const count = k => cfg.tiles.filter(SUMMARY_FILTERS[k].test).length;
+  const n = { alarm: count("alarm"), open: count("open"), on: count("on"), blind: count("blind") };
+  // Alarm-Leiste auf jeder Ansicht
+  const bar = $("#alarmBar");
+  if (bar) {
+    const act = cfg.tiles.filter(SUMMARY_FILTERS.alarm.test);
+    bar.hidden = !act.length;
+    if (act.length) bar.innerHTML = `${ICONS.alarm}<span><b>${act.length === 1 ? "Alarm" : act.length + " Alarme"}:</b> ${act.map(t => esc(t.name + (t.room ? " (" + t.room + ")" : ""))).join(", ")}</span>`;
+  }
+  const box = $("#summary");
+  if (box) {
+    const chip = (k, txt, cls) => `<button class="schip ${cls} ${startFilter === k ? "act" : ""}" data-k="${k}">${txt}</button>`;
+    let h = "";
+    if (n.alarm) h += chip("alarm", ICONS.alarm + n.alarm + (n.alarm === 1 ? " Alarm" : " Alarme"), "crit");
+    if (cfg.tiles.some(t => t.type === "contact" && contactDef(t).group === "open"))
+      h += chip("open", ICONS.window + (n.open ? n.open + " offen" : "alle zu"), n.open ? "warn" : "okc");
+    if (cfg.tiles.some(t => t.type === "switch" || t.type === "dimmer"))
+      h += chip("on", ICONS.bulb + (n.on ? n.on + " Licht" + (n.on === 1 ? "" : "er") + " an" : "alle Lichter aus"), n.on ? "lit" : "");
+    if (cfg.tiles.some(t => t.type === "blind"))
+      h += chip("blind", BLIND_SVG + (n.blind ? n.blind + " zu" : "alle offen"), "");
+    box.innerHTML = h;
+    box.querySelectorAll(".schip").forEach(b => b.onclick = () => { startFilter = startFilter === b.dataset.k ? "" : b.dataset.k; render(); });
+    box.querySelectorAll(".schip .shade").forEach(r => r.setAttribute("height", n.blind ? 10 : 0));
+  }
+  // gefilterte Liste neu aufbauen, wenn sich die Menge geändert hat
+  if (view === "__start" && startFilter) {
+    const sig = cfg.tiles.map((t, i) => SUMMARY_FILTERS[startFilter].test(t, i) ? i : -1).filter(i => i >= 0).join(",");
+    if (sig !== lastFilterSig) { lastFilterSig = sig; setTimeout(render, 0); }
+  }
+}
+
+/* ===================== Bedienung ===================== */
+function call(key, method, value) {
+  const msg = { type: "call", param: { key: normKey(key), method }, tag: "t" + (++tagSeq) };
+  if (value !== undefined) msg.param.value = String(value);
+  return send(msg);
+}
+function markBusy(i, target) {
+  busy.set(i, target); updateTiles();
+  if (navigator.vibrate) navigator.vibrate(10);
+  setTimeout(() => { if (busy.get(i) === target && busy.delete(i)) { updateTiles(); if (target !== null) toast("Keine Rückmeldung vom HomeServer"); } }, 3000);
+}
+function toggleSwitch(i) {
+  const t = cfg.tiles[i];
+  const cur = isOn(val(t.status || t.key));
+  const ok = cur === undefined ? call(t.key, "toggle", 1) : call(t.key, "set", cur ? 0 : 1);
+  if (!ok) return toast("Keine Verbindung zum HomeServer");
+  markBusy(i, cur === undefined ? true : !cur);
+}
+function toggleDimmer(i) {
+  const t = cfg.tiles[i];
+  const lvl = dimLevel(t);
+  const cur = lvl !== undefined ? lvl > 0 : (t.sw ? isOn(val(t.swStatus || t.sw)) : undefined);
+  const target = cur === undefined ? true : !cur;
+  const ok = t.sw ? call(t.sw, "set", target ? 1 : 0) : call(t.key, "set", target ? (lastLevel.get(i) || 100) : 0);
+  if (!ok) return toast("Keine Verbindung zum HomeServer");
+  markBusy(i, target);
+}
+function setDim(i, v) {
+  const t = cfg.tiles[i];
+  if (!call(t.key, "set", Math.round(v))) return toast("Keine Verbindung zum HomeServer");
+  markBusy(i, v > 0);
+}
+/* Jalousie: KNX-Konvention Auf/Ab 0 = auf, 1 = ab; Position 0 % = offen, 100 % = zu */
+function blindAction(i, a) {
+  const t = cfg.tiles[i];
+  let ok;
+  if (a === "stop") ok = call(t.stop, "set", 1);
+  else if (t.move) ok = call(t.move, "set", a === "up" ? 0 : 1);
+  else ok = call(t.key, "set", a === "up" ? 0 : 100);
+  if (!ok) return toast("Keine Verbindung zum HomeServer");
+  if (navigator.vibrate) navigator.vibrate(10);
+}
+/* Heizung: Sollwert in Schritten, Senden gebündelt nach kurzer Pause */
+function heatStep(i, dir) {
+  const t = cfg.tiles[i];
+  const step = num(t.step) || 0.5;
+  const cur = pendingSet.has(i) ? pendingSet.get(i).v : nval(t.status || t.key);
+  if (cur === undefined) return toast("Sollwert noch unbekannt");
+  const v = Math.round((cur + dir * step) * 100) / 100;
+  queueSet(i, t.key, Math.min(35, Math.max(5, v)));
+}
+function sliderSet(i, v, debounce) {
+  const t = cfg.tiles[i];
+  if (debounce) queueSet(i, t.key, v);
+  else { pendingSet.set(i, { v }); updateTiles(); flushSet(i, t.key); }
+}
+function queueSet(i, key, v) {
+  const p = pendingSet.get(i);
+  if (p && p.timer) clearTimeout(p.timer);
+  pendingSet.set(i, { v, timer: setTimeout(() => flushSet(i, key), 700) });
+  updateTiles();
+}
+function flushSet(i, key) {
+  const p = pendingSet.get(i); if (!p) return;
+  if (!call(key, "set", p.v)) { pendingSet.delete(i); updateTiles(); return toast("Keine Verbindung zum HomeServer"); }
+  p.timer = null; p.sent = Date.now();
+  // ohne Rückmeldung nach 3 s wieder den echten Wert zeigen
+  setTimeout(() => { const q = pendingSet.get(i); if (q && q.sent && Date.now() - q.sent >= 2900) { pendingSet.delete(i); updateTiles(); } }, 3000);
+}
+
+/* ===================== Szenen ===================== */
+async function runScene(i, el) {
+  const t = cfg.tiles[i];
+  const method = t.method || (/^SQ@/i.test(t.key) ? "start" : "call");
+  const st = el.querySelector(".state"), old = st.textContent;
+  el.classList.add("busy"); st.textContent = "wird ausgeführt …";
+  if (navigator.vibrate) navigator.vibrate(10);
+  try {
+    await callAsync(normKey(t.key, "SC@"), method);
+    el.classList.remove("busy"); el.classList.add("on"); st.textContent = "✓ ausgeführt";
+  } catch (e) {
+    el.classList.remove("busy"); st.textContent = "Fehler: " + e.message; toast("Szene: " + e.message);
+  }
+  setTimeout(() => { el.classList.remove("on"); st.textContent = old; }, 2500);
+}
+
+/* ===================== Diagramme aus Datenarchiven (DA@) ===================== */
+const chartRange = new Map();    // Tile-Index -> Stunden
+const chartCache = new Map();    // "key|col|h" -> {pts, ts}
+const chartLoading = new Set();
+const archMeta = new Map();      // DA-Key -> meta.data
+const pad2 = n => String(n).padStart(2, "0");
+const fmtStartAt = d => pad2(d.getFullYear() % 100) + pad2(d.getMonth() + 1) + pad2(d.getDate()) + pad2(d.getHours()) + pad2(d.getMinutes());
+function toMs(x) {
+  if (x === undefined || x === null || x === "") return undefined;
+  if (typeof x === "number" || /^\d+(\.\d+)?$/.test(String(x))) { const n = Number(x); return n < 1e12 ? n * 1000 : n; }
+  const d = new Date(x); return isNaN(d) ? undefined : d.getTime();
+}
+/* Das Antwortformat von DA@ get ist nicht öffentlich dokumentiert – deshalb tolerant lesen */
+function parseArchive(data, startMs, sizeMin, col) {
+  const pts = [];
+  const step = sizeMin * 60000;
+  const colIdx = c => { const m = String(c || "").match(/(\d+)/); return m ? +m[1] : 1; };
+  const pickVal = row => {
+    if (col !== undefined && col !== "" && row[col] !== undefined) return num(row[col]);
+    for (const k of ["value", "v", "val", "avg", "mean", "#1"]) if (row[k] !== undefined) return num(row[k]);
+    for (const [k, v] of Object.entries(row)) if (!/^(ts|t|time|timestamp|date|start|end|min|max)$/i.test(k) && num(v) !== undefined) return num(v);
+    return undefined;
+  };
+  const d = data && data.data !== undefined && !Array.isArray(data) && !data.items && !data.rows && !data.values ? data.data : data;
+  // Variante A: Spalten mit Wertelisten
+  const cols = d && Array.isArray(d.cols) ? d.cols : null;
+  if (cols && cols.some(c => Array.isArray(c && (c.values || c.data)))) {
+    const c = cols.find(c => col && (c.key === col || c.name === col)) || cols[0];
+    const arr = c.values || c.data;
+    arr.forEach((v, j) => pts.push({ t: startMs + j * step, v: num(Array.isArray(v) ? v[v.length - 1] : v) }));
+    return pts.filter(p => p.v !== undefined);
+  }
+  // Variante B: Zeilen
+  const rows = Array.isArray(d) ? d : d && (d.items || d.rows || d.values || d.records || d.data);
+  if (!Array.isArray(rows)) return pts;
+  rows.forEach((r, j) => {
+    let t, v;
+    if (Array.isArray(r)) {
+      const first = toMs(r[0]);
+      if (r.length > 1 && first > 946684800000) { t = first; v = num(r[Math.min(colIdx(col), r.length - 1)]); }
+      else { t = startMs + j * step; v = num(r[col ? colIdx(col) - 1 : 0]); }
+    } else if (r && typeof r === "object") {
+      t = toMs(r.ts ?? r.t ?? r.time ?? r.timestamp ?? r.date ?? r.start) ?? startMs + j * step;
+      v = pickVal(r);
+    } else { t = startMs + j * step; v = num(r); }
+    if (v !== undefined && t !== undefined) pts.push({ t, v });
+  });
+  return pts.sort((a, b) => a.t - b.t);
+}
+/* Link zur Datenquelle (Übersichtsseite des Visu-Servers) und zurück */
+function chartHasSource(t) { return !!cfg.srvOn && chartSources(t).some(k => /^VS@/i.test(k)); }
+function openChartSource(i) {
+  const t = cfg.tiles[i]; if (!t) return;
+  const src = chartMulti(t) ? chartSrcGet(t) : chartSources(t)[0] || "";
+  if (!/^VS@/i.test(src)) return toast("Datenquelle gibt es nur für Visu-Server-Verläufe (VS@…)");
+  const u = chartUnit(i, t);
+  try { sessionStorage.setItem("hs-visu-return", JSON.stringify({ i, u, y: window.scrollY, ranges: [...chartRange] })); } catch (e) {}
+  const back = location.href.split("#")[0];
+  location.href = srvBase() + "?id=" + encodeURIComponent(src.slice(3)) + "&u=" + u + "&back=" + encodeURIComponent(back);
+}
+function restoreReturn() {
+  let r = null;
+  try { r = JSON.parse(sessionStorage.getItem("hs-visu-return") || "null"); sessionStorage.removeItem("hs-visu-return"); } catch (e) {}
+  if (!r) return;
+  (r.ranges || []).forEach(([k, v]) => chartRange.set(k, v));
+  setTimeout(() => {
+    const el = document.querySelector(`.tile.chart[data-i="${r.i}"]`);
+    if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1500); }
+    else window.scrollTo(0, r.y || 0);
+  }, 300);
+}
+/* Diagramm mit Auswahlliste: Quelle "VS@*" (alle Verläufe des Visu-Servers) oder mehrere Quellen mit Komma */
+function chartSources(t) { return String(t.key || "").split(/[,;]/).map(x => x.trim()).filter(Boolean); }
+function chartMulti(t) { const s = chartSources(t); return s.length > 1 || /^VS@\*$/i.test(s[0] || ""); }
+const CHART_SRC_LS = "hs-visu-chartsrc";
+let chartSrcSel = {};
+try { chartSrcSel = JSON.parse(localStorage.getItem(CHART_SRC_LS) || "{}") || {}; } catch (e) {}
+const chartSrcOpts = new Map();   // Kachel-Key -> [{key,label}]
+function chartSrcGet(t) {
+  const opts = chartSrcOpts.get(t.key) || [];
+  const sel = chartSrcSel[t.key];
+  return (opts.find(o => o.key === sel) || opts[0] || {}).key || "";
+}
+let vsListCache = null;
+async function vsHistories(force) {
+  if (!force && vsListCache && Date.now() - vsListCache.ts < 300000) return vsListCache.list;
+  const d = await srvFetch("api/histories");
+  vsListCache = { ts: Date.now(), list: d.histories.slice().sort((a, b) => String(a.name).localeCompare(String(b.name), "de")) };
+  return vsListCache.list;
+}
+async function fillChartSelect(el, i, t) {
+  const sel = el.querySelector(".csrc"); if (!sel) return;
+  let opts = [];
+  try {
+    const hs = (cfg.srvOn && chartSources(t).some(k => /^VS@/i.test(k))) ? await vsHistories() : [];
+    const byId = new Map(hs.map(h => ["VS@" + h.id, h]));
+    for (const k of chartSources(t)) {
+      if (/^VS@\*$/i.test(k)) hs.forEach(h => opts.push({ key: "VS@" + h.id, label: h.name + (h.unit ? " (" + h.unit + ")" : "") }));
+      else { const h = byId.get(k); opts.push({ key: k, label: h ? h.name + (h.unit ? " (" + h.unit + ")" : "") : k }); }
+    }
+  } catch (e) { dlog("err", "Verlaufsliste: " + e.message); }
+  const seen = new Set(); opts = opts.filter(o => !seen.has(o.key) && seen.add(o.key));
+  chartSrcOpts.set(t.key, opts);
+  if (!opts.length) { sel.innerHTML = "<option>keine Daten</option>"; el.querySelector(".cbox").innerHTML = '<div class="cmsg">Keine Verläufe gefunden – Visu-Server eingeschaltet?</div>'; return; }
+  sel.innerHTML = opts.map(o => `<option value="${esc(o.key)}">${esc(o.label)}</option>`).join("");
+  sel.value = chartSrcGet(t);
+  sel.onclick = e => e.stopPropagation();
+  sel.onchange = () => {
+    chartSrcSel[t.key] = sel.value;
+    try { localStorage.setItem(CHART_SRC_LS, JSON.stringify(chartSrcSel)); } catch (e) {}
+    document.querySelectorAll(`.tile.chart[data-i="${i}"] .csrc`).forEach(s2 => { s2.value = sel.value; });
+    loadChart(i);
+  };
+  loadChart(i);
+}
+async function loadChart(i, force) {
+  let t = cfg.tiles[i]; if (!t) return;
+  if (chartMulti(t)) {
+    const src = chartSrcGet(t);
+    if (!src) return;
+    t = Object.assign({}, t, { key: src, live: "", unit: "", dec: undefined });
+  }
+  const el = document.querySelector(`.tile.chart[data-i="${i}"]`); if (!el) return;
+  const h = chartUnit(i, t);
+  el.querySelectorAll(".rng button[data-u]").forEach(b => b.classList.toggle("act", b.dataset.u === h));
+  const key = normKey(t.key, "DA@");
+  if (String(t.key || "").toUpperCase().startsWith("VS@")) return drawServerHistory(el, i, t, "VS@" + String(t.key).slice(3), h);
+  if (key.startsWith("CO@")) return drawHistory(el, i, t, key, h);
+  const ck = key + "|" + (t.col || "") + "|" + h;
+  if (chartLoading.has(ck) && !force) return;
+  const cached = chartCache.get(ck);
+  if (cached && !force && Date.now() - cached.ts < 5 * 60000) return drawChart(el, t, cached.pts, h);
+  const msg = el.querySelector(".cmsg") || Object.assign(document.createElement("div"), { className: "cmsg" });
+  if (!isConnected()) { el.querySelector(".cbox").innerHTML = '<div class="cmsg">wartet auf Verbindung …</div>'; return; }
+  el.querySelector(".cbox").classList.add("loading");
+  chartLoading.add(ck);
+  try {
+    let meta = archMeta.get(key);
+    if (!meta || force) {
+      const mr = await callAsync(key, "meta");
+      meta = mr.data || {};
+      archMeta.set(key, meta);
+      dlog("t", "Archiv " + key + " meta: " + JSON.stringify(meta).slice(0, 600));
+    }
+    const size = +t.size || UNIT_MIN[h];
+    const cnt = UNIT_CNT[h];
+    const last = toMs(meta.stat && meta.stat.last) || Date.now();
+    const start = new Date(last - cnt * size * 60000);
+    const params = { startat: fmtStartAt(start), cnt, size };
+    if (t.col) params.cols = [t.col];
+    const resp = await callAsync(key, "get", params, 20000);
+    const pts = parseArchive(resp.data, start.getTime(), size, t.col);
+    if (!pts.length) {
+      dlog("hint", "Archiv " + key + ": Antwortformat nicht erkannt oder leer. Rohdaten: " + JSON.stringify(resp).slice(0, 2000));
+      el.querySelector(".cbox").innerHTML = '<div class="cmsg">Keine Daten erkannt – Rohdaten stehen im Debug-Panel.</div>';
+      return;
+    }
+    chartCache.set(ck, { pts, ts: Date.now() });
+    drawChart(el, t, pts, h);
+  } catch (e) {
+    if (e.reconnect) { el.querySelector(".cbox").innerHTML = '<div class="cmsg">wartet auf Verbindung …</div>'; return; }
+    dlog("err", "Archiv " + key + ": " + e.message);
+    el.querySelector(".cbox").innerHTML = `<div class="cmsg">Archiv nicht lesbar: ${esc(e.message)}</div>`;
+  } finally {
+    chartLoading.delete(ck);
+    document.querySelectorAll(`.tile.chart[data-i="${i}"] .cbox`).forEach(c => c.classList.remove("loading"));
+    // Kachel wurde während des Ladens neu gezeichnet → aus dem Cache nachziehen
+    const c = chartCache.get(ck);
+    if (c) document.querySelectorAll(`.tile.chart[data-i="${i}"]`).forEach(e2 => { if (!e2.querySelector(".cbox svg")) drawChart(e2, t, c.pts, h); });
+  }
+}
+/* ---------- Ansichten ---------- */
+const CHART_UNITS = [["i", "Minute"], ["h", "Stunde"], ["d", "Tag"], ["w", "Woche"], ["M", "Monat"], ["y", "Jahr"]];
+const UNIT_MIN = { i: 1, h: 60, d: 1440, w: 10080, M: 43200, y: 525600 };           // für Datenarchive (DA@)
+const UNIT_CNT = { i: 120, h: 72, d: 62, w: 104, M: 36, y: 20 };
+const UNIT_SPAN = { i: "2 Std.", h: "3 Tagen", d: "2 Monaten", w: "2 Jahren", M: "3 Jahren", y: "20 Jahren" };
+function chartUnit(i, t) {
+  const sel = chartRange.get(i); if (sel) return sel;
+  const r = String(t.range || "").toLowerCase().trim();
+  const byWord = { minute: "i", min: "i", stunde: "h", std: "h", tag: "d", woche: "w", monat: "M", jahr: "y" };
+  const byHours = { 24: "h", 168: "d", 720: "d", 8760: "M" };
+  return byWord[r] || byHours[r] || (["i", "h", "d", "w", "M", "y"].includes(t.range) ? t.range : "h");
+}
+/* Beginn des Intervalls k Schritte vor t (Kalender, Ortszeit) */
+function unitBack(ms, u, k) {
+  if (u === "i") return ms - k * 60000;
+  const d = new Date(ms);
+  if (u === "h") d.setHours(d.getHours() - k);
+  else if (u === "d") d.setDate(d.getDate() - k);
+  else if (u === "w") d.setDate(d.getDate() - 7 * k);
+  else if (u === "M") d.setMonth(d.getMonth() - k);
+  else d.setFullYear(d.getFullYear() - k);
+  return d.getTime();
+}
+const WD = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"], MON = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+function isoWeek(d) {
+  const x = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = x.getUTCDay() || 7; x.setUTCDate(x.getUTCDate() + 4 - day);
+  const y0 = new Date(Date.UTC(x.getUTCFullYear(), 0, 1));
+  return Math.ceil(((x - y0) / 86400000 + 1) / 7);
+}
+function fmtSlot(ms, u, long) {
+  const d = new Date(ms), dd = pad2(d.getDate()) + "." + pad2(d.getMonth() + 1) + ".";
+  switch (u) {
+    case "i": return (long ? dd + " " : "") + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+    case "h": return long ? WD[d.getDay()] + " " + dd + " " + pad2(d.getHours()) + "–" + pad2((d.getHours() + 1) % 24) + " Uhr" : dd + " " + pad2(d.getHours()) + " Uhr";
+    case "d": return long ? WD[d.getDay()] + " " + dd + d.getFullYear() : dd;
+    case "w": return "KW " + isoWeek(d) + (long ? " · ab " + dd + d.getFullYear() : "/" + String(d.getFullYear()).slice(2));
+    case "M": return MON[d.getMonth()] + " " + d.getFullYear();
+    default: return String(d.getFullYear());
+  }
+}
+
+/* ---------- Verlauf aus KO (HSL3-Baustein 14771) ----------
+   HSH2;<jetzt>;<modus>;<dez>|i,<t_letzter>:v,v,,v|h,…|d,…|w,…|M,…|y,… */
+function parseHistory(txt) {
+  if (!txt || !txt.startsWith("HSH2;")) return null;
+  const parts = txt.split("|"), head = parts[0].split(";");
+  const out = { now: +head[1] * 1000, mode: +head[2], dec: +head[3], series: {} };
+  for (const p of parts.slice(1)) {
+    const c = p.indexOf(":"); const [k, tl] = p.slice(0, c).split(","); const data = p.slice(c + 1);
+    const vals = data ? data.split(",") : [];
+    const tLast = +tl * 1000;
+    out.series[k] = vals.map((v, j) => ({ t: unitBack(tLast, k, vals.length - 1 - j), v: v === "" ? null : Number(v) }));
+  }
+  return out;
+}
+const histSig = new Map();
+function drawHistory(el, i, t, key, u) {
+  const raw = values.get(key);
+  const txt = koText(raw);
+  const sig = u + "|" + txt.length + "|" + txt.slice(-40) + "|" + (t.live ? String(val(t.live)) : "");
+  if (histSig.get(el) === sig && el.querySelector(".cbox svg")) return;
+  histSig.set(el, sig);
+  const hs = parseHistory(txt);
+  if (!hs) {
+    el.querySelector(".cbox").innerHTML = `<div class="cmsg">${raw === undefined ? (isConnected() ? "wartet auf Daten von " + esc(key) + " …" : "wartet auf Verbindung …")
+      : txt.startsWith("HSH1;") ? "Baustein 14771 (bisher 19105) bitte aktualisieren." : "Kein Verlauf in " + esc(key) + " – Baustein 14771 verbunden?"}</div>`;
+    return;
+  }
+  const pts = hs.series[u] || [];
+  if (!pts.some(p => p.v !== null)) {
+    el.querySelector(".cbox").innerHTML = '<div class="cmsg">Noch keine Werte in dieser Ansicht – der Baustein sammelt noch.</div>';
+    return;
+  }
+  drawChart(el, Object.assign({}, t, { dec: decOr(t, hs.dec) }), pts, u, { bars: hs.mode === 2 });
+}
+
+function drawChart(el, t, ptsAll, u, opt) {
+  opt = opt || {};
+  const box = el.querySelector(".cbox");
+  const unit = t.unit ? " " + t.unit : "";
+  const pts = ptsAll.filter(p => p.v !== null && p.v !== undefined);
+  const lastV = pts[pts.length - 1].v;
+  const liveV = t.live ? nval(t.live) : t.liveValue;
+  if (opt.bars) {
+    const sum = pts.reduce((a, p) => a + p.v, 0);
+    el.querySelector(".big").innerHTML = fmtVal(t, sum) + (t.unit ? `<small>${esc(t.unit)}</small>` : "") +
+      `<small> seit ${fmtSlot(pts[0].t, u, false)}</small>`;
+  } else el.querySelector(".big").innerHTML = fmtVal(t, liveV ?? lastV) + (t.unit ? `<small>${esc(t.unit)}</small>` : "");
+  const W = 600, H = 150;
+  let lo = Math.min(...pts.map(p => p.v)), hi = Math.max(...pts.map(p => p.v));
+  if (opt.bars) lo = Math.min(0, lo);
+  if (hi === lo) { hi += 1; if (!opt.bars) lo -= 1; }
+  const padv = (hi - lo) * 0.08; hi += padv; if (!opt.bars) lo -= padv;
+  // gleichmäßige Abstände je Intervall (Monate/Jahre sind unterschiedlich lang)
+  const n = ptsAll.length, slotW = W / Math.max(1, opt.bars ? n : n - 1);
+  const idx = new Map(ptsAll.map((p, j) => [p, j]));
+  const X = p => opt.bars ? idx.get(p) * slotW : (n > 1 ? idx.get(p) * slotW : W / 2), Y = v => H - (v - lo) / (hi - lo) * H;
+  const t0 = ptsAll[0].t, t1 = ptsAll[n - 1].t;
+  let line = "", pen = false;
+  for (const p of ptsAll) {
+    if (p.v === null || p.v === undefined) { pen = false; continue; }   // Lücke → Linie unterbrechen
+    line += (pen ? "L" : "M") + X(p).toFixed(1) + " " + Y(p.v).toFixed(1); pen = true;
+  }
+  let area = "", bars = "";
+  if (opt.bars) {
+    const bw = Math.max(1, slotW * 0.8);
+    bars = pts.map(p => `<rect x="${(X(p) + slotW * 0.1).toFixed(1)}" y="${Y(Math.max(0, p.v)).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.5, Math.abs(Y(p.v) - Y(0))).toFixed(1)}" class="bar"/>`).join("");
+    line = "";
+  } else {
+    // Fläche nur unter zusammenhängenden Abschnitten
+    area = line.split("M").filter(Boolean).map(seg => { const xs = seg.split("L"); const x0 = xs[0].split(" ")[0], x1 = xs[xs.length - 1].split(" ")[0]; return "M" + seg + `L${x1} ${H}L${x0} ${H}Z`; }).join("");
+  }
+  const fmtT = ms => fmtSlot(ms, u, false);
+  const mid = (hi + lo) / 2;
+  box.innerHTML = `
+    <div class="ylab" style="top:0">${fmtNum(hi, decOr(t, 1))}</div><div class="ylab" style="top:50%">${fmtNum(mid, decOr(t, 1))}</div><div class="ylab" style="top:100%">${fmtNum(lo, decOr(t, 1))}</div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Verlauf ${esc(t.name || "")}">
+      <path d="M0 0H${W}M0 ${H / 2}H${W}M0 ${H}H${W}" class="grid" vector-effect="non-scaling-stroke"/>
+      ${area ? `<path d="${area}" class="area"/>` : ""}${bars}
+      ${line ? `<path d="${line}" class="line" vector-effect="non-scaling-stroke"/>` : ""}
+    </svg>
+    <div class="xlab"><span>${fmtT(t0)}</span><span>${fmtT(t1)}</span></div>
+    <div class="vline" hidden></div><div class="cdot" hidden></div><div class="ctip" hidden></div>`;
+  const svg = box.querySelector("svg"), vl = box.querySelector(".vline"), dot = box.querySelector(".cdot"), tip = box.querySelector(".ctip");
+  const show = e => {
+    const r = svg.getBoundingClientRect();
+    const fx = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    const off = opt.bars ? slotW / 2 : 0, xw = fx * W;
+    let best = pts[0]; for (const p of pts) if (Math.abs(X(p) + off - xw) < Math.abs(X(best) + off - xw)) best = p;
+    const px = (X(best) + off) / W * r.width, py = Y(best.v) / H * r.height;
+    vl.hidden = dot.hidden = tip.hidden = false;
+    vl.style.left = dot.style.left = px + "px"; dot.style.top = py + "px";
+    const d = new Date(best.t);
+    tip.textContent = fmtSlot(best.t, u, true) + " · " + fmtVal(t, best.v) + unit;
+    tip.style.left = Math.min(Math.max(px, 60), r.width - 60) + "px";
+  };
+  const hide = () => { vl.hidden = dot.hidden = tip.hidden = true; };
+  svg.addEventListener("pointermove", show); svg.addEventListener("pointerdown", show);
+  svg.addEventListener("pointerleave", hide);
+}
+setInterval(() => { if (document.visibilityState === "visible") document.querySelectorAll(".tile.chart").forEach(el => loadChart(+el.dataset.i)); }, 10 * 60000);
+
+/* ===================== Bearbeiten: Favoriten & Sortieren ===================== */
+function bindEdit(main) {
+  main.querySelectorAll(".tile").forEach(el => {
+    const i = +el.dataset.i;
+    el.querySelector(".edb.fav").onclick = e => {
+      e.stopPropagation();
+      cfg.tiles[i].fav = !cfg.tiles[i].fav; if (!cfg.tiles[i].fav) delete cfg.tiles[i].fav;
+      saveCfg(cfg);
+      document.querySelectorAll(`.tile[data-i="${i}"] .edb.fav`).forEach(b => b.classList.toggle("on", !!cfg.tiles[i].fav));
+      if (view === "__start") render();
+    };
+    const grip = el.querySelector(".edb.grip");
+    grip.onpointerdown = e => startDrag(e, el);
+  });
+}
+function startDrag(e, el) {
+  if (view.startsWith("__")) { toast("Sortieren geht in „Alle“ oder in einer Etage"); return; }
+  e.preventDefault(); e.stopPropagation();
+  const main = $("#main");
+  el.classList.add("dragging");
+  document.body.classList.add("dragmode");
+  const move = ev => {
+    ev.preventDefault();
+    el.style.visibility = "hidden";
+    const under = document.elementFromPoint(ev.clientX, ev.clientY);
+    el.style.visibility = "";
+    const over = under && under.closest(".tile"), grid = under && under.closest(".grid");
+    if (over && over !== el && main.contains(over)) {
+      const r = over.getBoundingClientRect();
+      const after = ev.clientX > r.left + r.width / 2;
+      over.parentElement.insertBefore(el, after ? over.nextSibling : over);
+    } else if (!over && grid && main.contains(grid) && el.parentElement !== grid) grid.appendChild(el);
+    // am Rand automatisch scrollen
+    if (ev.clientY < 90) scrollBy(0, -12); else if (ev.clientY > innerHeight - 60) scrollBy(0, 12);
+  };
+  const up = () => {
+    window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up);
+    el.classList.remove("dragging"); document.body.classList.remove("dragmode");
+    commitOrder();
+  };
+  window.addEventListener("pointermove", move, { passive: false }); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
+}
+function commitOrder() {
+  const main = $("#main");
+  const dom = [...main.querySelectorAll(".room .tile")].map(el => {
+    const sec = el.closest(".room");
+    return { i: +el.dataset.i, room: sec.dataset.room, floor: sec.dataset.floor };
+  });
+  const slots = dom.map(d => d.i).sort((a, b) => a - b);
+  const tiles = cfg.tiles.slice();
+  dom.forEach((d, k) => {
+    const t = Object.assign({}, cfg.tiles[d.i]);
+    if (d.room !== undefined && (t.room || "") !== d.room) { if (d.room) t.room = d.room; else delete t.room; }
+    if (d.floor !== undefined && (t.floor || "") !== d.floor) { if (d.floor) t.floor = d.floor; else delete t.floor; }
+    tiles[slots[k]] = t;
+  });
+  cfg.tiles = tiles;
+  saveCfg(cfg);
+  busy.clear(); pendingSet.clear(); lastLevel.clear(); chartRange.clear();
+  render();
+}
+function setEditing(on) {
+  document.body.classList.toggle("editing", on);
+  $("#btnEdit").classList.toggle("active", on);
+  $("#editBar").hidden = !on;
+}
+$("#btnEdit").onclick = () => setEditing(!document.body.classList.contains("editing"));
+$("#editDone").onclick = () => setEditing(false);
+// im Bearbeiten-Modus keine Schaltbefehle auslösen
+$("#main").addEventListener("click", e => {
+  if (document.body.classList.contains("editing") && !e.target.closest(".edb")) { e.stopPropagation(); e.preventDefault(); }
+}, true);
+
+/* ===================== Debug-Log ===================== */
+const dbgLines = [];
+function dlog(cls, msg) {
+  const t = new Date().toLocaleTimeString("de-DE", { hour12: false }) + "." + String(Date.now() % 1000).padStart(3, "0");
+  dbgLines.push(t + "  " + msg);
+  if (dbgLines.length > 800) dbgLines.shift();
+  const box = $("#dbgLog"); if (!box) return;
+  const line = document.createElement("div");
+  line.innerHTML = `<span class="t">${t}</span>  <span class="${cls}">${esc(msg.length > 3000 ? msg.slice(0, 3000) + " … (" + msg.length + " Zeichen)" : msg)}</span>`;
+  box.appendChild(line);
+  while (box.childNodes.length > 800) box.firstChild.remove();
+  box.scrollTop = box.scrollHeight;
+}
+const maskUrl = u => u.replace(/authorization=[^&]*/, "authorization=***");
+const CLOSE_CODES = {
+  1000: "normal geschlossen", 1001: "Gegenstelle geht weg", 1002: "Protokollfehler", 1003: "Datentyp nicht unterstützt",
+  1006: "Verbindung ohne Handshake abgebrochen", 1008: "Richtlinienverstoß (oft: Anmeldung abgelehnt)",
+  1009: "Nachricht zu groß", 1011: "Serverfehler", 1015: "TLS-Handshake fehlgeschlagen"
+};
+function diagnoseEnv() {
+  dlog("t", "Seite: " + (location.protocol === "file:" ? "lokale Datei " + decodeURIComponent(location.pathname.split("/").pop()) : location.origin + location.pathname));
+  dlog("t", "Browser: " + navigator.userAgent);
+  if (location.protocol === "https:" && !cfg.ssl)
+    dlog("hint", "⚠ Seite läuft über https, Verbindung ist ws:// → Browser blockiert das (Mixed Content). Haken bei „Verschlüsselt“ setzen.");
+  if (location.protocol === "file:")
+    dlog("hint", "ℹ Seite als lokale Datei geöffnet (Origin \"null\"). Falls der HS fremde Origins ablehnt, schließt er direkt nach dem Verbindungsaufbau.");
+  if (cfg.host && !cfg.user) dlog("hint", "⚠ Kein Benutzer eingetragen.");
+}
+async function checkCert() {
+  if (!cfg.host) return dlog("err", "Kein HomeServer eingetragen.");
+  const url = "https://" + hostBase() + "/";
+  dlog("t", "Prüfe HTTPS-Erreichbarkeit von " + url + " …");
+  try {
+    await fetch(url, { mode: "no-cors", cache: "no-store" });
+    dlog("in", "✓ HTTPS erreichbar, Zertifikat wird vom Browser akzeptiert.");
+  } catch (e) {
+    dlog("err", "✗ HTTPS nicht erreichbar: " + e.message);
+    dlog("hint", "→ Zertifikat vermutlich nicht akzeptiert. Öffne " + url + " in einem neuen Tab, akzeptiere die Warnung und klicke dann „Neu verbinden“.");
+  }
+}
+
+/* ===================== WebSocket / KO-Gateway ===================== */
+let ws = null, reconnectTimer = null, backoff = 1000, tagSeq = 0;
+const subscribed = new Set();
+let probeHook = null;
+
+function setConn(state, text) { $("#conn").className = "conn " + state; $("#connText").textContent = text; }
+
+function connect() {
+  clearTimeout(reconnectTimer);
+  if (ws) { ws.onclose = null; try { ws.close(); } catch (e) {} ws = null; }
+  subscribed.clear();
+  rejectPending("Verbindung neu aufgebaut");
+  if (!cfg.host) { setConn("", "nicht konfiguriert"); return; }
+
+  const auth = btoa(unescape(encodeURIComponent(cfg.user + ":" + cfg.pass)));
+  const url = (cfg.ssl ? "wss://" : "ws://") + hostBase() + "/endpoints/ws?authorization=" + encodeURIComponent(auth);
+  setConn("wait", "verbinde …");
+  dlog("t", "Verbinde: " + maskUrl(url) + "  (Benutzer: " + (cfg.user || "–") + ")");
+  const t0 = Date.now();
+  try { ws = new WebSocket(url); }
+  catch (e) { setConn("", "Fehler"); dlog("err", "WebSocket konnte nicht erstellt werden: " + e.message); toast(e.message); scheduleReconnect(); return; }
+
+  ws.onopen = () => {
+    ws._opened = true;
+    sync.missing.clear(); sync.gotBase = false;
+    if (cfg.srvOn) { /* Einrichtung läuft über den Visu-Server (HTTP), nicht über KOs */ }
+    else if (cfg.syncOn) {
+      setSync("warn", "Frage Einrichtung beim HomeServer ab …");
+      setTimeout(() => { if (cfg.syncOn && !sync.gotBase && isConnected()) setSync("err", "Keine Antwort für " + syncKeys()[0] + " – existiert das KO und ist es für den WebSocket-Benutzer freigegeben?"); }, 6000);
+    } else setSync("off", "");
+    backoff = 1000;
+    setConn("ok", "verbunden");
+    dlog("in", "✓ Verbunden nach " + (Date.now() - t0) + " ms");
+    subscribeTiles();
+    document.querySelectorAll(".tile.chart").forEach(el => loadChart(+el.dataset.i));
+  };
+  ws.onmessage = ev => {
+    dlog("in", "⇐ " + ev.data);
+    let m; try { m = JSON.parse(ev.data); } catch (e) { dlog("err", "Kein gültiges JSON"); return; }
+    handle(m);
+  };
+  ws.onerror = () => dlog("err", "WebSocket-Fehler (Details zeigt der Browser aus Sicherheitsgründen nicht)");
+  ws.onclose = ev => {
+    const opened = ev.target._opened;
+    dlog("err", "Getrennt: Code " + ev.code + " – " + (CLOSE_CODES[ev.code] || "unbekannt") + (ev.reason ? " – Grund: " + ev.reason : "")
+      + " (nach " + (Date.now() - t0) + " ms)");
+    if (ev.code === 1006 && !opened) {
+      if (cfg.ssl) dlog("hint", "→ Häufigste Ursache: Zertifikat im Browser nicht akzeptiert, falscher Port oder HS nicht erreichbar. „Zertifikat prüfen“ klicken.");
+      else dlog("hint", "→ ws:// abgelehnt. Der HS spricht meist nur verschlüsselt: Haken bei „Verschlüsselt“ setzen.");
+    } else if (opened) {
+      dlog("hint", "→ Verbindung stand und wurde vom HS beendet: Benutzer/Passwort, Endpunkt-Rechte der Benutzergruppe oder Origin prüfen.");
+    }
+    dlog("t", "Nächster Versuch in " + Math.round(backoff / 1000) + " s");
+    setConn("", ev.code === 1006 && !navigator.onLine ? "offline" : "getrennt");
+    busy.clear(); subscribed.clear(); updateTiles();
+    rejectPending("Verbindung getrennt");
+    scheduleReconnect();
+  };
+}
+function subscribeTiles() {
+  const keys = [...new Set([...syncKeys(), ...cfg.tiles.flatMap(tileKeys)])].filter(k => k.startsWith("CO@") && !subscribed.has(k));
+  // in Paketen, damit große Projekte den HS nicht mit einer Riesen-Nachricht belasten
+  for (let i = 0; i < keys.length; i += 100) {
+    const part = keys.slice(i, i + 100);
+    if (send({ type: "subscribe", param: { keys: part } })) part.forEach(k => subscribed.add(k));
+  }
+}
+function scheduleReconnect() {
+  clearTimeout(reconnectTimer);
+  reconnectTimer = setTimeout(connect, backoff);
+  backoff = Math.min(backoff * 2, 30000);
+}
+function send(obj) {
+  if (ws && ws.readyState === WebSocket.OPEN) { const d = JSON.stringify(obj); dlog("out", "⇒ " + d); ws.send(d); return true; }
+  dlog("err", "Senden nicht möglich, keine Verbindung: " + JSON.stringify(obj));
+  return false;
+}
+const isConnected = () => ws && ws.readyState === WebSocket.OPEN;
+
+const pendingCalls = new Map();   // tag -> {resolve, reject, timer, key, method}
+function callAsync(key, method, params, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    const tag = "q" + (++tagSeq);
+    const msg = { type: "call", param: Object.assign({ key, method }, params || {}), tag };
+    const timer = setTimeout(() => { pendingCalls.delete(tag); reject(new Error("Zeitüberschreitung")); }, timeoutMs);
+    pendingCalls.set(tag, { resolve, reject, timer, key, method });
+    if (!send(msg)) { clearTimeout(timer); pendingCalls.delete(tag); reject(new Error("keine Verbindung")); }
+  });
+}
+function rejectPending(reason) {
+  for (const [tag, p] of pendingCalls) { clearTimeout(p.timer); p.reject(Object.assign(new Error(reason), { reconnect: true })); }
+  pendingCalls.clear();
+}
+function matchPending(m) {
+  let tag = m.tag;
+  if (!tag || !pendingCalls.has(tag)) {
+    const rq = m.request || {}, k = rq.key || (rq.param && rq.param.key), me = rq.method || (rq.param && rq.param.method);
+    if (!k) return null;
+    tag = [...pendingCalls.keys()].find(t => pendingCalls.get(t).key.toUpperCase() === String(k).toUpperCase() && (!me || pendingCalls.get(t).method === me));
+  }
+  if (!tag) return null;
+  const p = pendingCalls.get(tag); pendingCalls.delete(tag); clearTimeout(p.timer);
+  return p;
+}
+
+function handle(m) {
+  // Antworten auf eigene Anfragen (Archiv, Szenen) zuerst
+  if (pendingCalls.size) {
+    const p = matchPending(m);
+    if (p) {
+      if (m.code !== undefined && m.code !== 0) p.reject(Object.assign(new Error("HS-Code " + m.code + (m.message ? " – " + m.message : "")), { resp: m }));
+      else p.resolve(m);
+      return;
+    }
+  }
+  // Antwort auf subscribe: Liste mit Anfangswerten
+  if (m.data && Array.isArray(m.data.items)) {
+    if (probeHook) probeHook(m.data.items);
+    let failed = 0;
+    for (const it of m.data.items) {
+      const key = normKey(it.key ?? it.uid);
+      if (!key) continue;
+      const isSync = syncKeys().includes(key);
+      if (it.code !== undefined && it.code !== 0) {
+        if (isSync) { syncMissing(key, it.code); continue; }
+        failed++; if (!probing.has(key)) dlog("err", "Abo fehlgeschlagen: " + key + " (Code " + it.code + ")"); continue;
+      }
+      const v = it.data && it.data.value !== undefined ? it.data.value : it.value;
+      if (isSync) { onSyncValue(key, v, true); continue; }
+      if (v !== undefined) values.set(key, v);
+    }
+    if (failed && !probeHook) toast(failed + " KO(s) nicht abonnierbar – siehe Debug");
+    updateTiles();
+    return;
+  }
+  // Fehlerantworten
+  if (m.code !== undefined && m.code !== 0 && m.request && syncKeys().includes(normKey(m.request.key || (m.request.param || {}).key))) {
+    syncMissing(normKey(m.request.key || m.request.param.key), m.code); return;
+  }
+  if (m.code !== undefined && m.code !== 0) {
+    toast("HS-Fehler " + m.code + (m.request && m.request.key ? " (" + m.request.key + ")" : ""));
+    busy.clear(); updateTiles();
+    return;
+  }
+  // Push-Event bei Wertänderung
+  const key = normKey(m.subscription && m.subscription.key || m.data && (m.data.key ?? m.data.uid) || m.request && m.request.key);
+  if (key && m.data && m.data.value !== undefined && syncKeys().includes(key)) { onSyncValue(key, m.data.value, false); return; }
+  if (key && m.data && m.data.value !== undefined) {
+    values.set(key, m.data.value);
+    cfg.tiles.forEach((t, i) => {
+      if (busy.has(i) && tileKeys(t).includes(key)) busy.delete(i);
+      const p = pendingSet.get(i);
+      if (p && p.sent && normKey(t.status || t.key) === key) pendingSet.delete(i);
+    });
+    updateTiles();
+  }
+}
+
+/* ===================== Einrichtung auf dem HomeServer (internes Text-KO) =====================
+   Laut Gira-Hilfe fassen KOs vom Typ „14 Byte“ im HS bis zu 30.000 Zeichen, remanent bis 10.000.
+   Gespeichert wird die Kachel-Einrichtung (ohne Adresse/Benutzer/Passwort) komprimiert,
+   bei Bedarf verteilt auf VISU_CONFIG, VISU_CONFIG_2 … VISU_CONFIG_5.
+   Format je KO:  HSV1;<Stand>;<Teil>/<Anzahl>;<Daten> */
+const SYNC_PARTS = 5, SYNC_CHUNK = 9000;
+function syncKeys() {
+  if (!cfg.syncOn || cfg.srvOn) return [];
+  const b = normKey(cfg.syncKey || "VISU_CONFIG");
+  return [b, ...Array.from({ length: SYNC_PARTS - 1 }, (_, j) => b + "_" + (j + 2))];
+}
+let sync = { state: "off", msg: "", remoteRev: 0, parts: {}, pushTimer: null, pushedRev: 0, missing: new Set(), gotBase: false };
+function setSync(state, msg) {
+  sync.state = state; sync.msg = msg;
+  const el = $("#syncState"); if (el) { el.textContent = msg; el.className = "hint " + ({ ok: "ok", warn: "warn", err: "err" }[state] || ""); }
+  const dot = $("#syncDot"); if (dot) { dot.className = "sdot " + state; dot.title = msg; }
+}
+const b64enc = u8 => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const b64dec = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function packCfg(obj) {
+  const raw = new TextEncoder().encode(JSON.stringify(obj));
+  if (!window.CompressionStream) return "0" + b64enc(raw);
+  const buf = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
+  return "1" + b64enc(new Uint8Array(buf));
+}
+async function unpackCfg(str) {
+  const bytes = b64dec(str.slice(1));
+  if (str[0] === "0") return JSON.parse(new TextDecoder().decode(bytes));
+  const buf = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer();
+  return JSON.parse(new TextDecoder().decode(buf));
+}
+function koText(v) {
+  if (v === undefined || v === null) return "";
+  const sv = String(v);
+  if (sv.startsWith("HSV1;")) return sv;
+  try { const t = atob(sv); return t; } catch (e) { return sv; }
+}
+function syncMissing(key, code) {
+  sync.missing.add(key);
+  if (key === syncKeys()[0]) {
+    sync.gotBase = true;
+    setSync("err", "Konfigurations-KO " + key + " fehlt auf dem HomeServer (Code " + code + ") – Einrichtung wird nur in diesem Browser gespeichert. Anleitung: Hilfe → „Einrichtung auf dem HomeServer“.");
+    dlog("hint", "Sync: " + key + " nicht vorhanden oder nicht freigegeben (Code " + code + ")");
+  }
+}
+async function onSyncValue(key, v, initial) {
+  const keys = syncKeys(), idx = keys.indexOf(key);
+  sync.missing.delete(key);
+  if (idx === 0) sync.gotBase = true;
+  const txt = koText(v);
+  const m = txt.match(/^HSV1;(\d+);(\d+)\/(\d+);([\s\S]*)$/);
+  if (!m) {
+    if (idx === 0) {
+      dlog("t", "Sync: " + key + " ist leer");
+      if (cfg.tiles.length) { setSync("warn", "HomeServer hat noch keine Einrichtung – lade die aus diesem Browser hoch …"); pushNow(); }
+      else setSync("ok", "Verbunden – auf dem HomeServer ist noch keine Einrichtung gespeichert.");
+    }
+    return;
+  }
+  const rev = +m[1], part = +m[2], n = +m[3];
+  (sync.parts[rev] = sync.parts[rev] || { n, data: {} }).data[part] = m[4];
+  const e = sync.parts[rev];
+  if (Object.keys(e.data).length < e.n) return;                       // warten auf restliche Teile
+  const packed = Array.from({ length: e.n }, (_, j) => e.data[j + 1]).join("");
+  Object.keys(sync.parts).forEach(r => { if (+r <= rev) delete sync.parts[r]; });
+  let remote;
+  try { remote = await unpackCfg(packed); } catch (err) { setSync("err", "Einrichtung auf dem HomeServer ist beschädigt: " + err.message); return; }
+  sync.remoteRev = rev;
+  const local = cfg.rev || 0;
+  if (rev > local) {
+    applyingRemote = true;
+    cfg = Object.assign({}, cfg, { tiles: remote.tiles || [], title: remote.title || "", rev });
+    saveCfg(cfg);
+    applyingRemote = false;
+    busy.clear(); pendingSet.clear(); lastLevel.clear();
+    if (!$("#dlg").open) render();
+    subscribeTiles();
+    if (!initial || local) toast("Einrichtung vom HomeServer aktualisiert");
+    dlog("in", "Sync: Einrichtung vom " + new Date(rev).toLocaleString("de-DE") + " übernommen (" + (remote.tiles || []).length + " Kacheln)");
+  } else if (rev < local) {
+    dlog("t", "Sync: dieser Browser ist neuer als der HomeServer → hochladen");
+    pushNow(); return;
+  }
+  setSync("ok", "✓ Einrichtung auf dem HomeServer gespeichert und synchron (Stand " + new Date(rev).toLocaleString("de-DE") + ", " + packed.length + " Zeichen in " + e.n + " KO" + (e.n > 1 ? "s" : "") + ").");
+}
+function schedulePush() {
+  if (cfg.srvOn) { clearTimeout(sync.pushTimer); sync.pushTimer = setTimeout(srvPush, 800); return; }
+  if (!cfg.syncOn) return;
+  clearTimeout(sync.pushTimer);
+  sync.pushTimer = setTimeout(pushNow, 800);
+}
+async function pushNow() {
+  clearTimeout(sync.pushTimer);
+  if (!cfg.syncOn) return;
+  if (!isConnected()) { setSync("warn", "Offline – Änderungen werden hochgeladen, sobald die Verbindung steht."); return; }
+  const keys = syncKeys();
+  if (sync.missing.has(keys[0])) return;
+  if (!cfg.rev) cfg.rev = Date.now();
+  const rev = cfg.rev;
+  const packed = await packCfg({ v: 1, rev, tiles: cfg.tiles, title: cfg.title || "" });
+  const size = SYNC_CHUNK - 40;
+  const n = Math.max(1, Math.ceil(packed.length / size));
+  if (n > SYNC_PARTS) { setSync("err", "Einrichtung zu groß (" + packed.length + " Zeichen) – auch mit 5 KOs nicht speicherbar."); return; }
+  const need = keys.slice(0, n).filter(k => sync.missing.has(k));
+  if (need.length) { setSync("err", "Einrichtung braucht " + n + " KOs – bitte zusätzlich anlegen: " + need.join(", ")); return; }
+  // Teile 2…n zuerst, Teil 1 zuletzt (danach ist alles vollständig)
+  for (let j = n; j >= 1; j--) {
+    const txt = "HSV1;" + rev + ";" + j + "/" + n + ";" + packed.slice((j - 1) * size, j * size);
+    call(keys[j - 1], "set", btoa(txt));
+  }
+  sync.pushedRev = rev;
+  setSync("warn", "Wird auf dem HomeServer gespeichert …");
+  dlog("out", "Sync: Einrichtung hochgeladen (" + packed.length + " Zeichen, " + n + " KO" + (n > 1 ? "s" : "") + ")");
+  setTimeout(() => { if (sync.state === "warn" && sync.pushedRev === rev && sync.remoteRev < rev)
+    setSync("err", "Keine Bestätigung vom HomeServer – ist " + keys[0] + " ein internes KO vom Typ „14 Byte“ mit Schreibrecht?"); }, 6000);
+}
+
+/* ===================== Visu-Server (Baustein 14770) =====================
+   Erreichbar unter https://<HS>/<Pfad>/ – der HomeServer leitet an den Baustein weiter. */
+function srvBase(c) {
+  c = c || cfg;
+  const path = "/" + String(c.srvPath || "/visu-daten/").replace(/^\/+|\/+$/g, "") + "/";
+  const origin = /^https?:$/.test(location.protocol) && (!c.host || location.host === hostBase()) ? location.origin
+               : (c.ssl ? "https://" : "http://") + String(c.host || "").replace(/^\w+:\/\//, "").replace(/\/+$/, "");
+  return origin + path;
+}
+async function srvFetch(path, opts, c) {
+  c = c || cfg;
+  const o = Object.assign({ cache: "no-store" }, opts || {});
+  o.headers = Object.assign({ "X-Visu-Key": c.srvKey || "" }, o.headers || {});
+  const r = await fetch(srvBase(c) + path, o);
+  let data = null; try { data = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error((data && data.error) || ("HTTP " + r.status));
+  return data;
+}
+let srvState = { remoteRev: 0, busy: false, ok: false };
+async function srvPull(initial) {
+  if (!cfg.srvOn || srvState.busy) return;
+  srvState.busy = true;
+  try {
+    const d = await srvFetch("api/config");
+    srvState.ok = true;
+    const rev = +d.rev || 0, local = cfg.rev || 0;
+    srvState.remoteRev = rev;
+    if (!d.config || !Array.isArray(d.config.tiles)) {
+      if (cfg.tiles.length) { setSync("warn", "Visu-Server hat noch keine Einrichtung – lade die aus diesem Browser hoch …"); srvState.busy = false; return srvPush(); }
+      setSync("ok", "Verbunden mit dem Visu-Server – noch keine Einrichtung gespeichert.");
+    } else if (rev > local) {
+      applyingRemote = true;
+      cfg = Object.assign({}, cfg, { tiles: d.config.tiles, title: d.config.title || "", rev });
+      saveCfg(cfg);
+      applyingRemote = false;
+      busy.clear(); pendingSet.clear(); lastLevel.clear();
+      if (!$("#dlg").open) render();
+      subscribeTiles();
+      if (!initial || local) toast("Einrichtung vom Visu-Server aktualisiert");
+      dlog("in", "Visu-Server: Einrichtung vom " + new Date(rev).toLocaleString("de-DE") + " übernommen (" + d.config.tiles.length + " Kacheln)");
+      setSync("ok", "✓ Einrichtung auf dem Visu-Server gespeichert und synchron (Stand " + new Date(rev).toLocaleString("de-DE") + ").");
+    } else if (rev < local) {
+      srvState.busy = false; return srvPush();
+    } else setSync("ok", "✓ Einrichtung auf dem Visu-Server gespeichert und synchron (Stand " + new Date(rev).toLocaleString("de-DE") + ").");
+  } catch (e) {
+    srvState.ok = false;
+    setSync("err", "Visu-Server nicht erreichbar: " + e.message + " – Einrichtung bleibt vorerst nur in diesem Browser.");
+    dlog("err", "Visu-Server: " + e.message + " (" + srvBase() + ")");
+  } finally { srvState.busy = false; }
+}
+async function srvPush() {
+  clearTimeout(sync.pushTimer);
+  if (!cfg.srvOn) return;
+  if (!cfg.rev) cfg.rev = Date.now();
+  const rev = cfg.rev;
+  setSync("warn", "Wird auf dem Visu-Server gespeichert …");
+  try {
+    const d = await srvFetch("api/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rev, config: { tiles: cfg.tiles, title: cfg.title || "" } }) });
+    srvState.remoteRev = d.rev; srvState.ok = true;
+    setSync("ok", "✓ Einrichtung auf dem Visu-Server gespeichert und synchron (Stand " + new Date(rev).toLocaleString("de-DE") + ").");
+    dlog("out", "Visu-Server: Einrichtung gespeichert (" + cfg.tiles.length + " Kacheln)");
+  } catch (e) {
+    setSync("err", "Speichern auf dem Visu-Server fehlgeschlagen: " + e.message);
+    dlog("err", "Visu-Server: " + e.message);
+  }
+}
+// andere Geräte: alle 15 s nachsehen, ob es einen neueren Stand gibt
+setInterval(async () => {
+  if (!cfg.srvOn || document.visibilityState !== "visible" || srvState.busy) return;
+  try { const d = await srvFetch("api/config/rev"); if ((+d.rev || 0) !== srvState.remoteRev || !srvState.ok) srvPull(false); }
+  catch (e) { if (srvState.ok) { srvState.ok = false; setSync("err", "Visu-Server nicht erreichbar: " + e.message); } }
+}, 15000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && cfg.srvOn) srvPull(false); });
+
+/* Diagrammdaten vom Visu-Server */
+const VS_N = { i: 180, h: 168, d: 62, w: 104, M: 36, y: 20 };
+const vsCache = new Map();
+async function drawServerHistory(el, i, t, key, u) {
+  const id = key.slice(3);
+  const ck = id + "|" + u;
+  const c = vsCache.get(ck);
+  if (c && Date.now() - c.ts < (u === "i" ? 55000 : 240000)) return renderVs(el, t, c.d, u);
+  if (!el.querySelector(".cbox svg")) el.querySelector(".cbox").innerHTML = '<div class="cmsg">lädt …</div>';
+  try {
+    const d = await srvFetch("api/history?id=" + encodeURIComponent(id) + "&u=" + u + "&n=" + VS_N[u]);
+    vsCache.set(ck, { d, ts: Date.now() });
+    document.querySelectorAll(`.tile.chart[data-i="${i}"]`).forEach(e2 => renderVs(e2, t, d, u));
+  } catch (e) {
+    el.querySelector(".cbox").innerHTML = `<div class="cmsg">Visu-Server: ${esc(e.message)}</div>`;
+    dlog("err", "Verlauf " + id + ": " + e.message);
+  }
+}
+function renderVs(el, t, d, u) {
+  if (chartUnit(+el.dataset.i, t) !== u) return;
+  const ot = cfg.tiles[+el.dataset.i];
+  if (ot && chartMulti(ot) && chartSrcGet(ot).toUpperCase() !== ("VS@" + d.id).toUpperCase()) return;
+  const pts = d.vals.map((v, j) => ({ t: unitBack(d.t_last, u, d.vals.length - 1 - j), v: v === null ? null : Number(v) }));
+  if (!pts.some(p => p.v !== null)) { el.querySelector(".cbox").innerHTML = '<div class="cmsg">Noch keine Werte in dieser Ansicht – der Baustein sammelt noch.</div>'; return; }
+  const tt = Object.assign({}, t, { dec: decOr(t, d.dec), unit: t.unit || d.unit });
+  if (!t.live && d.current !== null && d.current !== undefined && d.mode !== 2) tt.liveValue = d.current;
+  drawChart(el, tt, pts, u, { bars: d.mode === 2 });
+}
+setInterval(() => { if (document.visibilityState === "visible") document.querySelectorAll(".tile.chart").forEach(el => {
+  const t = cfg.tiles[+el.dataset.i]; if (t && String(t.key || "").startsWith("VS@")) loadChart(+el.dataset.i);
+}); }, 60000);
+
+async function srvCreateCharts() {
+  try {
+    const d = await srvFetch("api/histories");
+    const have = new Set(cfg.tiles.map(t => t.key));
+    const add = d.histories.filter(h => !have.has("VS@" + h.id)).map(h => ({ type: "chart", name: h.name, room: "Diagramme", key: "VS@" + h.id, unit: h.unit, range: h.mode === 2 ? "Tag" : "Stunde" }));
+    if (!add.length) return toast(d.histories.length ? "Alle Verläufe haben schon eine Diagramm-Kachel" : "Am Visu-Server ist noch kein Verlauf angemeldet");
+    cfg.tiles = cfg.tiles.concat(add); saveCfg(cfg);
+    $("#dlg").close(); render(); toast(add.length + " Diagramm-Kachel(n) angelegt");
+  } catch (e) { toast("Visu-Server: " + e.message); }
+}
+async function srvBackup() {
+  try {
+    const d = await srvFetch("api/export");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(d)], { type: "application/json" }));
+    a.download = "visu-server-sicherung-" + new Date().toISOString().slice(0, 10) + ".json"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  } catch (e) { toast("Sicherung fehlgeschlagen: " + e.message); }
+}
+async function srvRestore(file) {
+  try {
+    let body = await file.text();
+    let obj; try { obj = JSON.parse(body); } catch (e) { throw new Error("Datei ist kein JSON"); }
+    if (obj && obj.format !== "visu-server-export") {
+      const tiles = obj.tiles || (obj.config && obj.config.tiles);
+      if (!Array.isArray(tiles)) throw new Error("weder Visu-Server-Sicherung noch Visu-Export");
+      body = JSON.stringify({ format: "visu-server-export", version: 1, config: { config: { tiles, title: obj.title || (obj.config && obj.config.title) || "" } }, histories: [] });
+    }
+    const mode = ($("#srvRestoreMode") || {}).value || "merge";
+    if (!confirm("Sicherung „" + file.name + "“ einspielen?\n" + (mode === "merge"
+      ? "Nur fehlende Werte und fehlende Kacheln werden ergänzt, Vorhandenes bleibt."
+      : "Einrichtung und Verläufe werden für alle Geräte ÜBERSCHRIEBEN."))) return;
+    const d = await srvFetch("api/import?mode=" + mode, { method: "POST", headers: { "Content-Type": "application/json" }, body });
+    toast((d.mode === "merge" ? "Ergänzt" : "Überschrieben") + ": Einrichtung " + (d.config ? "✓" + (d.tiles_added !== undefined ? " (" + d.tiles_added + " Kacheln neu)" : "") : "–") + ", " + d.histories_queued.length + " Verläufe" + (d.histories_unknown.length ? " (" + d.histories_unknown.length + " unbekannt)" : ""));
+    vsCache.clear(); setTimeout(() => srvPull(false), 1500);
+  } catch (e) { toast("Wiederherstellung fehlgeschlagen: " + e.message); }
+}
+
+/* ===================== Einstellungen ===================== */
+/* Kategorien = Funktionstypen */
+const CATS = [
+  ["switch", "Licht / Schalter"], ["dimmer", "Dimmer"], ["blind", "Jalousie / Rollo"],
+  ["heating", "Heizung"], ["slider", "Wertgeber"], ["contact", "Kontakte & Melder"], ["scene", "Szenen & Sequenzen"],
+  ["chart", "Diagramme"], ["value", "Wertanzeigen"]
+];
+let rowSeq = 0;
+function tileRow(t, order) {
+  const type = SCHEMA[t.type] ? t.type : "switch";
+  const s = SCHEMA[type];
+  const d = document.createElement("details");
+  d.className = "tile-edit";
+  d.dataset.type = type;
+  d.dataset.order = order ?? (1e6 + rowSeq++);
+  // Felder, die nicht im Formular stehen (z. B. fmt), unverändert mitnehmen
+  const known = new Set(["type", "name", "room", "floor", "fav", ...s.fields.map(f => f[0])]);
+  d.dataset.extra = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k]) => !known.has(k))));
+  const inp = (f, v) => f[0] === "dec" ? `<label>${esc(f[1])} <select data-f="dec">${[["", "automatisch"], ["0", "0 (18)"], ["1", "1 (18,4)"], ["2", "2 (18,37)"], ["3", "3 (18,372)"]]
+      .map(([o, l]) => `<option value="${o}"${String(v ?? "") === o ? " selected" : ""}>${l}</option>`).join("")}</select></label>` : `<label>${esc(f[1])} <input type="text" data-f="${f[0]}"${type === "chart" && f[0] === "key" ? ' list="vsList"' : ""} data-ko="${f[2] ? 1 : ""}" data-pfx="${f[4] || ""}" value="${esc(v ?? "")}" placeholder="${esc(f[3] || "")}"></label>`;
+  let fields = "";
+  for (let j = 0; j < s.fields.length; j += 2)
+    fields += `<div class="row">${inp(s.fields[j], t[s.fields[j][0]])}${s.fields[j + 1] ? inp(s.fields[j + 1], t[s.fields[j + 1][0]]) : ""}</div>`;
+  d.innerHTML = `<summary>
+      <input type="checkbox" class="sel" aria-label="Auswählen">
+      <span class="sn"></span><span class="sm"></span>
+      <button type="button" class="iconbtn rm" title="Entfernen" aria-label="Entfernen">✕</button>
+    </summary>
+    <div class="te-body">
+      <div class="row3">${inp(["name", "Name", 0, "Deckenlicht"], t.name)}${inp(["room", "Raum", 0, "Wohnzimmer"], t.room)}${inp(["floor", "Etage (opt.)", 0, "EG"], t.floor)}</div>
+      ${fields}
+      <label class="check"><input type="checkbox" data-fb="fav" ${t.fav ? "checked" : ""}> Favorit auf der Startseite</label>
+    </div>`;
+  const sel = d.querySelector(".sel");
+  sel.onclick = e => e.stopPropagation();
+  sel.onchange = updateSelInfo;
+  d.querySelector(".rm").onclick = e => { e.preventDefault(); e.stopPropagation(); d.remove(); refreshCats(); };
+  d.addEventListener("input", () => updateRowSummary(d));
+  updateRowSummary(d);
+  if (!t.name && !tileKeys(t).length) d.open = true;   // neue, leere Kachel gleich aufklappen
+  return d;
+}
+function updateRowSummary(d) {
+  const g = f => (d.querySelector(`[data-f="${f}"]`) || {}).value?.trim() || "";
+  d.querySelector(".sn").textContent = g("name") || "(ohne Name)";
+  const key = g("key") || g("move") || g("actual");
+  d.querySelector(".sm").textContent = [g("floor"), g("room"), key].filter(Boolean).join(" · ");
+}
+function buildCats() {
+  const list = $("#tileList");
+  list.innerHTML = CATS.map(([type, label]) => `
+    <details class="cat" data-cat="${type}">
+      <summary>
+        <input type="checkbox" class="catsel" aria-label="Alle ${esc(label)} auswählen">
+        <span class="cn">${esc(label)}</span><span class="cc">0</span>
+        <button type="button" class="btn small catadd">+ Neu</button>
+        <button type="button" class="btn small danger catdel">Alle löschen</button>
+      </summary>
+      <div class="cat-body"></div>
+    </details>`).join("");
+  list.querySelectorAll(".cat").forEach(cat => {
+    const type = cat.dataset.cat;
+    const cs = cat.querySelector(".catsel");
+    cs.onclick = e => e.stopPropagation();
+    cs.onchange = () => { visibleRows(cat).forEach(r => r.querySelector(".sel").checked = cs.checked); updateSelInfo(); };
+    cat.querySelector(".catadd").onclick = e => { e.preventDefault(); e.stopPropagation(); addTile(ADD_PRESETS[type] || { type }); };
+    cat.querySelector(".catdel").onclick = e => {
+      e.preventDefault(); e.stopPropagation();
+      const rows = visibleRows(cat); if (!rows.length) return;
+      rows.forEach(r => r.remove()); refreshCats();
+      toast(rows.length + " × " + CATS.find(c => c[0] === type)[1] + " entfernt – „Abbrechen“ macht es rückgängig");
+    };
+  });
+}
+const allRows = () => [...document.querySelectorAll("#tileList .tile-edit")];
+const visibleRows = root => [...(root || $("#tileList")).querySelectorAll(".tile-edit")].filter(r => !r.hidden);
+function addTile(t) {
+  const row = tileRow(t);
+  const cat = document.querySelector(`#tileList .cat[data-cat="${row.dataset.type}"]`);
+  cat.querySelector(".cat-body").appendChild(row);
+  cat.open = true; row.open = true;
+  refreshCats();
+  row.scrollIntoView({ block: "nearest" });
+  row.querySelector('input[data-f="name"]').focus();
+}
+function refreshCats() {
+  const q = $("#tileSearch").value.trim().toLowerCase();
+  allRows().forEach(r => {
+    const hay = [...r.querySelectorAll("input[data-f]")].map(i => i.value).join(" ").toLowerCase();
+    r.hidden = !!q && !q.split(/\s+/).every(w => hay.includes(w));
+  });
+  document.querySelectorAll("#tileList .cat").forEach(cat => {
+    const all = cat.querySelectorAll(".tile-edit").length, vis = visibleRows(cat).length;
+    cat.querySelector(".cc").textContent = q ? vis + " / " + all : all;
+    cat.hidden = q ? !vis : false;
+    cat.classList.toggle("empty", !all);
+  });
+  updateSelInfo();
+}
+function updateSelInfo() {
+  const rows = allRows(), sel = rows.filter(r => r.querySelector(".sel").checked);
+  $("#btnDelSel").textContent = "Ausgewählte löschen (" + sel.length + ")";
+  $("#btnDelSel").disabled = !sel.length;
+  $("#tileTotal").textContent = rows.length + " Kacheln";
+  document.querySelectorAll("#tileList .cat").forEach(cat => {
+    const v = visibleRows(cat), n = v.filter(r => r.querySelector(".sel").checked).length;
+    const cs = cat.querySelector(".catsel");
+    cs.checked = !!v.length && n === v.length; cs.indeterminate = n > 0 && n < v.length;
+  });
+}
+async function fillVsDatalist() {
+  let dl = document.getElementById("vsList");
+  if (!dl) { dl = document.createElement("datalist"); dl.id = "vsList"; document.body.appendChild(dl); }
+  if (!cfg.srvOn) return;
+  try {
+    const hs = await vsHistories(true);
+    dl.innerHTML = '<option value="VS@*">Alle Verläufe – Auswahlliste in der Kachel</option>' +
+      hs.map(h => `<option value="VS@${esc(h.id)}">${esc(h.name)}${h.unit ? " (" + esc(h.unit) + ")" : ""}</option>`).join("");
+  } catch (e) {}
+}
+function openSettings() {
+  fillVsDatalist();
+  $("#cfgTitle").value = cfg.title || "";
+  $("#cfgHost").value = cfg.host; $("#cfgUser").value = cfg.user;
+  $("#cfgPass").value = cfg.pass; $("#cfgSsl").checked = !!cfg.ssl;
+  $("#cfgSyncOn").checked = !!cfg.syncOn; $("#cfgSyncKey").value = cfg.syncKey || "VISU_CONFIG";
+  $("#cfgSrvOn").checked = !!cfg.srvOn; $("#cfgSrvPath").value = cfg.srvPath || "/visu-daten/"; $("#cfgSrvKey").value = cfg.srvKey || "";
+  $("#srvState").textContent = cfg.srvOn ? (srvState.ok ? "✓ verbunden" : "nicht verbunden – „Verbindung testen“") : "";
+  setSync(sync.state, sync.msg);
+  $("#tileSearch").value = "";
+  buildCats();
+  cfg.tiles.forEach((t, i) => {
+    const row = tileRow(t, i);
+    document.querySelector(`#tileList .cat[data-cat="${row.dataset.type}"] .cat-body`).appendChild(row);
+  });
+  refreshCats();
+  // bei wenigen Kacheln alles offen, bei vielen nur die Überschriften
+  const few = cfg.tiles.length <= 30;
+  document.querySelectorAll("#tileList .cat").forEach(c => c.open = few && !c.classList.contains("empty"));
+  $("#btnExpand").textContent = few ? "Alle zuklappen" : "Alle aufklappen";
+  $("#embPass").checked = !!(EMBEDDED && EMBEDDED.pass); $("#embPassWarn").hidden = !$("#embPass").checked;
+  updateEmbState();
+  $("#dlg").showModal();
+}
+const ADD_PRESETS = {
+  "slider-pct": { type: "slider", min: 0, max: 100, step: 1, unit: "%" },
+  "slider-u16": { type: "slider", min: 0, max: 65535, step: 1, unit: "" },
+  slider: { type: "slider", min: 0, max: 100, step: 1, unit: "%" },
+  heating: { type: "heating", step: 0.5 }
+};
+document.querySelectorAll("[data-add]").forEach(b => b.onclick = () => addTile(ADD_PRESETS[b.dataset.add] || { type: b.dataset.add }));
+$("#tileSearch").addEventListener("input", refreshCats);
+$("#btnSelAll").onclick = () => {
+  const v = visibleRows(), all = v.length && v.every(r => r.querySelector(".sel").checked);
+  v.forEach(r => r.querySelector(".sel").checked = !all); updateSelInfo();
+};
+$("#btnDelSel").onclick = () => {
+  const sel = allRows().filter(r => r.querySelector(".sel").checked);
+  sel.forEach(r => r.remove()); refreshCats();
+  toast(sel.length + " Kacheln entfernt – „Abbrechen“ macht es rückgängig");
+};
+$("#btnClearTiles").onclick = () => {
+  const n = allRows().length; if (!n) return;
+  allRows().forEach(r => r.remove()); refreshCats();
+  toast("Alle " + n + " Kacheln entfernt – „Abbrechen“ macht es rückgängig");
+};
+$("#btnExpand").onclick = () => {
+  const cats = [...document.querySelectorAll("#tileList .cat")], open = cats.some(c => c.open);
+  cats.forEach(c => c.open = !open);
+  $("#btnExpand").textContent = open ? "Alle aufklappen" : "Alle zuklappen";
+};
+$("#btnExport").onclick = () => {
+  const out = Object.assign({}, cfg); delete out.pass; delete out.srvKey;   // Passwort nicht mit exportieren
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: "application/json" }));
+  a.download = "homeserver-visu.json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast("Exportiert (ohne Passwort)");
+};
+$("#cfgFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const c = JSON.parse(await f.text());
+    if (!Array.isArray(c.tiles)) throw new Error("keine Kacheln enthalten");
+    cfg = Object.assign({}, DEFAULTS, c, { pass: c.pass || cfg.pass });
+    saveCfg(cfg);
+    $("#dlg").close();
+    values.clear(); busy.clear(); pendingSet.clear();
+    render(); connect();
+    toast(cfg.tiles.length + " Kacheln importiert" + (c.pass ? "" : " – Passwort ggf. in den Einstellungen eintragen"));
+  } catch (err) { toast("Import fehlgeschlagen: " + err.message); }
+  e.target.value = "";
+};
+$("#btnSettings").onclick = openSettings;
+function cfgFromDialog() {
+  return {
+    title: $("#cfgTitle").value.trim(),
+    host: $("#cfgHost").value.trim(), user: $("#cfgUser").value.trim(),
+    pass: $("#cfgPass").value, ssl: $("#cfgSsl").checked,
+    syncOn: $("#cfgSyncOn").checked, syncKey: $("#cfgSyncKey").value.trim().replace(/^CO@/i, "") || "VISU_CONFIG",
+    srvOn: $("#cfgSrvOn").checked, srvPath: $("#cfgSrvPath").value.trim() || "/visu-daten/", srvKey: $("#cfgSrvKey").value,
+    tiles: allRows().sort((x, y) => x.dataset.order - y.dataset.order).map(d => {
+      const t = Object.assign({ type: d.dataset.type }, JSON.parse(d.dataset.extra || "{}"));
+      d.querySelectorAll("input[data-f], select[data-f]").forEach(inp => {
+        const v = inp.value.trim();
+        if (!v) return;
+        t[inp.dataset.f] = inp.dataset.ko ? v.split(/[,;]/).map(k => normKey(k, inp.dataset.pfx)).filter(Boolean).join(", ") : v;
+      });
+      d.querySelectorAll("input[data-fb]").forEach(cb => { if (cb.checked) t[cb.dataset.fb] = true; });
+      return t;
+    }).filter(t => tileKeys(t).length)
+  };
+}
+$("#dlg").addEventListener("close", () => {
+  if ($("#dlg").returnValue !== "save") return;
+  const srvChanged = $("#cfgSrvOn").checked !== !!cfg.srvOn || $("#cfgSrvKey").value !== (cfg.srvKey || "") || ($("#cfgSrvPath").value.trim() || "/visu-daten/") !== (cfg.srvPath || "/visu-daten/");
+  const syncChanged = $("#cfgSyncOn").checked !== !!cfg.syncOn || ($("#cfgSyncKey").value.trim().replace(/^CO@/i, "") || "VISU_CONFIG") !== cfg.syncKey;
+  cfg = Object.assign(cfgFromDialog(), { rev: cfg.rev });
+  saveCfg(cfg);
+  if (syncChanged) { sync.missing.clear(); sync.gotBase = false; setSync(cfg.syncOn ? "warn" : "off", cfg.syncOn ? "Verbinde mit dem Konfigurations-KO …" : "Speicherung auf dem HomeServer ist ausgeschaltet."); }
+  values.clear(); busy.clear(); pendingSet.clear();
+  render(); connect();
+  if (srvChanged) { vsCache.clear(); if (cfg.srvOn) srvPull(true); else setSync(cfg.syncOn ? "warn" : "off", ""); }
+});
+$("#btnSrvTest").onclick = async () => {
+  const c = Object.assign({}, cfg, { host: $("#cfgHost").value.trim() || cfg.host, ssl: $("#cfgSsl").checked, srvPath: $("#cfgSrvPath").value.trim() || "/visu-daten/", srvKey: $("#cfgSrvKey").value });
+  const el = $("#srvState"); el.className = "hint"; el.textContent = "Teste " + srvBase(c) + " …";
+  try {
+    const p = await srvFetch("api/ping", null, c);
+    el.className = "hint ok";
+    el.textContent = "✓ Visu-Server " + p.version + " erreichbar – " + p.histories + " Verlauf/Verläufe angemeldet, Einrichtung " + (p.config_rev ? "vom " + new Date(p.config_rev).toLocaleString("de-DE") : "noch leer") + ". Häkchen setzen und speichern.";
+  } catch (e) { el.className = "hint err"; el.textContent = "✗ " + e.message + " (" + srvBase(c) + ")"; }
+};
+$("#btnSrvCharts").onclick = () => srvCreateCharts();
+$("#btnSrvBackup").onclick = () => srvBackup();
+$("#srvRestoreFile").onchange = e => { const f = e.target.files[0]; if (f) srvRestore(f); e.target.value = ""; };
+
+/* ===================== Import aus cobjects.xml ===================== */
+let impDevices = [];     // erkannte Geräte
+let impKos = [];         // alle KOs aus der XML
+const probing = new Set();
+const xmlUrl = () => (cfg.ssl ? "https://" : "http://") + hostBase() + "/hscl?sys/cobjects.xml";
+
+function openImport() {
+  if (!cfg.host) { toast("Bitte zuerst den HomeServer in den Einstellungen eintragen"); return openSettings(); }
+  $("#impOpen").href = xmlUrl();
+  $("#imp").showModal();
+}
+$("#btnImport").onclick = openImport;
+$("#impClose").onclick = () => $("#imp").close();
+
+async function impFetch() {
+  const url = xmlUrl();
+  const h = $("#impSrcHint");
+  h.className = "hint"; h.textContent = "Lade " + url + " …";
+  dlog("t", "Import: lade " + url);
+  try {
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    parseXml(await r.arrayBuffer(), url);
+  } catch (e) {
+    dlog("err", "Import: Laden fehlgeschlagen: " + e.message);
+    h.className = "hint warn";
+    h.innerHTML = "Direktes Laden nicht möglich (" + esc(e.message) + ") – meist blockiert der Browser das aus Sicherheitsgründen (CORS) oder das Zertifikat ist noch nicht akzeptiert.<br>"
+      + "So geht's trotzdem: <b>„XML im Browser öffnen“</b> → ggf. Zertifikat bestätigen → Seite mit <b>Strg+S</b> speichern → hier <b>„XML-Datei wählen“</b>.";
+  }
+}
+$("#impFetch").onclick = impFetch;
+$("#impFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  parseXml(await f.arrayBuffer(), f.name);
+  e.target.value = "";
+};
+
+function parseXml(buf, src) {
+  // Kodierung aus dem XML-Kopf lesen (HS liefert oft ISO-8859-1)
+  const head = new TextDecoder("latin1").decode(buf.slice(0, 200));
+  const enc = (head.match(/encoding=["']([^"']+)/i) || [])[1] || "utf-8";
+  let text;
+  try { text = new TextDecoder(enc).decode(buf); } catch (e) { text = new TextDecoder("utf-8").decode(buf); }
+  const doc = new DOMParser().parseFromString(text, "text/xml");
+  let nodes = [...doc.getElementsByTagName("cobject")];
+  if (doc.getElementsByTagName("parsererror").length || !nodes.length) {
+    // Fallback: Attribute per Regex lesen (falls die XML nicht wohlgeformt ist)
+    nodes = [...text.matchAll(/<cobject\s([^>]*?)\/?>/g)].map(m => {
+      const o = {}; for (const a of m[1].matchAll(/(\w+)="([^"]*)"/g)) o[a[1]] = a[2].replace(/&#(\d+);/g, (_, n) => String.fromCharCode(n)).replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+      return { getAttribute: k => o[k] ?? null };
+    });
+  }
+  const h = $("#impSrcHint");
+  if (!nodes.length) {
+    h.className = "hint err"; h.textContent = "Keine K.-Objekte in " + src + " gefunden. Ist es wirklich cobjects.xml?";
+    dlog("err", "Import: keine <cobject>-Einträge gefunden. Anfang der Datei: " + text.slice(0, 300));
+    return;
+  }
+  impKos = nodes.map(n => {
+    const a = k => n.getAttribute(k) ?? "";
+    return {
+      id: a("id"), used: a("used") !== "0", type: a("type"), path: a("path").split(/\\+/).map(s => s.trim()).filter(Boolean),
+      fmt: a("fmt"), fmtex: a("fmtex"), name: a("name").trim() || "KO " + a("id"),
+      min: num(a("min")), max: num(a("max")), ga: a("ga")
+    };
+  });
+  h.className = "hint ok";
+  h.textContent = "✓ " + impKos.length + " K.-Objekte aus " + src + " gelesen.";
+  dlog("in", "Import: " + impKos.length + " K.-Objekte gelesen (" + enc + ")");
+  buildDevices();
+  $("#impStep2").hidden = false; $("#impStep3").hidden = false;
+  renderImport();
+}
+
+/* ---------- Erkennung ---------- */
+function koKind(k) {
+  const f = (k.fmt || "").toUpperCase();
+  if (/1BIT/.test(f) || (k.max === 1 && k.min === 0 && /EIS1\b|EIS1\+/.test(f))) return "bool";
+  if (/14BYTE|EIS15/.test(f)) return "text";
+  if (/8BIT/.test(f) && (/EIS6/.test(f) || k.max === 100)) return "pct";
+  if (/EIS5|FLOAT/.test(f) || /float/i.test(k.fmtex)) return "float";
+  if (/16BIT/.test(f) || /EIS10/.test(f)) return "u16";
+  return "num";
+}
+const STATUS_RE = /(^|[\s_\-\.(\/])(rm|rückmeldung|rueckmeldung|status|zustand|stat|feedback|rück)([\s_\-\.)\/]|$)/i;
+const isSt = k => STATUS_RE.test(k.name);
+const CONTACT_RE = /fenster|tür|tuer|kontakt|reed|verschluss|glasbruch|alarm|wasser|leck|leckage|rauch|präsenz|praesenz|bewegung|melder|pm\b|bwm/i;
+function contactKind(name) {
+  const n = name.toLowerCase();
+  if (/wasser|leck/.test(n)) return "wasser";
+  if (/rauch/.test(n)) return "rauch";
+  if (/alarm|glasbruch|sabotage|störung|stoerung/.test(n)) return "alarm";
+  if (/bewegung|präsenz|praesenz|melder|bwm|\bpm\b/.test(n)) return "bewegung";
+  if (/tür|tuer/.test(n)) return "tuer";
+  return "fenster";
+}
+const isContactKo = k => koKind(k) === "bool" && CONTACT_RE.test(k.name) && !/licht|leuchte|lampe|schalten/i.test(k.name);
+const BLIND_RE = /jalou|rollo|rollad|rolllad|behang|markise|raffstore|beschattung|lamell|screen|sonnenschutz/i;
+
+/* Rolle eines KOs für Jalousie- und Heizungserkennung */
+function koRole(k) {
+  const n = k.name.toLowerCase(), kind = koKind(k), st = isSt(k) ? "St" : "";
+  if (BLIND_RE.test(n)) {
+    if (kind === "bool") return st ? null : (/stop|step|kurz|schritt|lamell|winkel/.test(n) ? "bStop" : "bMove");
+    if (kind === "pct" || kind === "num") return (/lamell|winkel/.test(n) ? "bSlat" : "bPos") + st;
+  }
+  if (kind === "float" && /soll/.test(n)) return "hSet" + st;
+  if (kind === "float" && /\bist|istwert|temp/.test(n)) return "hAct";
+  if (/betriebsart|hvac|modus|betriebsmodus/.test(n) && kind !== "bool" && kind !== "text") return "hMode" + st;
+  if (kind === "pct" && /stellgr|ventil|stellwert|heizen/.test(n)) return "hValve";
+  return null;
+}
+const STRIP_WORDS = ["rm", "rückmeldung", "rueckmeldung", "status", "zustand", "stat", "feedback", "schalten", "ein/aus", "an/aus",
+  "ein", "aus", "on/off", "dimmen", "dimmwert", "helligkeitswert", "helligkeit", "wert", "absolut", "abs", "relativ", "1bit", "8bit",
+  "auf/ab", "fahren", "langzeit", "lang", "kurzzeit", "kurz", "stop", "stopp", "step", "schritt", "position", "pos", "höhe", "hoehe",
+  "lamelle", "lamellen", "lamellenposition", "winkel", "ist", "istwert", "soll", "sollwert", "temperatur", "temp", "raumtemperatur",
+  "betriebsart", "betriebsmodus", "kontakt", "melder", "modus", "hvac", "stellgröße", "stellgroesse", "stellwert", "ventil", "heizen", "heizung", "rtr", "basis"];
+const STRIP_RE = new RegExp("(^|\\s)(" + STRIP_WORDS.map(w => w.replace(/[/]/g, "\\/")).join("|") + ")(?=\\s|$)", "gi");
+function baseName(name) {
+  return name.toLowerCase().replace(/[_\-.,()]+/g, " ").replace(STRIP_RE, " ").replace(STRIP_RE, " ")
+    .replace(/[^a-z0-9äöüß/ ]+/g, " ").replace(/\s+/g, " ").trim();
+}
+function prettyName(name) {
+  const n = name.replace(/[_]+/g, " ").replace(STATUS_RE, " ").replace(STRIP_RE, " ").replace(STRIP_RE, " ").replace(/\s+/g, " ").trim();
+  return n || name;
+}
+function guessUnit(k) {
+  const n = k.name.toLowerCase(), kind = koKind(k);
+  if (kind === "pct") return "%";
+  if (/temp|°c|ist-?wert|soll-?wert/.test(n)) return "°C";
+  if (/feucht|humid|\brf\b/.test(n)) return "%";
+  if (/\blux\b|helligkeit|licht(sensor|wert)/.test(n)) return "lx";
+  if (/co2|co₂/.test(n)) return "ppm";
+  if (/wind/.test(n)) return "m/s";
+  if (/kwh|zähler|zaehler|energie/.test(n)) return "kWh";
+  if (/leistung|power|watt/.test(n)) return "W";
+  if (/strom\b|ampere/.test(n)) return "A";
+  if (/spannung|volt/.test(n)) return "V";
+  return "";
+}
+const cleanSeg = s => s.replace(/^\d+[\s._-]*/, "").trim() || s.trim();
+function coKey(k, mode) {
+  if (!k) return "";
+  if (mode === "id") return k.id ? "CO@" + k.id : "";
+  return k.ga ? "CO@" + k.ga.replace(/\//g, "_") : "";
+}
+
+function buildDevices() {
+  impDevices = [];
+  let uid = 0;
+  const push = (d) => { d.uid = uid++; impDevices.push(d); };
+  const byFolder = new Map();
+  for (const k of impKos) {
+    const f = k.path.join("\\");
+    if (!byFolder.has(f)) byFolder.set(f, []);
+    byFolder.get(f).push(k);
+  }
+  for (const [folder, kosAll] of byFolder) {
+    const path = folder ? folder.split("\\") : [];
+    const room = path.length ? cleanSeg(path[path.length - 1]) : "Allgemein";
+    const floor = path.length >= 2 ? cleanSeg(path[path.length - 2]) : "";
+    const group = path.map(cleanSeg).join(" › ") || "Ohne Ordner";
+    const used = new Set();
+    const pick = (list, role) => list.find(k => !used.has(k) && koRole(k) === role);
+
+    // --- Heizung: gibt es im Ordner genau einen Sollwert, gehört alles Heizungs-Zeug zusammen
+    const heatKos = kosAll.filter(k => /^h/.test(koRole(k) || ""));
+    const heatGroups = [];
+    if (heatKos.filter(k => koRole(k) === "hSet").length <= 1) { if (heatKos.length) heatGroups.push(heatKos); }
+    else { const m = new Map(); heatKos.forEach(k => { const b = baseName(k.name); if (!m.has(b)) m.set(b, []); m.get(b).push(k); }); heatGroups.push(...m.values()); }
+    for (const hk of heatGroups) {
+      const set = pick(hk, "hSet"), act = pick(hk, "hAct"), mode = pick(hk, "hMode");
+      if (!set && !(act && mode)) continue;
+      const kos = { key: set, status: pick(hk, "hSetSt"), actual: act, mode, modeStatus: pick(hk, "hModeSt"), valve: pick(hk, "hValve") };
+      Object.values(kos).forEach(k => k && used.add(k));
+      push({ group, room, floor, suggested: "heating", name: "Heizung", kos });
+    }
+
+    // --- nach Grundname bündeln (Schalten + Rückmeldung, Dimmer, Jalousie …)
+    const byBase = new Map();
+    for (const k of kosAll) {
+      if (used.has(k)) continue;
+      const b = baseName(k.name) || k.name.toLowerCase();
+      if (!byBase.has(b)) byBase.set(b, []);
+      byBase.get(b).push(k);
+    }
+    for (const [, list] of byBase) {
+      // Jalousie
+      const move = pick(list, "bMove"), pos = pick(list, "bPos");
+      if (move || pos) {
+        const kos = { move, stop: pick(list, "bStop"), key: pos, status: pick(list, "bPosSt"), slat: pick(list, "bSlat"), slatStatus: pick(list, "bSlatSt") };
+        Object.values(kos).forEach(k => k && used.add(k));
+        push({ group, room, floor, suggested: "blind", name: prettyName((move || pos).name), kos });
+      }
+      // Kontakte & Melder (1 Bit, Name mit Fenster/Tür/Alarm …)
+      for (const k of list) if (!used.has(k) && isContactKo(k)) {
+        used.add(k);
+        push({ group, room, floor, suggested: "contact", name: prettyName(k.name), kos: { key: k }, kind: contactKind(k.name) });
+      }
+      const rest = list.filter(k => !used.has(k));
+      const boolCtrl = rest.filter(k => koKind(k) === "bool" && !isSt(k));
+      const boolSt   = rest.filter(k => koKind(k) === "bool" && isSt(k));
+      const pctCtrl  = rest.filter(k => koKind(k) === "pct" && !isSt(k));
+      const pctSt    = rest.filter(k => koKind(k) === "pct" && isSt(k));
+      // Dimmer: genau ein Prozent-KO mit Licht-Namen
+      if (pctCtrl.length === 1 && /dimm|hellig|licht|leuchte|lampe|spot|led|decke|wand/i.test(rest.map(k => k.name).join(" "))) {
+        const kos = { key: pctCtrl[0], status: pctSt[0], sw: boolCtrl[0], swStatus: boolSt[0] };
+        Object.values(kos).forEach(k => k && used.add(k));
+        push({ group, room, floor, suggested: "dimmer", name: prettyName((boolCtrl[0] || pctCtrl[0]).name), kos });
+      } else if (boolCtrl.length === 1) {
+        push({ group, room, floor, suggested: "switch", name: prettyName(boolCtrl[0].name), kos: { key: boolCtrl[0], status: boolSt[0] } });
+        used.add(boolCtrl[0]); if (boolSt[0]) used.add(boolSt[0]);
+      }
+      // Übriges einzeln: steuerbare Prozentwerte als Wertgeber, sonst Anzeige
+      for (const k of list) {
+        if (used.has(k)) continue;
+        used.add(k);
+        const kind = koKind(k);
+        let suggested = "value";
+        if (kind === "bool" && !isSt(k)) suggested = "switch";
+        else if (kind === "pct" && !isSt(k)) suggested = "slider";
+        push({ group, room, floor, name: k.name, suggested, kos: { key: k } });
+      }
+    }
+  }
+  impDevices.forEach(d => { d.type = d.suggested; d.sel = false; d.used = Object.values(d.kos).some(k => k && k.used); applyNaming(d); });
+}
+
+/* ---------- Namen aus den KO-Bezeichnungen ableiten ----------
+   Viele Projekte benennen KOs „Raum - Funktion“ (z. B. „Bad 3.OG - Sollwert“).
+   Dann wird der linke Teil zum Raum, der rechte zum Kachelnamen, und ein Ordner
+   wie „OG“ wird zur Etage. */
+const FLOOR_RE = /^((u|k|e|o|d|s)g|\d+\s*\.?\s*(og|ug|dg)|og\s*\d+|keller|erdgeschoss|obergeschoss|dachgeschoss|untergeschoss|souterrain|dachboden|spitzboden|außen|aussen|außenbereich|garten)$/i;
+function splitName(name) {
+  const m = String(name).match(/^(.+?)\s+[-–—:|]\s+(.+)$/);
+  return m ? { pre: m[1].trim(), post: m[2].trim() } : null;
+}
+const GENERIC_NAME = { heating: "Heizung", blind: "Jalousie", dimmer: "Licht", switch: "Licht", slider: "Wert", value: "Wert", contact: "Kontakt" };
+function applyNaming(d) {
+  const kos = Object.values(d.kos).filter(Boolean);
+  const parts = kos.map(k => splitName(k.name));
+  const main = mainKo(d), mp = splitName(main.name);
+  let pre = null;
+  if (parts.every(Boolean) && new Set(parts.map(p => p.pre.toLowerCase())).size === 1) pre = parts[0].pre;
+  else if (mp && d.suggested !== "heating") pre = mp.pre;       // Einzel-KO oder gemischte Namen
+  if (!pre) {
+    if (d.suggested === "heating" && mp) pre = mp.pre;
+    else return;
+  }
+  // Ordner, der eigentlich eine Etage ist → als Etage übernehmen
+  if (FLOOR_RE.test((d.room || "").trim())) d.floor = d.room;
+  d.room = pre;
+  const post = (kos.map(k => splitName(k.name)).find((p, j) => kos[j] === main) || mp || { post: main.name }).post;
+  let nm = prettyName(post);
+  if (!baseName(post)) nm = (d.suggested === "value" || d.suggested === "slider") ? post : (d.suggested === "contact" ? (CONTACT[d.kind]?.label || "Kontakt") : GENERIC_NAME[d.suggested] || post);
+  if (d.suggested === "heating") nm = "Heizung";
+  d.name = nm;
+}
+
+/* ---------- Anzeige ---------- */
+function devMatches(d, q, filter, showUnused) {
+  if (!showUnused && !d.used) return false;
+  if (filter === "ctrl" && d.type === "value") return false;
+  if (filter !== "all" && filter !== "ctrl" && d.type !== filter) return false;
+  if (!q) return true;
+  const hay = (d.name + " " + d.group + " " + Object.values(d.kos).filter(Boolean).map(k => k.ga + " " + k.name + " " + k.id).join(" ")).toLowerCase();
+  return q.split(/\s+/).every(w => hay.includes(w));
+}
+function mainKo(d) { return d.kos.key || d.kos.move || d.kos.actual; }
+function describeKos(d, mode) {
+  const lab = Object.fromEntries((SCHEMA[d.type] || SCHEMA.value).fields.map(f => [f[0], f[1].replace(/ \(.*\)$/, "")]));
+  return Object.entries(d.kos).filter(([, k]) => k).map(([r, k]) =>
+    `${lab[r] || r}: ${coKey(k, mode) || "(keine " + (mode === "ga" ? "GA" : "ID") + ")"}${k.name !== d.name ? " · " + k.name : ""}`).join("   ");
+}
+function renderImport() {
+  const q = $("#impSearch").value.trim().toLowerCase(), filter = $("#impFilter").value,
+        showUnused = $("#impUnused").checked, mode = $("#impMode").value;
+  const groups = new Map();
+  for (const d of impDevices) {
+    if (!devMatches(d, q, filter, showUnused)) continue;
+    if (!groups.has(d.group)) groups.set(d.group, []);
+    groups.get(d.group).push(d);
+  }
+  const list = $("#impList");
+  if (!groups.size) { list.innerHTML = '<div class="hint">Keine passenden Einträge.</div>'; updateImpCount(); return; }
+  let html = "", shown = 0;
+  const types = ["switch", "dimmer", "blind", "heating", "slider", "contact", "value"];
+  for (const [g, devs] of groups) {
+    if (shown > 1500) { html += '<div class="hint">… weitere Einträge ausgeblendet – bitte Suche verwenden.</div>'; break; }
+    const allSel = devs.every(d => d.sel);
+    html += `<div class="grp"><div class="gh"><input type="checkbox" data-g="${esc(g)}" ${allSel ? "checked" : ""}><span>${esc(g)}</span><span style="flex:none;font-weight:400;color:var(--muted)">${devs.length}</span></div>`;
+    for (const d of devs) {
+      shown++;
+      const hasKey = !!coKey(mainKo(d), mode);
+      html += `<div class="dev ${hasKey ? "" : "nokey"}" data-u="${d.uid}">
+        <input type="checkbox" ${d.sel ? "checked" : ""} ${hasKey ? "" : "disabled"}>
+        <div class="dn">${esc(d.name)} <span class="dr">· ${esc([d.floor, d.room].filter(Boolean).join(" · "))}</span></div>
+        <select>${types.map(t => `<option value="${t}" ${d.type === t ? "selected" : ""}>${TYPE_LABEL[t]}</option>`).join("")}</select>
+        <div class="dk">${esc(describeKos(d, mode))}</div>
+      </div>`;
+    }
+    html += "</div>";
+  }
+  list.innerHTML = html;
+  list.querySelectorAll(".dev").forEach(row => {
+    const d = impDevices.find(x => x.uid === +row.dataset.u);
+    row.querySelector("input").onchange = e => { d.sel = e.target.checked; updateImpCount(); };
+    row.querySelector("select").onchange = e => { d.type = e.target.value; renderImport(); };
+  });
+  list.querySelectorAll(".gh input").forEach(cb => cb.onchange = () => {
+    impDevices.forEach(d => { if (d.group === cb.dataset.g && devMatches(d, q, filter, showUnused) && coKey(mainKo(d), mode)) d.sel = cb.checked; });
+    renderImport();
+  });
+  updateImpCount();
+}
+function updateImpCount() {
+  const n = impDevices.filter(d => d.sel).length;
+  $("#impCount").textContent = impDevices.length ? n + " ausgewählt · " + impDevices.length + " Geräte/KOs erkannt" : "";
+  $("#impApply").disabled = !n;
+}
+["impSearch", "impFilter", "impUnused", "impMode"].forEach(id => $("#" + id).addEventListener("input", renderImport));
+$("#impSelAll").onclick = () => {
+  const q = $("#impSearch").value.trim().toLowerCase(), f = $("#impFilter").value, u = $("#impUnused").checked, m = $("#impMode").value;
+  impDevices.forEach(d => { if (devMatches(d, q, f, u) && coKey(mainKo(d), m)) d.sel = true; });
+  renderImport();
+};
+$("#impSelNone").onclick = () => { impDevices.forEach(d => d.sel = false); renderImport(); };
+
+/* ---------- Adressierung automatisch erkennen ---------- */
+$("#impProbe").onclick = () => {
+  const hint = $("#impProbeHint");
+  if (!isConnected()) { hint.className = "hint warn"; hint.textContent = "Keine Verbindung zum HS – erst verbinden (Debug-Panel hilft)."; return; }
+  const sample = impKos.filter(k => k.used && k.ga && k.id).slice(0, 5);
+  if (!sample.length) { hint.className = "hint warn"; hint.textContent = "Keine geeigneten KOs zum Testen gefunden."; return; }
+  const cand = { ga: sample.map(k => coKey(k, "ga")), id: sample.map(k => coKey(k, "id")) };
+  const all = [...cand.ga, ...cand.id].filter(k => !subscribed.has(k));
+  all.forEach(k => probing.add(k));
+  hint.className = "hint"; hint.textContent = "Teste " + all.length + " Adressen …";
+  const res = { ga: 0, id: 0 };
+  let done = false;
+  const timer = setTimeout(() => finish(), 4000);
+  probeHook = items => {
+    for (const it of items) {
+      const k = normKey(it.key ?? it.uid);
+      if (it.code !== undefined && it.code !== 0) continue;
+      if (cand.ga.includes(k)) res.ga++;
+      if (cand.id.includes(k)) res.id++;
+    }
+    clearTimeout(timer); setTimeout(finish, 300);
+  };
+  function finish() {
+    if (done) return; done = true;
+    probeHook = null;
+    const probeOnly = all.filter(k => !cfg.tiles.some(t => tileKeys(t).includes(k)));
+    if (probeOnly.length) send({ type: "unsubscribe", param: { keys: probeOnly } });
+    setTimeout(() => probeOnly.forEach(k => probing.delete(k)), 2000);
+    dlog("t", `Adressierung: GA ${res.ga}/${sample.length} ok, KO-ID ${res.id}/${sample.length} ok`);
+    if (!res.ga && !res.id) {
+      hint.className = "hint err";
+      hint.textContent = "Keine Schreibweise wurde vom HS akzeptiert. Evtl. sind nur KOs mit eigener Endpunkt-ID freigegeben – dann die IDs nach dem Import in den Einstellungen anpassen. Details im Debug-Panel.";
+      return;
+    }
+    const mode = res.id > res.ga ? "id" : "ga";
+    $("#impMode").value = mode;
+    hint.className = "hint ok";
+    hint.textContent = `✓ Erkannt: ${mode === "ga" ? "Gruppenadresse (CO@1_2_3)" : "KO-ID (CO@12345)"} – GA ${res.ga}/${sample.length}, ID ${res.id}/${sample.length} Treffer.`;
+    renderImport();
+  }
+  send({ type: "subscribe", param: { keys: all } });
+};
+
+/* ---------- Übernehmen ---------- */
+function devToTile(d, mode) {
+  const k = x => coKey(x, mode);
+  const t = { type: d.type, name: d.name, room: d.room, floor: d.floor };
+  const main = mainKo(d);
+  switch (d.type) {
+    case "switch":  Object.assign(t, { key: k(d.kos.sw || main), status: k(d.kos.status && koKind(d.kos.status) === "bool" ? d.kos.status : d.kos.swStatus) }); break;
+    case "dimmer":  Object.assign(t, { key: k(d.kos.key), status: k(d.kos.status), sw: k(d.kos.sw), swStatus: k(d.kos.swStatus) }); break;
+    case "blind":   Object.assign(t, { move: k(d.kos.move), stop: k(d.kos.stop), key: k(d.kos.key), status: k(d.kos.status), slat: k(d.kos.slat), slatStatus: k(d.kos.slatStatus) }); break;
+    case "heating": Object.assign(t, { key: k(d.kos.key), status: k(d.kos.status), actual: k(d.kos.actual), mode: k(d.kos.mode), modeStatus: k(d.kos.modeStatus), valve: k(d.kos.valve), step: 0.5 }); break;
+    case "slider": {
+      const kind = koKind(main);
+      const r = kind === "pct" ? [0, 100] : kind === "u16" ? [0, 65535]
+              : (main.min !== undefined && main.max !== undefined && main.max > main.min) ? [main.min, main.max] : [0, 100];
+      Object.assign(t, { key: k(main), status: k(d.kos.status), min: r[0], max: r[1], step: kind === "float" ? 0.5 : 1, unit: guessUnit(main) });
+      break;
+    }
+    case "contact": Object.assign(t, { key: k(main), kind: d.kind || contactKind(main.name) }); break;
+    default: {
+      Object.assign(t, { key: k(main), unit: guessUnit(main) });
+      const kind = koKind(main);
+      if (kind === "text") t.fmt = "text";
+      if (kind === "bool") { t.fmt = "bool"; delete t.unit; }
+      if (kind === "pct" || kind === "u16") t.dec = 0;
+    }
+  }
+  Object.keys(t).forEach(x => (t[x] === "" || t[x] === undefined) && delete t[x]);
+  return t;
+}
+$("#impApply").onclick = () => {
+  const mode = $("#impMode").value;
+  const tiles = impDevices.filter(d => d.sel).map(d => devToTile(d, mode)).filter(t => tileKeys(t).length);
+  const base = $("#impReplace").checked ? [] : cfg.tiles;
+  const sig = t => t.type + "|" + tileKeys(t).join(",");
+  const existing = new Set(base.map(sig));
+  const add = tiles.filter(t => !existing.has(sig(t)));
+  cfg.tiles = [...base, ...add];
+  saveCfg(cfg);
+  dlog("in", "Import: " + add.length + " Kacheln übernommen" + (tiles.length - add.length ? ", " + (tiles.length - add.length) + " Duplikate übersprungen" : ""));
+  toast(add.length + " Kacheln übernommen");
+  $("#imp").close();
+  values.clear(); busy.clear(); pendingSet.clear();
+  render(); connect();
+};
+
+
+/* ===================== In Seite speichern ===================== */
+let serverInfo = "";
+const cfgSig = c => JSON.stringify({ host: c.host, user: c.user, ssl: c.ssl, tiles: c.tiles });
+function updateEmbState() {
+  const el = $("#embState"); if (!el) return;
+  const emb = EMBEDDED && Array.isArray(EMBEDDED.tiles) ? EMBEDDED : null;
+  if (!emb) { el.className = "hint"; el.textContent = "Diese Seite enthält noch keine eingebaute Einrichtung – alles liegt nur in diesem Browser."; }
+  else if (cfgSig(emb) === cfgSig(cfg)) { el.className = "hint ok"; el.textContent = "✓ Einrichtung ist in der Seite gespeichert (Stand " + new Date(emb.rev).toLocaleString("de-DE") + ")."; }
+  else { el.className = "hint warn"; el.textContent = "Dieser Browser hat Änderungen, die noch nicht in der Seite gespeichert sind (Seite: Stand " + new Date(emb.rev).toLocaleString("de-DE") + ")."; }
+  $("#btnReset").hidden = !emb || cfgSig(emb) === cfgSig(cfg);
+  if (serverInfo) el.textContent += " " + serverInfo;
+}
+$("#embPass").onchange = () => { $("#embPassWarn").hidden = !$("#embPass").checked; };
+$("#btnEmbed").onclick = async () => {
+  const c = cfgFromDialog();
+  const rev = Date.now();
+  const out = { rev, host: c.host, user: c.user, ssl: c.ssl, tiles: c.tiles };
+  if ($("#embPass").checked) out.pass = c.pass;
+  const json = JSON.stringify(out).replace(/</g, "\\u003c");
+  const re = /(<script id="hsEmbedded" type="application\/json">)[\s\S]*?(<\/script>)/;
+  if (!re.test(PRISTINE)) return toast("Seitenquelle nicht gefunden – bitte Seite neu laden");
+  const html = PRISTINE.replace(re, (m, a, b) => a + json + b);
+  const name = decodeURIComponent(location.pathname.split("/").pop() || "") || "index.html";
+  let saved = false;
+  if (window.showSaveFilePicker) {
+    try {
+      const h = await showSaveFilePicker({ suggestedName: /\.html?$/i.test(name) ? name : "index.html", types: [{ description: "HTML-Seite", accept: { "text/html": [".html", ".htm"] } }] });
+      const w = await h.createWritable(); await w.write(html); await w.close(); saved = true;
+    } catch (e) { if (e.name === "AbortError") return; }
+  }
+  if (!saved) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+    a.download = /\.html?$/i.test(name) ? name : "index.html"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+  // dieser Browser gilt ab jetzt als auf dem neuen Stand
+  cfg = Object.assign(c, { rev }); EMBEDDED = Object.assign({}, out);
+  saveCfg(cfg); updateEmbState();
+  toast("Gespeichert – Datei in den hsupload-Ordner legen und Projekt übertragen");
+  dlog("in", "In Seite gespeichert: " + c.tiles.length + " Kacheln" + (out.pass ? " (mit Passwort)" : ""));
+};
+$("#btnReset").onclick = () => {
+  const keepPass = cfg.pass;
+  cfg = Object.assign({}, DEFAULTS, EMBEDDED); if (!cfg.pass) cfg.pass = keepPass;
+  saveCfg(cfg); $("#dlg").close(); values.clear(); busy.clear(); pendingSet.clear(); render(); connect();
+  toast("Einrichtung aus der Seite übernommen");
+};
+
+$("#btnSyncPush").onclick = () => { if (!cfg.rev) cfg.rev = Date.now(); pushNow(); };
+$("#btnSyncHelp").onclick = () => { $("#help").showModal(); const d = $("#helpSync"); d.open = true; d.scrollIntoView(); };
+
+/* ===================== Hilfe ===================== */
+$("#btnHelp").onclick = () => $("#help").showModal();
+$("#helpClose").onclick = () => $("#help").close();
+$("#help").addEventListener("click", e => {
+  const a = e.target.closest("[data-help]"); if (!a) return;
+  e.preventDefault(); const d = document.getElementById(a.dataset.help); d.open = true; d.scrollIntoView({ behavior: "smooth" });
+});
+
+/* ===================== Allgemein ===================== */
+let toastTimer;
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && (!ws || ws.readyState > 1)) { backoff = 1000; connect(); }
+});
+window.addEventListener("online", () => { backoff = 1000; connect(); });
+
+function setDebug(open) {
+  $("#dbg").classList.toggle("open", open);
+  document.body.classList.toggle("dbg-open", open);
+  $("#btnDebug").classList.toggle("active", open);
+  try { localStorage.setItem("hs-visu-debug", open ? "1" : ""); } catch (e) {}
+}
+$("#btnDebug").onclick = () => setDebug(!$("#dbg").classList.contains("open"));
+$("#dbgClose").onclick = () => setDebug(false);
+$("#dbgClear").onclick = () => { $("#dbgLog").innerHTML = ""; dbgLines.length = 0; };
+$("#dbgReconnect").onclick = () => { backoff = 1000; diagnoseEnv(); connect(); };
+$("#dbgCert").onclick = checkCert;
+$("#dbgCopy").onclick = async () => {
+  const txt = dbgLines.join("\n");
+  try { await navigator.clipboard.writeText(txt); toast("Log kopiert"); }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("#dbgLog")); getSelection().removeAllRanges(); getSelection().addRange(r); toast("Text markiert – mit Strg+C kopieren"); }
+};
+try { if (localStorage.getItem("hs-visu-debug")) setDebug(true); } catch (e) {}
+
+/* ===================== Web-App (PWA) – nur wenn die Seite von einem Webserver kommt ===================== */
+if (/^https?:$/.test(location.protocol)) {
+  const add = (rel, href, extra) => { const l = document.createElement("link"); l.rel = rel; l.href = href; Object.assign(l, extra || {}); document.head.appendChild(l); };
+  add("manifest", "manifest.json");
+  add("apple-touch-icon", "icon-180.png");
+  if ("serviceWorker" in navigator && window.isSecureContext)
+    navigator.serviceWorker.register("sw.js").then(() => dlog("t", "Web-App: Service Worker aktiv"), e => dlog("hint", "Web-App: Service Worker nicht registriert (" + e.message + ")"));
+  // Läuft die Seite direkt auf dem HS, dessen Adresse vorbelegen
+  if (!cfg.host && location.host) { cfg.host = location.host; cfg.ssl = location.protocol === "https:"; }
+}
+
+restoreReturn();
+render();
+diagnoseEnv();
+connect();
+checkServerCopy();
+if (cfg.srvOn) srvPull(true);
+
+/* Liegt auf dem Server eine neuere Fassung der Seite (mit neuerer eingebauter Einrichtung)?
+   Direkt beim Server nachfragen – am Browser- und App-Cache vorbei. */
+async function checkServerCopy() {
+  if (!/^https?:$/.test(location.protocol)) return;
+  try {
+    const r = await fetch(location.pathname + "?nocache=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const html = await r.text();
+    const m = html.match(/<script id="hsEmbedded" type="application\/json">([\s\S]*?)<\/script>/);
+    const srv = m ? JSON.parse(m[1] || "{}") : {};
+    const srvRev = srv.rev || 0, curRev = (EMBEDDED && EMBEDDED.rev) || 0;
+    serverInfo = srvRev ? "Auf dem HomeServer liegt: Einrichtung vom " + new Date(srvRev).toLocaleString("de-DE") + " mit " + (srv.tiles || []).length + " Kacheln."
+                        : "Auf dem HomeServer liegt eine Seite OHNE eingebaute Einrichtung – „In Seite speichern“ wurde dort noch nicht übernommen.";
+    dlog("t", "Seite auf dem Server: " + (srvRev ? "Einrichtung vom " + new Date(srvRev).toLocaleString("de-DE") + " (" + (srv.tiles || []).length + " Kacheln)" : "keine eingebaute Einrichtung")
+      + " · diese Kopie: " + (curRev ? new Date(curRev).toLocaleString("de-DE") : "keine"));
+    if (srvRev > curRev && Array.isArray(srv.tiles)) {
+      EMBEDDED = srv;
+      const local = cfg;
+      if (srvRev > (local.rev || 0)) {
+        const keep = { pass: local.pass, syncOn: local.syncOn, syncKey: local.syncKey };
+        cfg = Object.assign({}, DEFAULTS, srv); if (!cfg.pass) cfg.pass = keep.pass;
+        if (keep.syncOn !== undefined) { cfg.syncOn = keep.syncOn; cfg.syncKey = keep.syncKey; }
+        applyingRemote = true; saveCfg(cfg); applyingRemote = false;
+        values.clear(); busy.clear(); pendingSet.clear();
+        render(); connect();
+        toast("Neuere Einrichtung vom HomeServer übernommen");
+      }
+      // Cache der App aktualisieren, damit der nächste Start sofort stimmt
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.getRegistration().then(g => g && g.update());
+    }
+  } catch (e) { dlog("hint", "Server-Kopie der Seite nicht prüfbar: " + e.message); }
+}
+</script>
+</body>
+</html>

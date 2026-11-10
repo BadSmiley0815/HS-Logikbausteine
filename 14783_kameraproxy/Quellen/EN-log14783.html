@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>14783 Kamera-Proxy</title><style>body{font:14px/1.45 Arial,sans-serif;margin:16px}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:4px 6px;text-align:left;vertical-align:top}code{background:#f2f2f2;padding:0 3px}</style></head><body><h1>14783 Camera proxy – version 0.1 (test release)</h1><p><b>ID 14783 · version 0.1 · HSL3</b> · BadSmiley0815</p>
+<p>Fetches still images and MJPEG streams from network cameras (e.g. Axis) using digest or basic authentication and serves them through the
+HomeServer forwarding (same address and certificate as the HS): <code>https://&lt;HS&gt;/kamera/&lt;name&gt;.jpg?k=&lt;key&gt;</code>,
+<code>…/&lt;name&gt;.mjpg?k=&lt;key&gt;</code>, test page <code>https://&lt;HS&gt;/kamera/</code>, JSON check <code>…/test?k=&lt;key&gt;</code>.</p>
+<p>Inputs: I1 base path (kamera), I2 port (8095, never 0), I3 key, I4 restart, then per camera (3×) name, address, user, password.
+Outputs: O1 status, O2 requests, O3 active streams, O4 last check. Credentials are never output or logged.</p></body></html>

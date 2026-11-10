@@ -1,0 +1,2432 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111418">
+<title>Szenen</title>
+<style>
+:root{
+  --bg:#f4f5f7;--panel:#ffffff;--panel2:#f0f2f5;--line:#dfe2e7;--txt:#1d2127;--mu:#6b7280;
+  --acc:#8cc63f;--acc-d:#6fa52a;--acc-bg:rgba(140,198,63,.13);--on:#8cc63f;--off:#b8bec7;
+  --warn:#c77700;--err:#c62828;--ok:#2e7d32;--shadow:0 6px 24px rgba(0,0,0,.12);
+  --r:12px;--fn-w:210px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111418;--panel:#191d23;--panel2:#20252c;--line:#2c323b;--txt:#e7eaee;--mu:#98a1ad;
+  --acc-bg:rgba(140,198,63,.16);--off:#56606c;--shadow:0 8px 28px rgba(0,0,0,.5);
+}}
+:root[data-theme="dark"]{--bg:#111418;--panel:#191d23;--panel2:#20252c;--line:#2c323b;--txt:#e7eaee;--mu:#98a1ad;
+  --acc-bg:rgba(140,198,63,.16);--off:#56606c;--shadow:0 8px 28px rgba(0,0,0,.5);}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top))}
+header h1{font-size:18px;margin:0 6px 0 0;white-space:nowrap}
+.tabs{display:flex;gap:6px;overflow-x:auto;flex:1 1 auto;min-width:0;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:6px 14px;white-space:nowrap}
+.tab.sel{background:var(--acc);border-color:var(--acc);color:#10210a;font-weight:600}
+.tab.add{padding:6px 11px}
+.hbtns{display:flex;gap:6px;align-items:center}
+.ibtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);display:inline-grid;place-items:center;padding:0}
+.ibtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ibtn.on{background:var(--acc);border-color:var(--acc);color:#10210a}
+.conn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mu);white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--off)}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.err{background:var(--err)}
+main{padding:14px 16px 90px;max-width:100%}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 12px}
+.bar .info{color:var(--mu);font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;background:var(--acc-bg);border:1px solid var(--acc);font-weight:600}
+.pill.none{background:transparent;border-color:var(--line);color:var(--mu);font-weight:400}
+.btn{border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:7px 13px}
+.btn:hover{filter:brightness(.97)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#10210a;font-weight:600}
+.btn.small{padding:4px 10px;font-size:13px}
+.btn.danger{color:var(--err)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.chips{display:none;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 10px;white-space:nowrap;text-align:left;line-height:1.15}
+.chip small{display:block;color:var(--mu);font-size:11px}
+.chip.sel{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.chip.act{background:var(--acc-bg)}
+.tw{overflow:auto;border-radius:var(--r);border:1px solid var(--line);background:var(--panel);max-height:calc(100vh - 170px)}
+table{border-collapse:separate;border-spacing:0;min-width:100%}
+th,td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;background:var(--panel)}
+thead th{position:sticky;top:0;z-index:2;font-weight:600}
+thead tr.sub th{top:var(--h1,58px);font-size:11px;font-weight:500;color:var(--mu);padding:3px 4px}
+th.fn,td.fn{position:sticky;left:0;z-index:1;text-align:left;min-width:var(--fn-w);max-width:280px;border-right:1px solid var(--line)}
+thead th.fn{z-index:3}
+td.fn .nm{font-weight:500}
+td.fn .ks{display:block;font-size:11px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.fn .ks.err{color:var(--err)}
+th.sc{min-width:118px;line-height:1.2;border-left:1px solid var(--line)}
+th.sc .sn{font-weight:600;white-space:pre-line}
+th.sc .sa{display:flex;gap:4px;justify-content:center;margin-top:4px}
+.mini{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:2px 8px;font-size:12px;line-height:1.5}
+.mini.play{font-size:12px}
+th.sc.act,td.act{background:linear-gradient(var(--acc-bg),var(--acc-bg)),var(--panel)}
+th.sc.act .sn::after{content:" ● aktiv";color:var(--acc-d);font-size:11px;white-space:nowrap}
+td.en{border-left:1px solid var(--line);width:48px}
+th.live,td.live{border-left:2px solid var(--line);min-width:84px}
+th.dk,td.dk{min-width:64px}
+.rad{display:flex;flex-direction:column;gap:8px}.rad label{display:flex;gap:8px;align-items:flex-start}.rad input{flex:none;margin-top:2px}input[type=radio]{width:18px;height:18px;accent-color:var(--acc-d);vertical-align:middle}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--acc-d);cursor:pointer;vertical-align:middle}
+.vb{border:none;background:none;padding:2px;display:inline-grid;place-items:center;min-width:40px;min-height:36px;border-radius:10px}
+.vb:disabled{cursor:default}
+.sw{width:32px;height:32px;border-radius:50%;border:2px solid var(--off);display:grid;place-items:center;color:var(--off);font-weight:700;font-size:15px;transition:.15s}
+.sw.on{border-color:var(--on);color:var(--on);box-shadow:0 0 0 3px var(--acc-bg)}
+.sw.unk{border-style:dashed}
+.num{border:1.5px solid var(--off);border-radius:9px;padding:3px 8px;min-width:58px;font-variant-numeric:tabular-nums;font-size:14px;white-space:nowrap}
+.num.on{border-color:var(--on)}
+.num.unk{border-style:dashed;color:var(--mu)}
+.num.mv{border-style:solid;font-weight:600}
+.seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin:2px 0 8px}
+.seg button{flex:1;border:none;background:var(--panel2);padding:6px 8px;font-size:13px}
+.seg button.sel{background:var(--acc);color:#10210a;font-weight:600}
+.rgbsw{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--off);border-radius:9px;padding:3px 8px 3px 4px;font-size:14px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rgbsw.on{border-color:var(--on)}
+.rgbsw i{width:20px;height:20px;border-radius:50%;border:1px solid rgba(0,0,0,.2);display:inline-block}
+.pop.wide{width:300px}
+#cw{display:block;margin:4px auto 6px;touch-action:none;cursor:crosshair;border-radius:50%}
+.crow{display:grid;grid-template-columns:78px 1fr 48px;gap:6px;align-items:center;font-size:13px;margin-top:2px}
+.crow input[type=range]{width:100%;height:24px;accent-color:var(--acc-d)}
+.presets{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.presets button{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);padding:0}
+.mvb{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mvb.three{grid-template-columns:1fr 1fr 1fr}
+.mvb .btn{padding:10px 6px;font-weight:600}
+.mvb .btn.sel{background:var(--acc);border-color:var(--acc);color:#10210a}
+.dis .sw,.dis .num,.dis .txt{opacity:.38}
+.busy .sw,.busy .num,.busy .txt{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.conn{cursor:pointer}
+.dlog{font:12px/1.45 ui-monospace,Consolas,monospace;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-height:52vh;overflow:auto;white-space:pre-wrap;word-break:break-all}
+.dlog .out{color:#1e6fd9}.dlog .in{color:var(--ok)}.dlog .err{color:var(--err)}.dlog .t{color:var(--mu)}
+tr.dragging td{opacity:.55;background:var(--acc-bg)}
+.handle{cursor:grab;touch-action:none;color:var(--mu);padding:4px 6px 4px 0;user-select:none;font-size:18px;vertical-align:middle}
+.rowbtns{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
+.rowbtns button{border:1px solid var(--line);background:var(--panel2);border-radius:7px;padding:1px 7px;font-size:13px}
+body:not(.edit) .handle,body:not(.edit) .rowbtns,body:not(.edit) .ed{display:none}
+.fsel{margin:0 6px 0 0;vertical-align:middle}
+.selbar{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:3px 6px 3px 10px;background:var(--panel)}
+.selbar label{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mu);cursor:pointer}
+.selbar .btn:disabled{opacity:.45;cursor:default}
+tr.fsl td.fn,.mcard.fsl{background:color-mix(in srgb,var(--err) 10%,var(--panel))}
+.trades{display:flex;gap:6px;overflow-x:auto;margin:0 0 10px;padding-bottom:2px;scrollbar-width:none}
+.trades::-webkit-scrollbar{display:none}
+.trd{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 13px;white-space:nowrap;display:inline-flex;gap:6px;align-items:center}
+.trd svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.trd small{color:var(--mu)}
+.trd.sel{background:var(--txt);color:var(--bg);border-color:var(--txt)}.trd.sel small{color:inherit;opacity:.7}
+tr.sec td{background:var(--panel2);font-weight:600;font-size:13px;letter-spacing:.02em;padding:6px 8px;text-align:left}
+tr.sec td.fn{background:var(--panel2)}
+tr.sec svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-right:6px}
+.txt{border:1.5px solid var(--off);border-radius:9px;padding:3px 9px;min-width:52px;font-size:14px;white-space:nowrap;display:inline-block}
+.txt.on{border-color:var(--on);background:var(--acc-bg)}
+.txt.unk{border-style:dashed;color:var(--mu)}
+.txt.lk{min-width:0;padding:3px 7px}.txt.locked{border-color:var(--err);background:color-mix(in srgb,var(--err) 12%,transparent);color:var(--err)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.modes.m3{grid-template-columns:repeat(3,minmax(0,1fr))}.modes.m3 .btn{padding:7px 4px;min-width:0}
+.ht{display:inline-flex;flex-direction:column;align-items:center;line-height:1.15;font-size:13px}
+.ht b{font-weight:600}.ht small{color:var(--mu);font-size:11.5px}.ht.unk{color:var(--mu)}
+.hl{display:inline-flex;flex-direction:column;align-items:center;line-height:1.2;font-size:12px;color:var(--mu);white-space:nowrap}
+.hl b{font-size:15px;color:var(--txt);font-weight:600}.hl .on{color:var(--acc-d);font-weight:600}
+td.live .vb:has(.hl){padding:3px 8px}
+.hsp{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}.hsp #hOk{flex:1 0 100%;padding:8px}
+.hsp .btn{min-width:42px;font-size:18px;padding:4px 0}.hsp input[type=number]{width:84px;text-align:center;font-size:17px;padding:6px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px}
+.hsp.off > :not(#hOk){opacity:.4}.hseg{margin-top:6px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:6px}
+.cal .dw{font-size:11px;color:var(--mu);text-align:center;padding:2px 0}
+.cal button{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 0 4px;font-size:13px;line-height:1.1;display:flex;flex-direction:column;align-items:center;min-height:40px}
+.cal button small{font-size:9px;color:var(--mu);max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 2px}
+.cal button.we{background:transparent;color:var(--mu)}
+.cal button.hol{background:color-mix(in srgb,var(--err) 16%,var(--panel));border-color:color-mix(in srgb,var(--err) 40%,var(--line))}
+.cal button.brg{background:color-mix(in srgb,#3b82f6 18%,var(--panel));border-color:color-mix(in srgb,#3b82f6 55%,var(--line))}
+.cal button.man{background:color-mix(in srgb,#e2a400 22%,var(--panel));border-color:#e2a400}
+.cal button.wrk{background:color-mix(in srgb,var(--acc) 22%,var(--panel));border-color:var(--acc-d)}
+.cal button.today{outline:2px solid var(--acc-d);outline-offset:1px}
+.cal i{visibility:hidden}
+.calh{display:flex;align-items:center;gap:8px;margin-top:4px}.calh b{flex:1;text-align:center}
+.lgd{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mu);margin-top:6px}.lgd span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:var(--c)}
+.pre{display:grid;grid-template-columns:44px repeat(7,minmax(0,1fr)) 70px;gap:4px;text-align:center;font-size:12px;color:var(--mu);align-items:center}
+.pre .pd{font-weight:600;color:var(--txt);text-align:left}.pre .ps{font-size:12px;color:var(--txt)}.pre .ps.cur{color:var(--acc-d);font-weight:600}
+.pre .off{opacity:.35}
+.pre input{appearance:textfield;-moz-appearance:textfield;text-align:center!important}.pre input::-webkit-inner-spin-button,.pre input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+@media (max-width:600px){.pre{grid-template-columns:24px repeat(7,minmax(0,1fr)) 40px;gap:2px;font-size:10px}.pre input{padding:7px 0!important;font-size:12px;min-width:0;border-radius:6px}.pre .ps{font-size:10.5px}.pre .ps .mu{display:block}}
+.pre input{width:100%;text-align:center;padding:6px 2px}
+.prl{font-size:13px;margin-top:6px}
+.plr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fg .plr select,.plr select{width:auto;min-width:120px}.plr input[type=time]{width:130px!important}.plr input[type=number]{width:80px!important}.plr label{display:inline-flex;gap:5px;align-items:center}
+.hl .pl{font-size:11px;color:var(--acc-d);white-space:normal;max-width:130px;text-align:center}
+.kpw{position:relative;min-width:0}.kv .kpw{flex:1;min-width:160px}.kpw input{width:100%}.kpw.hasv input{padding-right:96px!important}
+.kvb{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--mu);pointer-events:none;max-width:88px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kvb.ok{color:var(--acc-d);font-weight:600}.kvb.err{color:var(--err)}
+.kdrop{position:fixed;z-index:50;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);max-height:300px;overflow:auto;font-size:13px}
+.kdrop .kh{padding:6px 10px;font-size:11.5px;color:var(--mu);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;position:sticky;top:0;background:var(--panel)}
+.kdrop .kh label{display:inline-flex;gap:4px;align-items:center;margin-left:auto;cursor:pointer}
+.kdrop .kr{padding:6px 10px;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:0 10px;border-bottom:1px solid color-mix(in srgb,var(--line) 50%,transparent)}
+.kdrop .kr.sel,.kdrop .kr:hover{background:color-mix(in srgb,var(--acc) 18%,var(--panel))}
+.kdrop .kr b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kdrop .kr small{grid-column:1;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kdrop .kr .kv{grid-row:1/3;grid-column:2;align-self:center;text-align:right;font-size:12px;color:var(--mu)}.kdrop .kr .kv i{display:block;font-style:normal;font-weight:600;color:var(--txt)}
+.kdrop .kr.weak{opacity:.6}.kdrop .ke{padding:10px;color:var(--mu)}
+.hsec{font-size:12px;color:var(--mu);margin:12px 0 2px;text-transform:uppercase;letter-spacing:.04em}
+.modes .btn.sel{background:var(--acc);border-color:var(--acc);color:#10210a;font-weight:600}
+.cds{display:inline-flex;gap:3px;align-items:center;white-space:nowrap}
+.cd{border:1px solid var(--line);background:var(--panel2);border-radius:8px;height:30px;min-width:30px;padding:0 5px;display:inline-flex;align-items:center;gap:3px;color:var(--mu);font-size:12px}
+.cd svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cd.on{background:var(--acc);border-color:var(--acc);color:#10210a;font-weight:600}
+.wt{font-size:12px;color:var(--warn);margin-left:3px}
+.cinfo{display:inline-flex;gap:12px;flex-wrap:wrap;color:var(--mu);font-size:14px}
+.cinfo span{display:inline-flex;gap:4px;align-items:center}
+.cinfo svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cinfo .on{color:var(--txt);font-weight:600}
+.cinfo{cursor:pointer}
+.cinfo span{border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--panel)}
+.cinfo span.on{border-color:var(--acc);background:var(--acc-bg)}
+.kv{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.kv input{flex:1;min-width:160px}
+.live{font-size:13px;color:var(--mu);white-space:nowrap}.live b{color:var(--txt)}
+tr.win td{border-top:none}
+tr.sum td,tr.win td.fn{}
+.sl{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mu);border-radius:6px;padding:1px 6px;margin-left:4px}
+.sl svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sl.cur{background:var(--acc-bg);color:var(--txt);font-weight:600}
+tr.win td.fn{padding-left:28px}
+tr.off td.en,tr.off td.val{opacity:.55}
+/* ===== Handy-Ansicht (Karten) ===== */
+body.mob .chips{display:flex}
+body.mob .tw{display:none}
+body.mob .desk-only{display:none}
+#mob{max-width:560px;margin:0 auto}
+body.mob #app{max-width:560px;margin:0 auto}
+.pop.sheet{left:0 !important;right:0;top:auto !important;bottom:0;width:auto;max-width:560px;margin:0 auto;border-radius:18px 18px 0 0;
+  padding:14px 16px max(16px,env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(0,0,0,.25)}
+.pop.sheet .mvb .btn{padding:14px 6px}
+.pop.sheet input[type=range]{height:34px}
+.msel{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px;position:sticky;top:var(--hh,58px);z-index:3}
+.msel.act{background:linear-gradient(var(--acc-bg),var(--acc-bg)),var(--panel);border-color:var(--acc)}
+.msel .mname{font-weight:700;font-size:16px;flex:1;min-width:0;line-height:1.2}
+.msel .mname small{display:block;font-weight:500;color:var(--mu);font-size:12px}
+.msel.act .mname small::before{content:"● aktiv · ";color:var(--acc-d);font-weight:700}
+.msel .btn{padding:9px 14px}
+.msec{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin:16px 4px 6px}
+.msec svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mcard{display:grid;grid-template-columns:1fr auto;gap:2px 12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.mtop{grid-column:1;display:flex;align-items:center;gap:6px;min-width:0}
+.mtop .nm{font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrows{grid-column:1;display:flex;flex-direction:column;justify-content:center}
+.mrow{display:flex;align-items:center;gap:10px;min-height:46px}
+.mrow .sl{width:96px;margin-left:0;justify-content:flex-start}
+.mrow.off .men,.mrow.off .val{opacity:.5}
+body.mob .bar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;margin-bottom:8px}
+body.mob .bar::-webkit-scrollbar{display:none}
+body.mob #actPill,body.mob #bReset{display:none}
+/* Handy: Leisten als feste Raster, nichts abgeschnitten */
+body.mob .bar{overflow:visible}
+body.mob .cinfo{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%}
+body.mob .cinfo #seasonChip{grid-column:1 / -1}
+body.mob .cinfo span{justify-content:center;gap:3px;white-space:nowrap;font-size:12px;padding:5px 2px;min-width:0;overflow:hidden}
+body.mob header h1{display:none}
+body.mob header{flex-wrap:nowrap;gap:8px}
+body.mob .cinfo svg{width:15px;height:15px;flex:none}
+.cinfo .sep{font-style:normal}
+body.mob .cinfo .sep{display:inline-block;width:4px;overflow:hidden;color:transparent}
+body.mob.edit .bar{flex-wrap:wrap}
+body.mob .selbar{flex:1;justify-content:space-between;white-space:nowrap}
+.selbar #selCnt{white-space:nowrap}
+body.mob .trades{display:grid;grid-template-columns:repeat(auto-fit,minmax(54px,1fr));gap:5px;overflow:visible;margin-bottom:8px}
+body.mob .trd{flex-direction:column;gap:2px;padding:6px 2px;border-radius:12px;font-size:11.5px;line-height:1.1;min-width:0}
+body.mob .trd svg{width:19px;height:19px}
+body.mob .trd .tl{display:none}
+body.mob .trd small{font-size:10px}
+.trd .ts{display:none}
+.trd[data-t=""] svg{display:none}
+body.mob .trd[data-t=""] svg{display:block}
+body.mob .trd .ts{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+body.mob .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;overflow:visible;margin-bottom:8px}
+body.mob .chip{padding:6px 4px;text-align:center;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+body.mob .chip small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.men{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mu);cursor:pointer}
+.men input{width:24px;height:24px}
+.mside{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-left:1px solid var(--line);padding-left:12px}
+.mside .mlbl{font-size:11px;color:var(--mu)}
+.mcard .vb{min-height:44px;min-width:48px}
+.mcard .rowbtns{margin-left:auto}
+.mempty{color:var(--mu);text-align:center;padding:30px 10px}
+.empty{padding:40px 16px;text-align:center;color:var(--mu)}
+.empty .btn{margin:10px 4px 0}
+.ev{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:7px 16px;
+  padding-bottom:max(7px,env(safe-area-inset-bottom));font-size:13px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4}
+.toast{position:fixed;left:50%;bottom:48px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+  background:#222831;color:#fff;border-radius:10px;padding:9px 16px;box-shadow:var(--shadow);transition:.2s;z-index:50;max-width:92vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.pop{position:fixed;z-index:40;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;width:280px}
+.pop h4{margin:0 0 2px;font-size:14px}.pop .mu{font-size:12px;color:var(--mu);margin-bottom:8px}
+.pop input[type=range]{width:100%;accent-color:var(--acc-d);height:28px}
+.pop .row{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.pop .row input[type=number]{width:90px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--txt);padding:0;width:min(560px,94vw);max-height:90vh;box-shadow:var(--shadow)}
+dialog.wide{width:min(900px,96vw)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dh{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:600;position:sticky;top:0;background:var(--panel);z-index:1}
+.db{padding:14px 16px;overflow:auto}
+.df{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.df .l{margin-right:auto}
+.fg{display:grid;grid-template-columns:150px 1fr;gap:9px 12px;align-items:center}
+.fg label{color:var(--mu);font-size:14px}
+.fg input:not([type=checkbox]):not([type=radio]),.fg select,.fg textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+.fg .full{grid-column:1/-1}
+.hint{font-size:13px;color:var(--mu);margin:6px 0}
+.hint.ok{color:var(--ok)}.hint.err{color:var(--err)}.hint.warn{color:var(--warn)}
+fieldset{border:1px solid var(--line);border-radius:10px;margin:0 0 12px;padding:10px 12px}
+legend{padding:0 6px;font-weight:600;font-size:14px}
+.implist{max-height:48vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.impg{padding:6px 10px;background:var(--panel2);font-size:13px;font-weight:600;position:sticky;top:0;display:flex;justify-content:space-between;align-items:center}
+.impr{display:grid;grid-template-columns:26px 1fr 120px 150px;gap:8px;align-items:center;padding:5px 10px;border-top:1px solid var(--line)}
+.impr input[type=text]{width:100%;padding:4px 7px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}
+.impr select{padding:4px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}
+.impr small{grid-column:2/-1;color:var(--mu);font-size:11px;margin-top:-4px}
+.impr.have{opacity:.5}
+.keybox{max-width:420px;margin:40px auto;padding:20px}
+.keybox input{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);margin:10px 0}
+.help h3{margin:14px 0 4px;font-size:15px}.help p,.help li{font-size:14px}.help code{background:var(--panel2);padding:1px 5px;border-radius:5px}
+.help table{width:100%;font-size:13px}.help td,.help th{text-align:left;background:none;padding:4px 6px}
+@media (max-width:760px){
+  :root{--fn-w:132px}
+  .impr{grid-template-columns:26px 1fr 1fr}.impr input[type=text]{grid-column:2/-1}
+  header h1{font-size:16px}
+  main{padding:10px 8px 80px}
+  th.fn,td.fn{max-width:128px;font-size:14px}
+  th,td{padding:5px 3px}
+  td.fn .ks{display:none}
+  body.edit td.fn .ks{display:block}
+  .fg{grid-template-columns:1fr}
+  .fg label{margin-bottom:-5px}
+  .conn span{display:none}
+  th.live,td.live{min-width:62px}
+  th.dk,td.dk{min-width:40px}
+  .cd{min-width:26px;height:28px;padding:0 3px}
+  th.sc{min-width:96px}
+  header{padding:8px 10px}
+  .ibtn{width:34px;height:34px}
+}
+th.dk .sh{display:none}
+@media (max-width:760px){th.dk .lg{display:none}th.dk .sh{display:inline}}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Szenen</h1>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="hbtns">
+    <span class="conn" id="conn" title=""><i class="dot" id="dot"></i><span id="connTxt">verbinde …</span></span>
+    <button class="ibtn" id="bConn" title="Verbindung zum KO-Gateway"><svg viewBox="0 0 24 24"><path d="M9 2v6M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-12 0Z"/><path d="M12 17v5"/></svg></button>
+    <button class="ibtn" id="bView" title="Ansicht umschalten"></button>
+    <button class="ibtn" id="bEdit" title="Bearbeiten (Funktionen, Reihenfolge, Szenennamen)"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+    <button class="ibtn" id="bImport" title="Funktionen aus dem HomeServer übernehmen"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></button>
+    <button class="ibtn" id="bGroup" title="Einstellungen der Gruppe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></button>
+    <button class="ibtn" id="bHelp" title="Hilfe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+  </div>
+</header>
+
+<main>
+  <div id="keyBox" class="card keybox" hidden>
+    <b>Zugangsschlüssel</b>
+    <div class="hint">Den Schlüssel von Eingang E3 des Bausteins 14778 eingeben.</div>
+    <input id="keyIn" type="password" autocomplete="current-password" placeholder="Schlüssel">
+    <button class="btn pri" id="keyOk">Anmelden</button>
+    <div class="hint err" id="keyErr"></div>
+  </div>
+  <div id="app" hidden>
+    <div class="bar">
+      <span id="actPill" class="pill none">keine Szene aktiv</span>
+      <button class="btn small" id="bReset" title="Keine Szene als aktiv markieren (es wird nichts gesendet)">Aktiv zurücksetzen</button>
+      <span class="cinfo" id="condInfo"></span>
+      <span class="info ed desk-only">Bearbeiten: Zeilen an ⋮⋮ ziehen · Szenennamen mit ✎ ändern</span>
+      <button class="btn small ed" id="bAdd">+ Funktion</button>
+      <span class="selbar ed" id="selBar"><label><input type="checkbox" id="selAll"> alle</label><span id="selCnt" class="mu">0 ausgewählt</span><button class="btn small danger" id="bDelSel" disabled>Löschen</button></span>
+    </div>
+    <div class="trades" id="trades"></div>
+    <div class="chips" id="chips"></div>
+    <div class="tw" id="tw"><table id="grid" class="vroot"></table></div>
+    <div id="mob" class="vroot" hidden></div>
+    <div class="empty card" id="empty" hidden>
+      <b>Noch keine Funktionen in dieser Gruppe.</b><br>
+      Übernimm Licht, Dimmer und Werte direkt aus der KO-Struktur des HomeServers oder lege sie von Hand an.<br>
+      <button class="btn pri" id="bImport2">Aus HomeServer übernehmen</button>
+      <button class="btn" id="bAdd2">Von Hand anlegen</button>
+    </div>
+  </div>
+</main>
+<div class="ev" id="ev">–</div>
+<div class="toast" id="toast"></div>
+<div class="pop" id="pop" hidden></div>
+
+<!-- Funktion -->
+<dialog id="dFunc">
+  <form method="dialog">
+    <div class="dh"><span id="dFuncT">Funktion</span><button class="ibtn" value="cancel" formnovalidate>✕</button></div>
+    <div class="db">
+      <div class="fg">
+        <label for="fName">Name</label><input id="fName" required maxlength="60">
+        <label for="fTrade">Gewerk</label><select id="fTrade"></select>
+        <label for="fType">Art</label>
+        <select id="fType"><option value="switch">Schalten / 1 Bit (Ein/Aus, Auf/Zu)</option><option value="lock">Sperre / 1 Bit (1 = gesperrt, 0 = freigegeben)</option><option value="dim">Dimmen / Prozent (0–100 %)</option>
+          <option value="updown">Auf/Ab fahren (1 Bit, lang)</option>
+          <option value="blind">Position (0–100 %, z. B. Rollo, Dachfenster)</option><option value="value">Wert (frei, z. B. Sollwert °C)</option>
+          <option value="heat">Heizung Raum (Ist, Soll, Betriebsart, Ventil)</option>
+          <option value="mode">Betriebsart Heizung (Auto/Komfort/Standby/Nacht/Frost)</option>
+          <option value="rgbw">RGBW-Licht (Farbrad: R, G, B, W + Helligkeit)</option></select>
+        <label for="fKey" id="fKeyL" class="ky">Steuer-KO</label><input id="fKey" class="ky" placeholder="z. B. 1/1/0 oder CO@1_1_0">
+        <label class="rg" for="fR">Rot-KO</label><input class="rg" id="fR" placeholder="z. B. 1/8/1">
+        <label class="rg" for="fG">Grün-KO</label><input class="rg" id="fG" placeholder="z. B. 1/8/2">
+        <label class="rg" for="fB">Blau-KO</label><input class="rg" id="fB" placeholder="z. B. 1/8/3">
+        <label class="rg" for="fW">Weiß-KO</label><input class="rg" id="fW" placeholder="z. B. 1/8/4">
+        <label class="rg" for="fChMax">Kanalwerte</label><select class="rg" id="fChMax"><option value="100">0–100 % (DPT 5.001)</option><option value="255">0–255 (DPT 5.010)</option></select>
+        <label class="bl" for="fMove">Fahren-KO (1 Bit, lang)</label><input class="bl" id="fMove" placeholder="Auf/Ab Langzeit, z. B. 4/0/2 (optional)">
+        <label class="bl" for="fStop">Stopp-KO (1 Bit, kurz)</label><input class="bl" id="fStop" placeholder="Stopp/Schritt, z. B. 4/0/3 (optional, für „Aktuell“)">
+        <span class="bl"></span><label class="bl" style="color:inherit"><input type="checkbox" id="fMoveInv"> Fahren invertiert (Auf = 1, Zu = 0)</label>
+        <span class="bl"></span><label class="bl" style="color:inherit"><input type="checkbox" id="fPosInv"> Position invertiert (Aktor: 0 % = offen, 100 % = zu)</label>
+        <label class="hk" for="fCtl">Freigabe</label><select class="hk" id="fCtl"><option value="scene">nach Szene – Zeitprogramm aus</option><option value="plan">nach Zeitprogramm – Szenen ändern diese Heizung nicht</option><option value="both">Szene und Zeitprogramm – der letzte Befehl gilt</option></select>
+        <label class="hk" for="fModeKey">Betriebsart-KO</label><input class="hk" id="fModeKey" placeholder="8 Bit, im HS DPT 5.010 (0 Auto, 1 Komfort, 2 Standby, 3 Nacht, 4 Frost)">
+        <label class="hk" for="fModeSt">Betriebsart-Status</label><input class="hk" id="fModeSt" placeholder="optional, leer = Betriebsart-KO">
+        <label class="hk" for="fSetSt">Sollwert-Status</label><input class="hk" id="fSetSt" placeholder="optional, aktueller Sollwert, leer = Sollwert-KO">
+        <label class="hk" for="fValve">Ventil / Stellgröße</label><input class="hk" id="fValve" placeholder="optional, Status in % oder 1 Bit, z. B. 3/1/5">
+        <label for="fStatus" id="fStatusL">Status-KO</label><input id="fStatus" placeholder="optional, leer = Steuer-KO">
+        <label class="nv" for="fMin" id="fMinL">Min / Max / Schritt</label>
+        <div class="nv" style="display:flex;gap:6px"><input id="fMin" type="number" step="any"><input id="fMax" type="number" step="any"><input id="fStep" type="number" step="any" min="0"></div>
+        <label class="nv" for="fUnit">Einheit</label><input class="nv" id="fUnit" maxlength="10">
+        <label class="lb" for="fL0">Anzeige</label>
+        <div class="lb" style="display:flex;gap:6px;align-items:center"><span id="fL0t">0 =</span><input id="fL0" maxlength="12"><span id="fL1t">1 =</span><input id="fL1" maxlength="12"></div>
+        <label>Bedingungen</label>
+        <div style="display:grid;gap:6px">
+          <label style="color:inherit" id="fDuskL"><input type="checkbox" id="fDusk"> Dämmerung: nur bei Dunkelheit senden</label>
+          <label style="color:inherit" id="fRainL"><input type="checkbox" id="fRain"> Regen: bei Regen nicht öffnen, nach dem Regen wiederherstellen</label>
+          <label style="color:inherit" id="fTminL"><input type="checkbox" id="fTminOn"> Außentemperatur: erst ab <input id="fTmin" type="number" step="0.5" min="-40" max="60" style="width:5.5em;display:inline-block"> °C öffnen/einschalten</label>
+          <label style="color:inherit"><input type="checkbox" id="fSeason"> Sommer/Winter getrennt: zwei Zeilen, es gilt je nach Außentemperatur die passende</label>
+        </div>
+        <span></span><div class="hint" style="margin:0" id="fCondHint">Bedingungen gelten nur für Werte &gt; 0 (Ein, Auf, Rollo zu). Aus und Schließen wird immer gesendet.</div>
+      </div>
+      <div class="hint">KO-Angabe als Gruppenadresse (<code>1/2/3</code>) oder Endpunkt-ID (<code>CO@…</code>). Das KO muss für den Gateway-Benutzer des Bausteins freigegeben sein.</div>
+    </div>
+    <div class="df"><button class="btn danger l" id="fDel" value="del" formnovalidate>Löschen</button>
+      <button class="btn" value="cancel" formnovalidate>Abbrechen</button><button class="btn pri" value="ok">Speichern</button></div>
+  </form>
+</dialog>
+
+<!-- Szenenname -->
+<dialog id="dScene">
+  <form method="dialog">
+    <div class="dh"><span>Szenenname</span><button class="ibtn" value="cancel" formnovalidate>✕</button></div>
+    <div class="db"><div class="fg"><label for="sName">Name</label><textarea id="sName" rows="2" maxlength="40"></textarea></div>
+      <div class="hint">Zeilenumbruch erlaubt, z. B. „Szene 1“ ⏎ „Kommen“.</div></div>
+    <div class="df"><button class="btn" value="cancel" formnovalidate>Abbrechen</button><button class="btn pri" value="ok">Speichern</button></div>
+  </form>
+</dialog>
+
+<!-- Gruppe -->
+<dialog id="dGroup" class="wide">
+  <form method="dialog">
+    <div class="dh"><span id="dGroupT">Gruppe</span><button class="ibtn" value="cancel" formnovalidate>✕</button></div>
+    <div class="db">
+      <fieldset><legend>Gruppe</legend><div class="fg">
+        <label for="gName">Name</label><input id="gName" maxlength="40" required>
+        <label for="gCount">Anzahl Szenen</label><input id="gCount" type="number" min="1" max="32" step="1">
+      </div></fieldset>
+      <fieldset><legend>Szenenaufruf</legend><div class="fg">
+        <label for="gTrigKey">Szenen-KO (DPT 17.001)</label><div class="kv"><input id="gTrigKey" placeholder="Gruppenadresse, z. B. 1/7/0"><span class="live" id="lvTrig"></span></div>
+        <label for="gNum">Wert</label>
+        <select id="gNum"><option value="0">DPT 17.001: Wert 0–63 = Szene 1–64</option><option value="1">Wert 1 = Szene 1 (wie bisher Matrix, 0 = keine Szene)</option></select>
+        <span class="bl"></span><label class="bl" style="color:inherit"><input type="checkbox" id="gTrig"> Über die Baustein-Ein-/Ausgänge (E5–E13, A2–A10)</label>
+      </div>
+      <div class="hint">Das Szenen-KO wird über das KO-Gateway empfangen und muss für den Gateway-Benutzer (Lesen) freigegeben sein.
+      Alternativ oder zusätzlich können die Baustein-Eingänge genutzt werden: E5 Szene (DPT 17.001, Wert 0–63) und E6–E13 Szene 1–8 per 1 Bit;
+Rückmeldung an A2 (aktive Szene, DPT 17.001) und A3–A10 (Szene 1–8 aktiv, 1 Bit). Das gilt nur für <b>eine</b> Gruppe – beim Aktivieren wird es bei den anderen Gruppen abgeschaltet. Derselbe Aufruf über beide Wege zählt nur einmal.</div></fieldset>
+      <fieldset id="fsSens"><legend>Sensoren – gelten für alle Gruppen</legend><div class="fg">
+        <label for="cDuskKey">Dämmerung-KO</label><div class="kv"><input id="cDuskKey" placeholder="leer = Baustein-Eingang E4 (1 = dunkel)"><span class="live" id="lvDusk"></span></div>
+        <label for="cRainKey">Regen-KO</label><div class="kv"><input id="cRainKey" placeholder="leer = Baustein-Eingang E15 (1 = Regen)"><span class="live" id="lvRain"></span></div>
+        <label for="cTempKey">Außentemperatur-KO</label><div class="kv"><input id="cTempKey" placeholder="leer = Baustein-Eingang E16 (°C)"><span class="live" id="lvTemp"></span></div>
+        <label for="cLimit">Sommer ab</label><div class="kv"><span style="display:flex;gap:6px;align-items:center"><input id="cLimit" type="number" step="0.5" style="width:90px"> °C Tagesmittel</span><span class="live" id="lvSeason"></span></div>
+        <label for="cDelay">Nach Regen wiederherstellen</label><div class="kv"><span style="display:flex;gap:6px;align-items:center"><input id="cDelay" type="number" min="0" max="240" step="1" style="width:90px"> min ohne Regen</span></div>
+      </div>
+      <div class="hint">KO als Gruppenadresse (z. B. <code>5/0/1</code>) – muss für den Gateway-Benutzer freigegeben sein. <br>Sommer/Winter in Anlehnung an DIN: der Baustein speichert um <b>7, 14 und 22 Uhr</b> die Außentemperatur, Tagesmittel = (T7 + T14 + T22 + T22) / 4. Ab der Grenze (Standard 16 °C) gilt <b>Sommer</b>, darunter bzw. ohne Temperatur <b>Winter</b>. Umgeschaltet wird nur zu den Messzeitpunkten; fehlen anfangs Messwerte, wird die aktuelle Temperatur eingesetzt. Ausgänge A13–A17.</div></fieldset>
+      <fieldset><legend>Nachholen</legend>
+        <label><input type="checkbox" id="gCatch"> Zurückgestellte Werte der aktiven Szene senden, sobald die Bedingung erfüllt ist (Dämmerung beginnt), und bei Wechsel Sommer/Winter die andere Zeile senden</label>
+        <div class="hint">Ohne Haken werden Werte, deren Bedingung beim Szenenaufruf nicht erfüllt ist, verworfen. Regen-Funktionen werden immer nach dem Regen wiederhergestellt.</div>
+      </fieldset>
+      <fieldset><legend>Spalte „Aktuell“</legend>
+        <label><input type="checkbox" id="gLive"> Änderungen in „Aktuell“ zusätzlich in die aktive Szene übernehmen</label>
+      </fieldset>
+      <fieldset><legend>Seite</legend><div class="fg">
+        <label for="gTitle">Seitentitel</label><input id="gTitle" maxlength="60">
+        <label>Sicherung</label><div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn small" id="bExport">Herunterladen</button>
+          <label class="btn small">Einspielen … <input type="file" id="fImport" accept=".json,application/json" hidden></label>
+          <select id="impMode" class="btn small"><option value="merge">nur Fehlendes ergänzen</option><option value="replace">alles überschreiben</option></select></div>
+      </div></fieldset>
+    </div>
+    <div class="df"><button class="btn danger l" id="gDel" value="del" formnovalidate>Gruppe löschen</button>
+      <button class="btn" value="cancel" formnovalidate>Abbrechen</button><button class="btn pri" value="ok">Speichern</button></div>
+  </form>
+</dialog>
+
+<!-- Import -->
+<dialog id="dImp" class="wide">
+  <div class="dh"><span>Funktionen aus dem HomeServer übernehmen</span><button class="ibtn" id="impX">✕</button></div>
+  <div class="db">
+    <fieldset><legend>1 · KO-Struktur laden</legend>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn small pri" id="impFetch">Vom HomeServer laden</button>
+        <label class="btn small">XML-Datei wählen … <input type="file" id="impFile" accept=".xml,text/xml" hidden></label>
+        <a class="btn small" id="impOpen" target="_blank" rel="noopener" href="/hscl?sys/cobjects.xml">XML im Browser öffnen</a>
+      </div>
+      <div class="hint" id="impHint">Quelle: <code>/hscl?sys/cobjects.xml</code> – im Experten muss „XML-Struktur der K.-Objekte auf Gerät laden“ angehakt sein.</div>
+    </fieldset>
+    <fieldset id="impS2" hidden><legend>2 · Schreibweise der KOs</legend>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="impMode2" class="btn small"><option value="ga">Gruppenadresse (CO@1_2_3)</option><option value="id">KO-Nummer (CO@12345)</option></select>
+        <button class="btn small" id="impProbe">Automatisch erkennen</button><span class="hint" id="impProbeHint"></span>
+      </div>
+    </fieldset>
+    <fieldset id="impS3" hidden><legend>3 · Funktionen wählen</legend>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+        <input id="impQ" type="search" placeholder="Suchen (Name, Ordner, Adresse)" style="flex:1;min-width:180px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)">
+        <label class="hint" style="margin:0"><input type="checkbox" id="impAll"> alle KOs einzeln</label>
+      </div>
+      <div class="implist" id="impList"></div>
+    </fieldset>
+  </div>
+  <div class="df"><span class="hint l" id="impCnt"></span><button class="btn" id="impCancel">Schließen</button><button class="btn pri" id="impAdd" disabled>Hinzufügen</button></div>
+</dialog>
+
+<!-- Zeitprogramm Heizung -->
+<dialog id="dPlan" class="wide">
+  <form method="dialog">
+    <div class="dh"><span id="dPlanT">Zeitprogramm</span><button class="ibtn" value="cancel" formnovalidate>✕</button></div>
+    <div class="db">
+      <fieldset><legend>Zeitprogramm dieser Heizung</legend><div class="fg">
+        <label for="pCtl">Freigabe</label><select id="pCtl"><option value="scene">nach Szene – Zeitprogramm aus</option><option value="plan">nach Zeitprogramm – Szenen ändern diese Heizung nicht</option><option value="both">Szene und Zeitprogramm – der letzte Befehl gilt</option></select>
+        <label for="pWd">Arbeitstage</label><select id="pWd" style="width:auto"><option value="5">Montag – Freitag</option><option value="6">Montag – Samstag</option></select>
+        <label>Kommen</label><div class="plr"><input type="time" id="pK"> <select id="pKo"></select> <label style="color:inherit"><input type="checkbox" id="pKsp"> Soll</label> <input type="number" id="pKv" step="0.5"> °C</div>
+        <label>Gehen</label><div class="plr"><input type="time" id="pG"> <select id="pGo"></select> <label style="color:inherit"><input type="checkbox" id="pGsp"> Soll</label> <input type="number" id="pGv" step="0.5"> °C</div>
+      </div>
+      <div class="hint">An Arbeitstagen wird „Kommen“ um die Vorlaufzeit früher gesendet, damit der Raum zur Kommen-Zeit warm ist. „Gehen“ zur eingestellten Zeit. An Wochenenden, Feiertagen und freien Tagen bleibt es beim Gehen-Zustand.</div></fieldset>
+      <fieldset><legend>Vorlaufzeit in Minuten je Außentemperatur</legend>
+        <div class="pre" id="pPre"></div>
+        <div class="plr" style="margin-top:8px"><label style="color:inherit"><input type="checkbox" id="pAf"> Erster Arbeitstag nach freien Tagen (z. B. Dienstag nach Ostermontag) wie Montag</label>
+          <span style="flex:1"></span><button type="button" class="btn small" id="pCopy">Dienstag auf Mi–Sa übernehmen</button></div>
+        <div class="prl" id="pPreLive"></div>
+        <div class="hint">Spalte „Start“: Heizbeginn bei der aktuellen Außentemperatur. Zwischen den Punkten wird linear gerechnet, über 10 °C gilt der Wert von 10 °C, unter −20 °C der von −20 °C. Außentemperatur = Mittel der letzten 3 Stunden; unbekannt → längster Vorlauf.</div></fieldset>
+      <fieldset><legend>Feiertage und freie Tage – gilt für alle Heizungen</legend>
+        <div class="plr"><label for="pState" style="color:inherit">Bundesland</label><select id="pState"></select>
+          <label style="color:inherit" id="pMhL"><input type="checkbox" id="pMh"> Mariä Himmelfahrt (15.08.)</label>
+          <label style="color:inherit"><input type="checkbox" id="pBr"> Automatische Brückentag-Erkennung</label></div>
+        <div class="calh"><button type="button" class="btn small" id="pPrev">‹</button><b id="pMon"></b><button type="button" class="btn small" id="pNext">›</button></div>
+        <div class="cal" id="pCal"></div>
+        <div class="lgd"><span style="--c:color-mix(in srgb,var(--err) 30%,var(--panel))">Feiertag</span><span style="--c:#e2a400">frei (manuell)</span><span style="--c:color-mix(in srgb,#3b82f6 40%,var(--panel))">Brückentag</span><span style="--c:var(--acc)">Arbeitstag (manuell)</span><span style="--c:var(--line)">Wochenende</span></div>
+        <div class="hint">Tag anklicken: Arbeitstag ↔ frei (z. B. Betriebsurlaub, Brückentag); Feiertag/Wochenende/Brückentag ↔ Arbeitstag (wird gearbeitet). Nochmal klicken = automatisch. Brückentag = einzelner Arbeitstag zwischen Feiertag und Wochenende (bzw. freiem Tag).</div></fieldset>
+    </div>
+    <div class="df"><button class="btn" value="cancel" formnovalidate>Abbrechen</button><button class="btn pri" value="ok">Speichern</button></div>
+  </form>
+</dialog>
+
+<!-- Verbindung KO-Gateway (wie HTML5-Visu) -->
+<dialog id="dConn">
+  <form method="dialog">
+    <div class="dh"><span>Verbindung zum KO-Gateway</span><button class="ibtn" value="cancel" formnovalidate>✕</button></div>
+    <div class="db">
+      <div class="fg">
+        <label for="cHost">HomeServer</label><input id="cHost" placeholder="IP oder Name, z. B. 192.168.1.10" autocomplete="off">
+        <label for="cUser">Benutzer</label><input id="cUser" autocomplete="username">
+        <label for="cPass">Passwort</label><input id="cPass" type="password" autocomplete="current-password">
+        <span></span><label style="color:inherit"><input type="checkbox" id="cSsl"> verschlüsselt (wss://)</label>
+        <span>Speichern</span><div class="rad">
+          <label style="color:inherit"><input type="radio" name="cStore" id="cShare1" value="1"> <span><b>für alle Endgeräte</b> (im Baustein) – auf weiteren Geräten nur noch den Seiten-Schlüssel eingeben</span></label>
+          <label style="color:inherit"><input type="radio" name="cStore" id="cShare0" value="0"> <span>nur auf diesem Gerät (Browser) – jedes Gerät braucht eigene Zugangsdaten</span></label></div>
+        <span></span><label style="color:inherit"><input type="checkbox" id="cToBlock"> Zugang auch im Baustein 14778 speichern (Szenen vom Bus ohne offene Seite)</label>
+      </div>
+      <div class="hint" id="cShareHint">Bei „für alle Endgeräte“ gibt der Baustein den Zugang an jede Seite heraus, die den Seiten-Schlüssel (E3) kennt. Die Verbindung läuft dann immer zum HomeServer, von dem die Seite geladen wurde.</div>
+      <div class="hint" id="cFromVisu" hidden>Vorbelegt aus der HTML5-Visu auf diesem HomeServer.</div>
+      <div class="hint">Experte → Projekteinstellungen → KO-Gateway: Benutzer anlegen, die verwendeten KOs in eine WebSocket-Gruppe mit Lesen + Schreiben aufnehmen. Bei https vorher einmal <code>https://&lt;HS&gt;</code> öffnen und das Zertifikat bestätigen.</div>
+      <div class="hint" id="cState"></div>
+    </div>
+    <div class="df"><button type="button" class="btn l" id="cCert">Zertifikat prüfen</button><button type="button" class="btn" id="cDbg">Debug</button>
+      <button class="btn" value="cancel" formnovalidate>Abbrechen</button><button class="btn pri" value="ok">Speichern &amp; verbinden</button></div>
+  </form>
+</dialog>
+
+<!-- Debug -->
+<dialog id="dDbg" class="wide">
+  <div class="dh"><span>Debug – KO-Gateway</span><button class="ibtn" onclick="this.closest('dialog').close()">✕</button></div>
+  <div class="db">
+    <div class="seg" style="max-width:420px"><button type="button" data-dt="page" class="sel">Diese Seite</button><button type="button" data-dt="block">Baustein 14778</button></div>
+    <div id="dbgInfo" class="hint"></div>
+    <div id="dbgErr" class="hint err"></div>
+    <div class="dlog" id="dbgLog"></div>
+  </div>
+  <div class="df"><label class="hint l" style="margin:0"><input type="checkbox" id="dbgAuto" checked> automatisch aktualisieren</label>
+    <button class="btn" id="dbgCopy">Kopieren</button><button class="btn pri" id="dbgRef">Aktualisieren</button></div>
+</dialog>
+
+<!-- Hilfe -->
+<dialog id="dHelp" class="wide">
+  <div class="dh"><span>Hilfe – 14778 Szenen-Server (v4.2)</span><button class="ibtn" onclick="this.closest('dialog').close()">✕</button></div>
+  <div class="db help">
+    <p><b>Baustein-ID 14778 · Version 4.0</b></p>
+    <h3>Bedienen</h3>
+    <ul>
+      <li><b>Freigabe</b>: nur angehakte Funktionen werden beim Aufruf der Szene gesendet.</li>
+      <li><b>Wert</b>: antippen. Schalter wechseln Ein/Aus, Dimmer und Werte öffnen einen Regler.
+        Bei der <b>aktiven Szene</b> (grün hinterlegt) wird die Änderung gespeichert <b>und sofort gesendet</b>, bei allen anderen Szenen nur gespeichert.</li>
+      <li><b>Aktuell</b>: zeigt den Istzustand und schaltet/dimmt die Funktion direkt.</li>
+      <li><b>RGBW-Licht</b>: Farbrad für Rot/Grün/Blau, Regler für Weiß und Helligkeit, Farbvorlagen (Warmweiß, Kaltweiß …). Gesendet werden die vier Kanal-KOs und das Helligkeits-KO.</li>
+      <li><b>Rollo/Dachfenster</b>: als Art <b>Auf/Ab fahren (1 Bit, lang)</b> oder <b>Position %</b> anlegen. Sind beide KOs eingetragen, im Wert-Regler je Szene wählen zwischen <b>Auf/Ab fahren</b> und <b>Position 0–100 %</b>. In „Aktuell“: Auf, Stopp, Zu und Positionsregler.</li>
+      <li><b>Gewerke</b> (Licht, Rollo, Tore, Dachfenster, Heizung): Leiste über dem Gitter filtert, unter „Alle“ gibt es je Gewerk einen Abschnitt. Eine Zeile in einen anderen Abschnitt ziehen ändert ihr Gewerk.</li>
+      <li><b>Bedingung</b>: Mond = nur bei Dunkelheit, Wolke = Regen (bei Regen nicht öffnen, nach dem Regen wiederherstellen), Thermometer = erst ab einer Außentemperatur öffnen/einschalten (Grenzwert je Funktion, Klick zum Ändern; darunter wird zurückgestellt und nachgeholt, sobald es wärmer ist), Sonne/Schneeflocke = getrennte Zeilen für Sommer und Winter (Grenze unter Zahnrad → Sensoren; die gültige Zeile ist markiert). Bedingungen gelten nur für Werte &gt; 0 (Ein, Rollo zu, Fenster/Tor auf) – Aus und Schließen gehen immer. ⏳ = Wert wartet auf die Bedingung bzw. das Regenende.</li>
+      <li><b>▶</b> im Kopf einer Szene ruft sie auf. Im Bearbeiten-Modus übernimmt <b>⤓</b> alle aktuellen Werte in diese Szene.</li>
+    </ul>
+    <h3>Ansicht</h3>
+    <p>Symbol oben rechts (Bildschirm/Handy) schaltet um: <b>Automatisch</b> (Handy-Ansicht unter 760 px Breite) → <b>Handy</b> → <b>Desktop</b>. Die Wahl gilt je Gerät/Browser. Handy-Ansicht: Szene oben wählen, darunter jede Funktion als Karte mit Freigabe, Wert, Aktuell und Bedingungen; Regler öffnen sich als Blatt von unten.</p>
+    <h3>Einrichten</h3>
+    <ul>
+      <li>Stift oben: Bearbeiten-Modus – Zeilen an ⋮⋮ ziehen, Funktionen ändern/löschen, Szenennamen ändern.</li>
+      <li>Pfeil nach unten: Funktionen aus der KO-Struktur des HomeServers übernehmen.</li>
+      <li>Zahnrad: Gruppe (Name, Anzahl Szenen, Szenen-KO, Dämmerung), Seitentitel, Sicherung.</li>
+      <li>„+“ neben den Gruppen: weitere Szenengruppe, z. B. Außen, Büro, Werkstatt.</li>
+    </ul>
+    <p><button class="btn small" onclick="this.closest('dialog').close();openDbg()">Debug: Verbindung zum KO-Gateway anzeigen</button> (auch per Klick auf den Verbindungspunkt oben)</p>
+    <h3>Baustein 14778 im Experten</h3>
+    <table>
+      <tr><th>E1 Basis-Pfad</th><td><code>szenen</code> → diese Seite unter <code>https://&lt;HS&gt;/szenen/</code></td></tr>
+      <tr><th>E2 Port</th><td>8093 (nicht 0 und nicht der Port von 14770 (Visu-Server))</td></tr>
+      <tr><th>E3 Schlüssel</th><td>Kennwort für diese Seite</td></tr>
+      <tr><th>E4 Dämmerung</th><td>1 = dunkel (nur ohne Dämmerungs-KO)</td></tr>
+      <tr><th>E5 Szene</th><td>Szenen-KO DPT 17.001 (0–63 = Szene 1–64) für die Gruppe mit „Baustein-Ein-/Ausgänge“</td></tr>
+      <tr><th>E6–E13 Szene 1–8</th><td>1 Bit: 1 = Szene aufrufen (0 wird ignoriert)</td></tr>
+      <tr><th>E14 Neustart</th><td>1 = Server und Gateway neu verbinden</td></tr>
+      <tr><th>E15 Regen</th><td>1 = Regen (nur ohne Regen-KO)</td></tr>
+      <tr><th>E16 Außentemperatur</th><td>°C (nur ohne Temperatur-KO; unbelegt = unbekannt → Winter)</td></tr>
+      <tr><th>A1 Status</th><td>Klartext (ASCII)</td></tr>
+      <tr><th>A2 Szene</th><td>aktive Szene als DPT 17.001 (0 = Szene 1); nur gesendet, wenn eine Szene aktiv ist</td></tr>
+      <tr><th>A3–A10</th><td>Szene 1–8 aktiv (1 Bit, genau einer = 1)</td></tr>
+      <tr><th>A11</th><td>1 = KO-Gateway verbunden</td></tr>
+      <tr><th>A12</th><td>Stand der Einrichtung</td></tr>
+      <tr><th>A13 / A14</th><td>1 = Sommer / 1 = Winter (Tagesmittel 7/14/22 Uhr gegen Grenze)</td></tr>
+      <tr><th>A15</th><td>Symbol: 1 = Sommer, 2 = Winter</td></tr>
+      <tr><th>A16</th><td>Text „Sommer“ / „Winter“</td></tr>
+      <tr><th>A17</th><td>Debug, z. B. T1:20 T2:31 T3:24 S:24.75 At:24.0</td></tr>
+    </table>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+const VER = "4.0";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const normKey = k => {
+  k = String(k || "").trim(); if (!k) return "";
+  k = /^[A-Z]{2}@/i.test(k) ? k.replace(/^([a-z]{2})@/i, (m, p) => p.toUpperCase() + "@") : "CO@" + k;
+  return /^CO@\d+\/\d+(\/\d+)?$/.test(k) ? k.replace(/\//g, "_") : k;
+};
+const num = v => { if (v === true) return 1; if (v === false) return 0; const n = parseFloat(String(v ?? "").replace(",", ".")); return isNaN(n) ? undefined : n; };
+const fmt = (n, d = 2) => Number(n).toLocaleString("de-DE", { maximumFractionDigits: d });
+const lsGet = k => { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+/* ===================== Gewerke ===================== */
+const IC = {
+  licht: '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z"/>',
+  rollo: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 8h18M3 12h18M3 16h18"/>',
+  tor: '<path d="M3 21V8l9-5 9 5v13"/><path d="M7 21v-9h10v9M7 15h10M7 18h10"/>',
+  dachfenster: '<path d="m2 13 10-9 10 9"/><path d="m7 12 5-4.5 5 4.5v6H7z"/><path d="M12 8v10"/>',
+  heizung: '<path d="M14 14.8V4a2 2 0 0 0-4 0v10.8a4 4 0 1 0 4 0Z"/><path d="M12 9v7"/>',
+  sonst: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  dusk: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  rain: '<path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/><path d="M8 19v2M8 13v2M16 19v2M16 13v2M12 21v2M12 15v2"/>',
+  temp: '<path d="M14 14.8V4a2 2 0 0 0-4 0v10.8a4 4 0 1 0 4 0Z"/>',
+  cond: '<path d="M4 6h16M7 12h10M10 18h4"/>',
+  snow: '<path d="M12 2v20M4.9 4.9l14.2 14.2M2 12h20M4.9 19.1 19.1 4.9"/>',
+  season: '<circle cx="8" cy="8" r="3"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1"/><path d="M16 12v10M12 17h8M13.2 14.2l5.6 5.6M13.2 19.8l5.6-5.6"/>'
+};
+/* welche Bedingungen im Gitter je Gewerk angeboten werden (gesetzte werden immer gezeigt) */
+const COND_BY_TRADE = { licht: ["dusk"], rollo: ["dusk"], tor: ["dusk"], dachfenster: ["rain", "temp", "season"], heizung: ["season"], sonst: ["dusk"] };
+function condHtml(f) {
+  const show = new Set(COND_BY_TYPE[f.type] || COND_BY_TRADE[f.trade] || ["dusk"]);
+  if (f.dusk) show.add("dusk"); if (f.rain) show.add("rain"); if (f.season) show.add("season");
+  let h = '<span class="cds">';
+  if (show.has("dusk")) h += `<button class="cd ${f.dusk ? "on" : ""}" data-a="c-dusk" title="Dämmerung: nur bei Dunkelheit senden">${icon("dusk")}</button>`;
+  if (show.has("rain")) h += `<button class="cd ${f.rain ? "on" : ""}" data-a="c-rain" title="Regen: bei Regen nicht öffnen, danach wiederherstellen">${icon("rain")}</button>`;
+  if (show.has("temp") || f.tmin != null) h += `<button class="cd ${f.tmin != null ? "on" : ""}" data-a="c-temp" title="${f.tmin != null ? "Erst ab " + String(f.tmin).replace(".", ",") + " °C Außentemperatur senden (Klick: ändern)" : "Außentemperatur-Grenzwert setzen"}">${icon("temp")}${f.tmin != null ? '<small style="font-size:10px">' + String(f.tmin).replace(".", ",") + "°</small>" : ""}</button>`;
+  if (show.has("season")) h += `<button class="cd ${f.season ? "on" : ""}" data-a="c-season" title="Sommer/Winter getrennt (zwei Zeilen)">${icon("season")}</button>`;
+  return h + '<span class="wt" hidden title=""></span></span>';
+}
+const TRADES = [["licht", "Licht"], ["rollo", "Rollo"], ["tor", "Tore"], ["dachfenster", "Dachfenster"], ["heizung", "Heizung"], ["sonst", "Sonstiges"]];
+const TRADE_N = Object.fromEntries(TRADES);
+const TRADE_I = Object.fromEntries(TRADES.map(([k], i) => [k, i]));
+const icon = t => `<svg viewBox="0 0 24 24">${IC[t] || IC.sonst}</svg>`;
+/* Anzeige für 0/1 bzw. 0 %/100 % je Gewerk (KNX: Rollo Auf/Ab 0 = auf, 1 = ab) */
+const LBL = { licht: ["Aus", "Ein"], rollo: ["Auf", "Zu"], tor: ["Zu", "Auf"], dachfenster: ["Zu", "Auf"], heizung: ["Aus", "Ein"], sonst: ["Aus", "Ein"] };
+const lbl = f => f.type === "lock" ? [f.lbl0 || "Freigegeben", f.lbl1 || "Gesperrt"] : [f.lbl0 || (LBL[f.trade] || LBL.sonst)[0], f.lbl1 || (LBL[f.trade] || LBL.sonst)[1]];
+/* Bedingungen im Gitter je Art: Sperre/Heizung/Betriebsart/Wert ohne Dämmerung und Regen */
+const COND_BY_TYPE = { lock: ["season"], heat: ["season"], mode: ["season"], value: ["season"] };
+const MODES = [[1, "Komfort"], [2, "Standby"], [3, "Nacht"], [4, "Frostschutz"], [0, "Auto"]];
+const HMODES = [[0, "Auto"], [1, "Komfort"], [2, "Standby"], [3, "Nacht"], [4, "Frost"]];
+const HMODE_N = Object.fromEntries(HMODES);
+function heatDefaults(e, fresh) {
+  if (fresh || num(e.v) === undefined || num(e.v) === 0) e.v = 21;
+  if (e.sp === undefined) e.sp = false;
+  if (e.o === undefined) e.o = fresh ? 1 : null;
+  if (e.vw !== undefined || e.ew !== undefined) { if (num(e.vw) === undefined || num(e.vw) === 0) e.vw = e.v; if (e.spw === undefined) e.spw = e.sp; if (e.ow === undefined) e.ow = e.o; }
+}
+/* Heizung – Szene: Betriebsart + ggf. Sollwert */
+const byPlan = f => f.type === "heat" && f.ctl === "plan";
+function heatCellHtml(f, e, w) {
+  if (byPlan(f)) return `<span class="ht unk" title="Freigabe nach Zeitprogramm – Szenen ändern diese Heizung nicht">⏱<small>Zeitpr.</small></span>`;
+  const o = w ? e.ow : e.o, sp = w ? e.spw : e.sp, v = w ? e.vw : e.v;
+  if ((o === null || o === undefined) && !sp) return `<span class="ht unk">–</span>`;
+  return `<span class="ht"><b>${o === null || o === undefined ? "–" : esc(HMODE_N[o] || o)}</b><small>${sp && num(v) !== undefined ? fmt(num(v), 1) + " °C" : "Soll –"}</small></span>`;
+}
+/* Heizung – Aktuell: Ist, Soll, Betriebsart, Ventil */
+function heatLiveHtml(f) {
+  const ist = num(gv(f.status)), soll = num(gv(f.setStatus || f.key)), md = num(gv(f.modeStatus || f.modeKey)), vl = f.valveKey ? num(gv(f.valveKey)) : undefined;
+  const t = x => x === undefined ? "–" : fmt(x, 1);
+  let h = `<span class="hl" title="Ist / Soll / Betriebsart / Ventil"><b>${f.status ? t(ist) + " °C" : "Soll " + t(soll) + " °C"}</b>`;
+  if (f.status) h += `<span>Soll ${t(soll)} °C</span>`;
+  h += `<span>${md === undefined ? "–" : esc(HMODE_N[Math.round(md)] || fmt(md))}</span>`;
+  if (f.valveKey) h += `<span class="${vl > 0 ? "on" : ""}">Ventil ${vl === undefined ? "–" : fmt(vl, 0) + " %"}</span>`;
+  if (f.plan && f.plan.on) { const pn = planNext(f); if (pn) h += `<span class="pl" title="${esc(pn)}">${esc(pn.replace(/ \(.*\)/, ""))}</span>`; }
+  return h + "</span>";
+}
+const MODE_N = Object.fromEntries(MODES);
+function guessTrade(name, path) {
+  const n = (name || "").toLowerCase(), p = (path || "").toLowerCase();
+  if (/licht|leucht|lampe|fluter|spot|\bled\b|dimm|beleucht|strahler|downlight/.test(n)) return "licht";
+  if (/dachfenster|oberlicht|lichtkuppel|velux|fensterantrieb|fenstermotor|\brwa\b|kippfenster/.test(n)) return "dachfenster";
+  if (/jalou|rollo|rollad|rolllad|behang|markise|raffstore|beschattung|lamell|screen|sonnenschutz/.test(n)) return "rollo";
+  if (/(^|[\s_\-])tor(e)?([\s_\-]|$)|garage|schranke|rolltor|sektionaltor|einfahrt/.test(n)) return "tor";
+  if (/heiz|soll|\brtr\b|temperatur|betriebsart|betriebsmodus|hvac|isttemp|raumtemp|klima|fbh|fußboden|fussboden|ventil|stellgr/.test(n)) return "heizung";
+  if (/dachfenster|oberlicht/.test(p)) return "dachfenster";
+  if (/beschattung|jalou|rollo|rolll?aden/.test(p)) return "rollo";
+  if (/tor|garage/.test(p)) return "tor";
+  if (/heizung|klima/.test(p)) return "heizung";
+  return "licht";
+}
+function tradeDefaults(trade, type) {
+  if ((trade === "heizung" && type === "value") || type === "heat") return { min: 5, max: 30, step: 0.5, unit: "°C" };
+  if (type === "dim" || type === "blind") return { min: 0, max: 100, step: 1, unit: "%" };
+  if (type === "value") return { min: 0, max: 100, step: 1, unit: "" };
+  return {};
+}
+
+/* ===================== Zustand ===================== */
+let CFG = null, REV = 0, GID = lsGet("hs-szenen-gid");
+let ST = { seq: 0, active: {}, dark: {}, values: {}, errors: {}, gw: {} };
+let KEY = lsGet("hs-szenen-key");
+const SELF = new Set();   // im Bearbeiten-Modus ausgewählte Funktionen (Mehrfach-Löschen)
+let EDIT = false, SEL_S = 0, MOB = false, TRADE = lsGet("hs-szenen-trade") || "";
+let VIEW = lsGet("hs-szenen-view") || "auto";        // auto | mobile | desktop (je Gerät)
+const VIEW_IC = {
+  auto: '<svg viewBox="0 0 24 24"><rect x="2" y="4" width="13" height="10" rx="1.5"/><path d="M6 18h5"/><rect x="16" y="8" width="6" height="12" rx="1.5"/></svg>',
+  mobile: '<svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
+  desktop: '<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="13" rx="1.5"/><path d="M8 21h8M12 16v5"/></svg>'
+};
+const VIEW_N = { auto: "Automatisch", mobile: "Handy", desktop: "Desktop" };
+const BASE = location.pathname.replace(/[^/]*$/, "");
+
+/* ===================== API ===================== */
+async function api(path, body, method) {
+  const o = { method: method || (body !== undefined ? "POST" : "GET"), headers: { "X-Scene-Key": KEY }, cache: "no-store" };
+  if (body !== undefined) { o.headers["Content-Type"] = "application/json"; o.body = typeof body === "string" ? body : JSON.stringify(body); }
+  const r = await fetch(BASE + path, o);
+  let d = null; try { d = await r.json(); } catch (e) {}
+  if (r.status === 401) { showKey(KEY ? "Schlüssel falsch." : ""); throw Object.assign(new Error("Schlüssel fehlt oder falsch"), { auth: true }); }
+  if (!r.ok) throw Object.assign(new Error((d && d.error) || ("HTTP " + r.status)), { status: r.status, data: d });
+  return d;
+}
+function showKey(msg) { $("#app").hidden = true; $("#keyBox").hidden = false; $("#keyErr").textContent = msg || ""; $("#keyIn").focus(); }
+$("#keyOk").onclick = () => { KEY = $("#keyIn").value; lsSet("hs-szenen-key", KEY); start(); };
+$("#keyIn").onkeydown = e => { if (e.key === "Enter") $("#keyOk").click(); };
+
+let toastT;
+function toast(msg, ms) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), ms || 2600); }
+
+/* ===================== Laden & Live-Abgleich ===================== */
+let started = false, pollRun = 0;
+async function start() {
+  try {
+    await loadConfig();
+    $("#keyBox").hidden = true; $("#app").hidden = false;
+    if (!started) { started = true; }
+    poll(++pollRun);
+    await gwShared();
+    if (!ws) wsConnect();
+    if (!GWC.user && !lsGet("hs-szenen-connask")) { lsSet("hs-szenen-connask", "1"); setTimeout(openConn, 400); }
+  } catch (e) { if (!e.auth) { setConn("err", "Server nicht erreichbar"); toast(e.message); setTimeout(start, 4000); } }
+}
+async function loadConfig() {
+  const d = await api("api/config");
+  CFG = d.config; REV = d.rev;
+  setTimeout(wsSubscribe, 0);
+  if (!CFG.groups.some(g => g.id === GID)) GID = CFG.groups[0].id;
+  render();
+}
+async function poll(run) {
+  let fails = 0;
+  while (run === pollRun) {
+    try {
+      const s = await api("api/state?since=" + ST.seq + "&wait=20");
+      fails = 0;
+      const revChanged = s.rev !== REV;
+      ST = s;
+      if (revChanged && !saving) { await loadConfig(); } else updateLive();
+    } catch (e) {
+      if (e.auth) return;
+      fails++; setConn("err", "Server nicht erreichbar"); ST.seq = 0;
+      await sleep(Math.min(2000 * fails, 10000));
+    }
+  }
+}
+function setConn(cls, txt) { $("#dot").className = "dot " + cls; $("#connTxt").textContent = txt; $("#conn").title = txt; }
+
+/* ===================== Hilfen für Gruppe/Funktion ===================== */
+const grp = () => CFG.groups.find(g => g.id === GID) || CFG.groups[0];
+const liveKey = f => f.status || f.key;
+/* v4.2: Position invertiert (KNX 0 % = offen) – Anzeige immer 0 % = zu bzw. wie Gewerk */
+function liveVal(f) { const x = gv(liveKey(f)); if (f.posInv && f.type === "blind" && x !== undefined && x !== null && x !== "" && !isNaN(Number(x))) return 100 - Number(x); return x; }
+const isMobile = () => VIEW === "mobile" || (VIEW === "auto" && window.matchMedia("(max-width:760px)").matches);
+function showView() {
+  $("#bView").innerHTML = VIEW_IC[VIEW];
+  $("#bView").title = "Ansicht: " + VIEW_N[VIEW] + " (klicken zum Umschalten)";
+}
+/* RGBW: Farbe [R, G, B, W] in 0–100 % → Anzeigefarbe (Weißanteil als warmes Weiß beigemischt) */
+function rgbCss(c) {
+  c = c || [0, 0, 0, 0];
+  const w = (c[3] || 0) / 100;
+  const ch = (x, ww) => Math.round(Math.min(255, (x || 0) * 2.55 + (ww - (x || 0) * 2.55) * w * 0.85));
+  if (!(c[0] || c[1] || c[2] || c[3])) return "#555";
+  return `rgb(${ch(c[0], 255)},${ch(c[1], 226)},${ch(c[2], 170)})`;
+}
+function liveColor(f) {
+  return ["rKey", "gKey", "bKey", "wKey"].map(k => { const x = f[k] ? num(gv(f[k])) : undefined; return x === undefined ? 0 : (f.chMax === 255 ? x / 2.55 : x); });
+}
+function valHtml(f, v, m, isLive, c) {
+  if (f.type === "heat") return isLive ? heatLiveHtml(f) : `<span class="ht unk">–</span>`;
+  const n = num(v);
+  if (f.type === "rgbw") {
+    c = c || (isLive ? liveColor(f) : [0, 0, 0, 100]);
+    const t = f.key ? (n === undefined ? "–" : fmt(n, 0) + " %") : "";
+    return `<span class="rgbsw ${n > 0 || (!f.key && c.some(x => x > 0)) ? "on" : ""}"><i style="background:${rgbCss(c)}"></i>${t}</span>`;
+  }
+  if (f.type === "blind" && m === "move" && n !== undefined) {
+    const t = lbl(f)[n >= 50 ? 1 : 0];
+    return `<span class="num mv ${n > 0 ? "on" : ""}" title="1 Bit fahren">${t === "Auf" ? "▲" : "▼"} ${esc(t)}</span>`;
+  }
+  if (f.type === "lock") {
+    if (n === undefined) return `<span class="txt unk">?</span>`;
+    const lk = n >= 0.5;
+    const t = esc(lbl(f)[lk ? 1 : 0]);
+    return `<span class="txt lk ${lk ? "on locked" : ""}" title="${t} (${lk ? "1" : "0"})">${lk ? "🔒" : "🔓"}${isLive || MOB ? " " + t : ""}</span>`;
+  }
+  if (f.type === "switch") {
+    const on = n !== undefined && n >= 0.5;
+    const cls = n === undefined ? "unk" : on ? "on" : "";
+    if (f.trade === "licht" && !f.lbl0 && !f.lbl1) return `<span class="sw ${cls}">${n === undefined ? "?" : on ? "I" : "0"}</span>`;
+    return `<span class="txt ${cls}">${n === undefined ? "?" : esc(lbl(f)[on ? 1 : 0])}</span>`;
+  }
+  if (f.type === "mode") {
+    if (n === undefined) return `<span class="txt unk">?</span>`;
+    return `<span class="txt ${n === 1 ? "on" : ""}">${esc(MODE_N[Math.round(n)] || fmt(n))}</span>`;
+  }
+  if (f.type === "blind") {
+    if (n === undefined) return `<span class="num unk">– %</span>`;
+    // Status in „Aktuell“: immer Position in %, in den Szenen Endlagen als Auf/Zu
+    const t = isLive || (n > 0 && n < 100) ? fmt(n, 0) + " %" : lbl(f)[n <= 0 ? 0 : 1];
+    return `<span class="num ${n > 0 ? "on" : ""}">${esc(t)}</span>`;
+  }
+  const unit = f.unit ? (f.unit === "%" ? " %" : " " + esc(f.unit)) : "";
+  if (n === undefined) return `<span class="num unk">–${unit}</span>`;
+  return `<span class="num ${n > (f.min ?? 0) ? "on" : ""}">${fmt(n)}${unit}</span>`;
+}
+
+/* ===================== Darstellung ===================== */
+function render() {
+  document.title = CFG.title || "Szenen";
+  $("#title").textContent = CFG.title || "Szenen";
+  $("#tabs").innerHTML = CFG.groups.map(g => `<button class="tab ${g.id === GID ? "sel" : ""}" data-g="${esc(g.id)}">${esc(g.name)}</button>`).join("")
+    + `<button class="tab add ed" id="gAdd" title="Neue Szenengruppe">+</button>`;
+  lsSet("hs-szenen-gid", GID);
+  const g = grp();
+  MOB = isMobile();
+  document.body.classList.toggle("mob", MOB);
+  showView();
+  const act = ST.active[g.id] || 0;
+  if (!SEL_S || SEL_S > g.scenes.length) SEL_S = act || 1;
+  const cols = g.scenes.map((_, i) => i);
+  $("#chips").innerHTML = g.scenes.map((s, i) => `<button class="chip ${i + 1 === SEL_S ? "sel" : ""} ${i + 1 === act ? "act" : ""}" data-s="${i + 1}">${esc(s.name.split("\n")[0])}<small>${esc(s.name.split("\n")[1] || (i + 1 === act ? "aktiv" : ""))}</small></button>`).join("");
+  const present = TRADES.filter(([k]) => g.funcs.some(f => f.trade === k));
+  if (TRADE && !present.some(([k]) => k === TRADE)) TRADE = "";
+  lsSet("hs-szenen-trade", TRADE);
+  $("#trades").hidden = present.length < 2 && !TRADE;
+  const SHORT = { licht: "Licht", rollo: "Rollo", tor: "Tore", dachfenster: "Dach", heizung: "Heizung", sonst: "Sonst." };
+  $("#trades").innerHTML = `<button class="trd ${TRADE ? "" : "sel"}" data-t="">${icon("cond")}<span class="tl">Alle</span><span class="ts">Alle</span> <small>${g.funcs.length}</small></button>`
+    + present.map(([k, n]) => `<button class="trd ${TRADE === k ? "sel" : ""}" data-t="${k}" title="${n}">${icon(k)}<span class="tl">${n}</span><span class="ts">${SHORT[k]}</span> <small>${g.funcs.filter(f => f.trade === k).length}</small></button>`).join("");
+  const vis = visibleFuncs(g);
+  updSel();
+  const sections = !TRADE && present.length > 1;
+  $("#empty").hidden = g.funcs.length > 0;
+  $("#tw").hidden = g.funcs.length === 0 || MOB;
+  $("#mob").hidden = g.funcs.length === 0 || !MOB;
+  if (MOB) { $("#grid").innerHTML = ""; renderMobile(g, vis, sections); return; }
+  $("#mob").innerHTML = "";
+  let h = `<thead><tr><th class="fn" rowspan="2">Funktion</th>`;
+  for (const i of cols) {
+    const s = g.scenes[i];
+    h += `<th class="sc" colspan="2" data-s="${i + 1}"><div class="sn">${esc(s.name)}</div><div class="sa">
+      <button class="mini play" data-a="call" data-s="${i + 1}" title="Szene aufrufen">▶</button>
+      <button class="mini ed" data-a="ren" data-s="${i + 1}" title="Name ändern">✎</button>
+      <button class="mini ed" data-a="learn" data-s="${i + 1}" title="Aktuelle Werte in diese Szene übernehmen">⤓</button></div></th>`;
+  }
+  h += `<th class="live" rowspan="2">Aktuell</th><th class="dk" rowspan="2" title="Bedingungen: Dämmerung, Regen, Außentemperatur, Sommer/Winter"><span class="lg">Bedingung</span><span class="sh">${icon("cond")}</span></th></tr><tr class="sub">`;
+  for (const i of cols) h += `<th>Freigabe</th><th>Wert</th>`;
+  h += `</tr></thead><tbody>`;
+  const span = 3 + cols.length * 2;
+  let lastT = null;
+  vis.forEach(f => {
+    if (sections && f.trade !== lastT) {
+      lastT = f.trade;
+      h += `<tr class="sec" data-trade="${f.trade}"><td class="fn">${icon(f.trade)}${esc(TRADE_N[f.trade] || f.trade)}</td><td colspan="${span - 1}"></td></tr>`;
+    }
+    const err = ST.errors[f.key] || ST.errors[f.status];
+    h += `<tr data-f="${esc(f.id)}" class="${f.season ? "sum" : ""} ${EDIT && SELF.has(f.id) ? "fsl" : ""}"><td class="fn"><input type="checkbox" class="fsel ed" data-a="fsel" title="Auswählen" ${SELF.has(f.id) ? "checked" : ""}><span class="handle" title="Ziehen zum Sortieren">⋮⋮</span><span class="nm">${esc(f.name)}</span>${f.season ? `<span class="sl" data-sl="s">${icon("sun")}Sommer</span>` : ""}
+      <span class="rowbtns"><button data-a="up" title="nach oben">↑</button><button data-a="down" title="nach unten">↓</button><button data-a="edit" title="Bearbeiten">✎</button></span>
+      <span class="ks ${err ? "err" : ""}" title="${err ? "Gateway-Code " + esc(err) : ""}">${esc(f.key)}${f.moveKey ? (f.key ? " · " : "") + "Fahren " + esc(f.moveKey) : ""}${f.type === "rgbw" ? (f.key ? " · " : "") + "RGBW " + [f.rKey, f.gKey, f.bKey, f.wKey].filter(Boolean).map(esc).join(", ") : ""}${f.type === "heat" ? (f.modeKey ? " · BA " + esc(f.modeKey) : "") + (f.status ? " · Ist " + esc(f.status) : "") + (f.valveKey ? " · Ventil " + esc(f.valveKey) : "") : f.status && f.status !== f.key ? " · RM " + esc(f.status) : ""}${err ? " · Fehler " + esc(err) : ""}</span></td>`;
+    const cells = w => cols.map(i => {
+      const e = f.sv[i], en = w ? !!e.ew : e.en, v = w ? (e.vw ?? 0) : e.v, md = w ? e.mw : e.m, cc = w ? (e.cw || e.c) : e.c, wa = w ? ' data-w="1"' : "";
+      return `<td class="en" data-s="${i + 1}"><input type="checkbox" data-a="en" data-s="${i + 1}"${wa} ${en && !byPlan(f) ? "checked" : ""} ${byPlan(f) ? "disabled title='Freigabe nach Zeitprogramm'" : ""} aria-label="Freigabe${w ? " Winter" : ""}"></td>
+        <td class="val ${en ? "" : "dis"}" data-s="${i + 1}"><button class="vb" data-a="val" data-s="${i + 1}"${wa} aria-label="Wert${w ? " Winter" : ""}">${f.type === "heat" ? heatCellHtml(f, e, w) : valHtml(f, v, md, false, cc)}</button></td>`;
+    }).join("");
+    const rs = f.season ? ' rowspan="2"' : "";
+    h += cells(false) + `<td class="live"${rs}><button class="vb" data-a="live" aria-label="Aktuell">${valHtml(f, liveVal(f), null, true)}</button></td>
+      <td class="dk"${rs}>${condHtml(f)}</td></tr>`;
+    if (f.season) h += `<tr class="win" data-fw="${esc(f.id)}"><td class="fn"><span class="sl" data-sl="w">${icon("snow")}Winter</span></td>${cells(true)}</tr>`;
+  });
+  $("#grid").innerHTML = h + "</tbody>";
+  const r1 = $("#grid thead tr"); if (r1) $("#grid").style.setProperty("--h1", r1.offsetHeight + "px");
+  updateLive();
+}
+/* ---------- Handy-Ansicht: eine Szene, Funktionen als Karten ---------- */
+function renderMobile(g, vis, sections) {
+  const s = SEL_S, sc = g.scenes[s - 1], act = ST.active[g.id] || 0;
+  const [l1, l2] = sc.name.split("\n");
+  let h = `<div class="msel ${s === act ? "act" : ""}" id="mobHead" data-s="${s}">
+    <div class="mname">${esc(l1)}<small>${esc(l2 || "Szene " + s)}</small></div>
+    <span class="ed"><button class="mini" data-a="ren" data-s="${s}" title="Name ändern">✎</button> <button class="mini" data-a="learn" data-s="${s}" title="Aktuelle Werte übernehmen">⤓</button></span>
+    <button class="btn pri" data-a="call" data-s="${s}">▶ Aufrufen</button></div>`;
+  let lastT = null;
+  const row = (f, w) => {
+    const e = f.sv[s - 1], en = w ? !!e.ew : e.en, v = w ? (e.vw ?? 0) : e.v, md = w ? e.mw : e.m, cc = w ? (e.cw || e.c) : e.c, wa = w ? ' data-w="1"' : "";
+    return `<div class="mrow ${f.season ? (w ? "win" : "sum") : ""}"${w ? ` data-fw="${esc(f.id)}"` : ""}>
+      ${f.season ? `<span class="sl" data-sl="${w ? "w" : "s"}">${icon(w ? "snow" : "sun")}${w ? "Winter" : "Sommer"}</span>` : ""}
+      <label class="men"><input type="checkbox" data-a="en" data-s="${s}"${wa} ${en && !byPlan(f) ? "checked" : ""} ${byPlan(f) ? "disabled" : ""}>Freigabe</label>
+      <div class="val ${en ? "" : "dis"}" data-s="${s}"><button class="vb" data-a="val" data-s="${s}"${wa}>${f.type === "heat" ? heatCellHtml(f, e, w) : valHtml(f, v, md, false, cc)}</button></div></div>`;
+  };
+  vis.forEach(f => {
+    if (sections && f.trade !== lastT) { lastT = f.trade; h += `<div class="msec">${icon(f.trade)}${esc(TRADE_N[f.trade] || f.trade)}</div>`; }
+    const err = ST.errors[f.key] || ST.errors[f.status];
+    h += `<div class="mcard ${EDIT && SELF.has(f.id) ? "fsl" : ""}" data-f="${esc(f.id)}">
+      <div class="mtop"><input type="checkbox" class="fsel ed" data-a="fsel" title="Auswählen" ${SELF.has(f.id) ? "checked" : ""}><span class="nm">${esc(f.name)}</span>${err ? `<span class="ks err" title="Gateway-Code ${esc(err)}">⚠</span>` : ""}
+        <span class="rowbtns"><button data-a="up" title="nach oben">↑</button><button data-a="down" title="nach unten">↓</button><button data-a="edit" title="Bearbeiten">✎</button></span></div>
+      <div class="mrows">${row(f, false)}${f.season ? row(f, true) : ""}</div>
+      <div class="mside"><span class="mlbl">Aktuell</span><button class="vb" data-a="live">${valHtml(f, liveVal(f), null, true)}</button>${condHtml(f)}</div></div>`;
+  });
+  if (!vis.length) h += `<div class="mempty">Keine Funktionen in diesem Gewerk.</div>`;
+  $("#mob").innerHTML = h;
+  document.documentElement.style.setProperty("--hh", document.querySelector("header").offsetHeight + "px");
+  updateLive();
+}
+let DLG_G = null;
+function updateSensLive() {
+  const c = ST.sensors; if (!c || !$("#dGroup").open) return;
+  const tk = normKey($("#gTrigKey").value), tv = num(gv(tk));
+  if (!tk) $("#lvTrig").textContent = "";
+  else if (ST.errors[tk]) $("#lvTrig").innerHTML = "<b style='color:var(--err)'>nicht erreichbar (Code " + esc(ST.errors[tk]) + ")</b>";
+  else if (tv === undefined) $("#lvTrig").textContent = "noch kein Wert";
+  else { const n = $("#gNum").value === "1" ? (tv & 127) : (tv & 63) + 1; $("#lvTrig").innerHTML = "zuletzt: <b>" + tv + "</b> → " + (n === 0 ? "keine Szene" : "Szene " + n); }
+  const t = c.temp === null || c.temp === undefined ? null : c.temp;
+  const lim = num($("#cLimit").value) ?? c.limit;
+  $("#lvDusk").innerHTML = "aktuell: <b>" + (c.dark ? "Dämmerung" : "Hell") + "</b>";
+  $("#lvRain").innerHTML = "aktuell: <b>" + (c.rain ? "Regen" : "Trocken") + "</b>";
+  $("#lvTemp").innerHTML = "aktuell: <b>" + (t === null ? "unbekannt" : fmt(t, 1) + " °C") + "</b>";
+  const mn = c.mean === null || c.mean === undefined ? null : c.mean;
+  $("#lvSeason").innerHTML = mn === null ? "→ <b>Winter</b> (Temperatur unbekannt)"
+    : "Ø <b>" + fmt(mn, 2) + " °C</b> (" + slotTxt(c) + ") → <b>" + (mn >= lim ? "Sommer" : "Winter") + "</b>";
+}
+function slotTxt(c) {
+  return [7, 14, 22].map((h, i) => { const v = (c.slots || [])[i]; return h + " Uhr " + (v === null || v === undefined ? "– (aktuell)" : fmt(v, 1)); }).join(", ");
+}
+/* sichtbare Funktionen: nach Gewerk (Reihenfolge wie in der Leiste), innerhalb in eigener Reihenfolge */
+function visibleFuncs(g) {
+  return g.funcs.map((f, i) => [f, i]).filter(([f]) => !TRADE || f.trade === TRADE)
+    .sort((a, b) => (TRADE_I[a[0].trade] ?? 9) - (TRADE_I[b[0].trade] ?? 9) || a[1] - b[1]).map(x => x[0]);
+}
+function updateLive() {
+  if (!CFG) return;
+  const g = grp(), act = ST.active[g.id] || 0;
+  const gw = ST.gw || {};
+  const pg = wsOpen();
+  if (pg && gw.ok) setConn("ok", "verbunden");
+  else if (pg) setConn("warn", "Seite verbunden · Baustein: " + (gw.msg || "nicht verbunden"));
+  else if (gw.ok) setConn("warn", "Baustein verbunden · Seite: " + (GWC.user ? "nicht verbunden" : "kein Zugang"));
+  else setConn("err", "KO-Gateway nicht verbunden");
+  document.querySelectorAll("#grid [data-s]").forEach(el => {
+    if (el.tagName === "TH" || el.tagName === "TD") el.classList.toggle("act", +el.dataset.s === act);
+  });
+  const mh = $("#mobHead"); if (mh) mh.classList.toggle("act", +mh.dataset.s === act);
+  document.querySelectorAll("#chips .chip").forEach(c => c.classList.toggle("act", +c.dataset.s === act));
+  const p = $("#actPill");
+  if (act && g.scenes[act - 1]) { p.className = "pill"; p.textContent = "Aktiv: " + g.scenes[act - 1].name.replace(/\n/g, " – "); }
+  else { p.className = "pill none"; p.textContent = "keine Szene aktiv"; }
+  const c = ST.sensors;
+  let ci = "";
+  if (c) {
+    const t = c.temp === null || c.temp === undefined ? null : c.temp;
+    ci += `<span class="${c.dark ? "on" : ""}" title="Dämmerung (${esc(c.src.dusk)})">${icon(c.dark ? "dusk" : "sun")}${c.dark ? "Dämmerung" : "Hell"}</span>`;
+    ci += `<span class="${c.rain ? "on" : ""}" title="Regen (${esc(c.src.rain)})">${icon("rain")}${c.rain ? "Regen" : "Trocken"}</span>`;
+    const mn = c.mean === null || c.mean === undefined ? null : c.mean;
+    ci += `<span id="seasonChip" title="Außentemperatur (${esc(c.src.temp)}) · Tagesmittel (T7 + T14 + 2·T22) / 4: ${esc(slotTxt(c))} · Sommer ab Ø ${fmt(c.limit, 1)} °C">${icon("temp")}${t === null ? "– °C" : fmt(t, 1) + " °C"}<i class="sep"> · </i>Ø ${mn === null ? "–" : fmt(mn, 1)} °C<i class="sep"> · </i>Grenze ${fmt(c.limit, 1)} °C<i class="sep"> · </i>${icon(c.summer ? "sun" : "snow")}${c.summer ? "Sommer" : "Winter"}</span>`;
+  }
+  $("#condInfo").innerHTML = ci;
+  const summer = c && c.summer === true;
+  document.querySelectorAll(".vroot .sl").forEach(x => x.classList.toggle("cur", (x.dataset.sl === "s") === summer));
+  document.querySelectorAll(".vroot .sum, .vroot .win").forEach(r => r.classList.toggle("off", r.classList.contains("win") === summer));
+  updateSensLive();
+  const wt = (ST.waiting || {})[g.id] || {};
+  document.querySelectorAll(".vroot [data-f]").forEach(tr => {
+    const w = wt[tr.dataset.f], el = tr.querySelector(".wt"); if (!el) return;
+    el.hidden = !w; el.textContent = w ? "⏳" : "";
+    el.title = w === "regen" ? "wird nach dem Regen wiederhergestellt" : w ? "wartet auf Bedingung (wird nachgeholt)" : "";
+  });
+  $("#ev").textContent = ST.event ? "Letztes Ereignis: " + ST.event : "Bereit · 14778 Szenen-Server v" + VER;
+  g.funcs.forEach(f => {
+    const b = document.querySelector(`.vroot [data-f="${CSS.escape(f.id)}"] [data-a="live"]`);
+    if (!b || (POP && POP.live && POP.fid === f.id)) return;
+    const bz = BUSY.get(f.id), cur = liveVal(f);
+    if (bz && num(cur) === num(bz.target)) { clearTimeout(bz.timer); BUSY.delete(f.id); }
+    const isBusy = BUSY.has(f.id);
+    b.classList.toggle("busy", isBusy);
+    b.innerHTML = valHtml(f, isBusy ? BUSY.get(f.id).target : cur, null, true);
+  });
+}
+
+/* ===================== Bedienung ===================== */
+let saving = false;
+$("#tabs").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "gAdd") return addGroup();
+  GID = b.dataset.g; SEL_S = 0; SELF.clear(); closePop(); render();
+};
+$("#trades").onclick = e => { const b = e.target.closest(".trd"); if (!b) return; TRADE = b.dataset.t; closePop(); render(); };
+$("#chips").onclick = e => { const b = e.target.closest(".chip"); if (!b) return; SEL_S = +b.dataset.s; render(); };
+$("#bEdit").onclick = () => { EDIT = !EDIT; document.body.classList.toggle("edit", EDIT); $("#bEdit").classList.toggle("on", EDIT); if (!EDIT && SELF.size) { SELF.clear(); render(); } else updSel(); };
+function updSel() {
+  const g = grp(), ids = new Set(g.funcs.map(f => f.id));
+  [...SELF].forEach(id => { if (!ids.has(id)) SELF.delete(id); });
+  const vis = visibleFuncs(g), n = SELF.size, nv = vis.filter(f => SELF.has(f.id)).length;
+  $("#selCnt").textContent = n + " ausgewählt";
+  $("#bDelSel").disabled = !n; $("#bDelSel").textContent = n ? n + " löschen" : "Löschen";
+  $("#selAll").checked = vis.length > 0 && nv === vis.length; $("#selAll").indeterminate = nv > 0 && nv < vis.length;
+  $("#selBar").style.visibility = g.funcs.length ? "" : "hidden";
+}
+$("#selAll").onchange = () => {
+  const vis = visibleFuncs(grp());
+  if ($("#selAll").checked) vis.forEach(f => SELF.add(f.id)); else vis.forEach(f => SELF.delete(f.id));
+  render();
+};
+$("#bDelSel").onclick = () => {
+  const g = grp(), sel = g.funcs.filter(f => SELF.has(f.id));
+  if (!sel.length) return;
+  const names = sel.slice(0, 8).map(f => "• " + f.name).join("\n") + (sel.length > 8 ? "\n… und " + (sel.length - 8) + " weitere" : "");
+  if (!confirm(sel.length + (sel.length === 1 ? " Funktion" : " Funktionen") + " mit allen Szenenwerten löschen?\n\n" + names)) return;
+  g.funcs = g.funcs.filter(f => !SELF.has(f.id));
+  SELF.clear(); saveConfig();
+  toast(sel.length + (sel.length === 1 ? " Funktion" : " Funktionen") + " gelöscht");
+};
+$("#bHelp").onclick = () => $("#dHelp").showModal();
+$("#bReset").onclick = async () => { try { await api("api/call", { g: GID, s: 0 }); } catch (e) { toast(e.message); } };
+window.addEventListener("resize", () => { if (CFG && isMobile() !== MOB) { closePop(); render(); } });
+$("#bView").onclick = () => {
+  VIEW = { auto: "mobile", mobile: "desktop", desktop: "auto" }[VIEW];
+  lsSet("hs-szenen-view", VIEW); closePop(); render();
+  toast("Ansicht: " + VIEW_N[VIEW] + (VIEW === "auto" ? " (nach Bildschirmbreite)" : ""), 1800);
+};
+
+async function gridClick(e) {
+  const el = e.target.closest("[data-a]"); if (!el) return;
+  const a = el.dataset.a, g = grp();
+  const tr = el.closest("[data-f],[data-fw]"); const fid = tr ? (tr.dataset.f || tr.dataset.fw) : null;
+  const f = fid ? g.funcs.find(x => x.id === fid) : null;
+  const s = +el.dataset.s || 0, w = el.dataset.w === "1";
+  const K = w ? ["ew", "vw"] : ["en", "v"];
+  if (a === "fsel") {
+    if (el.checked) SELF.add(fid); else SELF.delete(fid);
+    (el.closest("tr") || el.closest(".mcard")).classList.toggle("fsl", el.checked); updSel(); return;
+  }
+  if (a === "call") {
+    try { const r = await api("api/call", { g: g.id, s }); pageSend(r); toast(g.scenes[s - 1].name.replace(/\n/g, " – ") + " aufgerufen (" + r.sent + " Werte gesendet)"); }
+    catch (err) { toast(err.message); }
+  } else if (a === "ren") renameScene(s);
+  else if (a === "learn") {
+    if (!confirm("Aktuelle Werte aller Funktionen in „" + g.scenes[s - 1].name.replace(/\n/g, " ") + "“ übernehmen?\nFreigaben bleiben unverändert.")) return;
+    try { await api("api/call", { g: g.id, s, learn: true }); toast("Werte übernommen"); await loadConfig(); } catch (err) { toast(err.message); }
+  } else if (a === "en") {
+    const on = el.checked;
+    f.sv[s - 1][K[0]] = on; (el.closest("tr") || el.closest(".mrow")).querySelector(`.val[data-s="${s}"]`).classList.toggle("dis", !on);
+    cell(g, f, s, { en: on, w });
+  } else if (a === "c-dusk") {
+    f.dusk = !f.dusk; saveConfig();
+  } else if (a === "c-temp") {
+    const cur = f.tmin != null ? String(f.tmin).replace(".", ",") : "";
+    const s = prompt("Erst ab dieser Außentemperatur öffnen/einschalten (°C).\nLeer = Bedingung aus.", cur);
+    if (s === null) return;
+    const v = num(s); if (v === undefined) delete f.tmin; else f.tmin = v; saveConfig();
+  } else if (a === "c-rain") {
+    f.rain = !f.rain; saveConfig();
+  } else if (a === "c-season") {
+    f.season = !f.season;
+    if (f.season) f.sv.forEach(e => { if (e.vw === undefined) { e.ew = e.en; e.vw = e.v; } });   // Winter startet als Kopie
+    saveConfig();
+  } else if (a === "val") {
+    if (byPlan(f)) toast("„" + f.name + "“: Freigabe nach Zeitprogramm – in „Aktuell“ → ⏱ Zeitprogramm umstellen", 3500);
+    else if (f.type === "heat") openHeatPop(el, g, f, s, false, w);
+    else if (f.type === "blind") openBlindPop(el, g, f, s, false, w);
+    else if (f.type === "rgbw") openColorPop(el, g, f, s, false, w);
+    else if (f.type === "switch" || f.type === "lock") {
+      const nv = num(f.sv[s - 1][K[1]]) >= 0.5 ? 0 : 1;
+      f.sv[s - 1][K[1]] = nv; el.innerHTML = valHtml(f, nv);
+      cell(g, f, s, { v: nv, w });
+    } else openPop(el, g, f, s, false, w);
+  } else if (a === "live") {
+    if (!f.key && !f.moveKey && !f.modeKey && !(f.type === "rgbw" && (f.rKey || f.gKey || f.bKey || f.wKey))) return toast("Kein Steuer-KO eingetragen");
+    if (f.type === "heat") openHeatPop(el, g, f, 0, true, false);
+    else if (f.type === "blind") openBlindPop(el, g, f, 0, true, false);
+    else if (f.type === "rgbw") openColorPop(el, g, f, 0, true, false);
+    else if (f.type === "switch" || f.type === "lock") {
+      const cur = num(liveVal(f));
+      const nv = cur !== undefined && cur >= 0.5 ? 0 : 1;
+      live(g, f, nv);
+    } else openPop(el, g, f, 0, true);
+  } else if (a === "edit") editFunc(f);
+  else if (a === "up" || a === "down") {
+    const vis = visibleFuncs(g).filter(x => x.trade === f.trade);
+    const k = vis.indexOf(f), o = vis[a === "up" ? k - 1 : k + 1];
+    if (!o) return;
+    const i = g.funcs.indexOf(f), j = g.funcs.indexOf(o);
+    [g.funcs[i], g.funcs[j]] = [g.funcs[j], g.funcs[i]];
+    render(); saveConfig();
+  }
+}
+$("#grid").addEventListener("click", gridClick);
+$("#mob").addEventListener("click", gridClick);
+
+async function cell(g, f, s, body) {
+  saving = true;
+  try {
+    const r = await api("api/value", Object.assign({ g: g.id, f: f.id, s }, body));
+    REV = r.rev;
+    pageSend(r);
+    const active = (ST.active[g.id] || 0) === s;
+    if (r.other_season && active) toast("Gespeichert – gilt erst im " + (body.w ? "Winter" : "Sommer"), 2500);
+    else if (r.sent) toast("Gespeichert und gesendet (aktive Szene)");
+    else if (r.blocked && r.blocked.length) toast("Gespeichert – zurückgestellt: " + r.blocked.map(x => ({ Daemmerung: "es ist hell", Regen: "es regnet (wird danach wiederhergestellt)", Temperatur: "Außentemperatur zu niedrig" }[x] || x)).join(", "), 3500);
+    else if (!active) toast("Gespeichert – wird beim nächsten Aufruf der Szene gesendet", 1800);
+    else toast("Gespeichert");
+  } catch (e) { toast("Nicht gespeichert: " + e.message); await loadConfig(); }
+  finally { saving = false; }
+}
+const BUSY = new Map();   // fid -> {target, timer}: gesendet, Rückmeldung steht noch aus
+function markBusy(f, v) {
+  const old = BUSY.get(f.id); if (old) clearTimeout(old.timer);
+  const timer = setTimeout(() => { if (BUSY.get(f.id) && BUSY.get(f.id).timer === timer) { BUSY.delete(f.id); updateLive(); toast("Keine Rückmeldung für „" + f.name + "“ – Status-KO prüfen"); } }, 4000);
+  BUSY.set(f.id, { target: v, timer }); updateLive();
+}
+async function live(g, f, v, m, c) {
+  if ((!m || m === "pos") && f.type !== "rgbw") markBusy(f, v);
+  try {
+    const direct = wsOpen();
+    const r = await api("api/set", { g: g.id, f: f.id, v, m, c, nosend: direct });
+    if (direct && r.kos) wsSendAll(r.kos);
+    if (m === "move") toast(f.name + ": " + lbl(f)[v >= 50 ? 1 : 0] + " fahren", 1500);
+    if (m === "stop") toast(f.name + ": Stopp", 1200);
+    if (r.stored) { REV = r.rev; await loadConfig(); }
+  } catch (e) { const b = BUSY.get(f.id); if (b) clearTimeout(b.timer); BUSY.delete(f.id); toast(e.message); updateLive(); }
+}
+
+/* ---------- Regler für Dimmer/Werte ---------- */
+let POP = null, popSendT = null;
+function openPop(anchor, g, f, s, isLive, w) {
+  closePop();
+  const min = f.min ?? 0, max = f.max ?? 100, step = f.step || 1;
+  const cur = isLive ? num(liveVal(f)) : num(f.sv[s - 1][w ? "vw" : "v"]);
+  const v0 = cur === undefined ? min : cur;
+  const quick = f.type === "dim" || f.type === "blind" ? [0, 25, 50, 75, 100] : [min, max];
+  const qLabel = q => f.type === "blind" ? (q <= 0 ? lbl(f)[0] : q >= 100 ? lbl(f)[1] : q + " %") : (q === 0 && f.type === "dim" ? "Aus" : fmt(q) + (f.unit === "%" ? " %" : f.unit ? " " + f.unit : ""));
+  const p = $("#pop");
+  const curLine = !f.season || (ST.sensors && ST.sensors.summer === true) ? !w : w;
+  const sub = isLive ? "Aktuell – wird sofort gesendet" : esc(g.scenes[s - 1].name.replace(/\n/g, " – ")) + (f.season ? (w ? " · Winter" : " · Sommer") : "")
+    + ((ST.active[g.id] || 0) === s && curLine ? " (aktiv – wird gesendet)" : " – wird nur gespeichert");
+  if (f.type === "mode") {
+    p.innerHTML = `<h4>${esc(f.name)}</h4><div class="mu">${sub}</div><div class="modes">${MODES.map(([v, n]) => `<button class="btn ${Math.round(v0) === v ? "sel" : ""}" data-m="${v}">${n}</button>`).join("")}</div>`;
+    placePop(p, anchor);
+    POP = { g, f, s, w, live: isLive, fid: f.id, anchor, v: v0, committed: v0 };
+    p.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { POP.v = +b.dataset.m; anchor.innerHTML = valHtml(f, POP.v); commitPop(); closePop(); });
+    return;
+  }
+  p.innerHTML = `<h4>${esc(f.name)}</h4><div class="mu">${sub}</div>
+    <input type="range" id="pR" min="${min}" max="${max}" step="${step}" value="${v0}">
+    <div class="row"><input type="number" id="pN" min="${min}" max="${max}" step="${step}" value="${v0}"><span>${esc(f.unit || "")}</span>
+      <span style="flex:1"></span><button class="btn small pri" id="pOk">OK</button></div>
+    <div class="row">${quick.map(q => `<button class="btn small" data-q="${q}">${esc(qLabel(q))}</button>`).join("")}</div>`;
+  placePop(p, anchor);
+  POP = { g, f, s, w, live: isLive, fid: f.id, anchor, v: v0, committed: v0 };
+  const R = $("#pR"), N = $("#pN");
+  const setV = (v, send) => {
+    if (!POP) return;
+    v = Math.min(max, Math.max(min, num(v) ?? min)); POP.v = v; R.value = v; N.value = v;
+    anchor.innerHTML = valHtml(f, v);
+    if (isLive && send) { clearTimeout(popSendT); popSendT = setTimeout(() => commitPop(), 250); }
+  };
+  R.oninput = () => setV(R.value, true);
+  R.onchange = () => { setV(R.value); commitPop(); };
+  N.onchange = () => { setV(N.value); commitPop(); };
+  N.onkeydown = e => { if (e.key === "Enter") { setV(N.value); commitPop(); closePop(); } };
+  $("#pOk").onclick = () => { setV(N.value); commitPop(); closePop(); };
+  p.querySelectorAll("[data-q]").forEach(b => b.onclick = () => { setV(b.dataset.q); commitPop(); });
+}
+/* Heizung: Betriebsart + Sollwert (Szene: speichern, Aktuell: sofort senden) */
+function openHeatPop(anchor, g, f, s, isLive, w) {
+  closePop();
+  const p = $("#pop"), min = f.min ?? 5, max = f.max ?? 30, step = f.step || 0.5;
+  const e = isLive ? null : f.sv[s - 1];
+  const K = w ? { o: "ow", sp: "spw", v: "vw" } : { o: "o", sp: "sp", v: "v" };
+  let o = isLive ? num(gv(f.modeStatus || f.modeKey)) : e[K.o];
+  let sp = isLive ? true : !!e[K.sp];
+  let v = isLive ? num(gv(f.setStatus || f.key)) : num(e[K.v]);
+  if (v === undefined) v = 21;
+  const curLine = !f.season || (ST.sensors && ST.sensors.summer === true) ? !w : w;
+  const sub = isLive ? "Aktuell – wird sofort gesendet" : esc(g.scenes[s - 1].name.replace(/\n/g, " – ")) + (f.season ? (w ? " · Winter" : " · Sommer") : "")
+    + ((ST.active[g.id] || 0) === s && curLine ? " (aktiv – wird gesendet)" : " – wird nur gespeichert");
+  POP = { g, f, s, w, live: isLive, fid: f.id, anchor };
+  const save = body => {
+    if (isLive) { liveHeat(g, f, body); return; }
+    if ("o" in body) e[K.o] = body.o; if ("v" in body) e[K.v] = body.v; if ("sp" in body) e[K.sp] = body.sp;
+    anchor.innerHTML = heatCellHtml(f, e, w);
+    cell(g, f, s, Object.assign({ w }, body));
+  };
+  const draw = () => {
+    let h = `<h4>${esc(f.name)}</h4><div class="mu">${sub}</div>`;
+    if (isLive && f.status) h += `<div class="hsec">Ist ${num(gv(f.status)) === undefined ? "–" : fmt(num(gv(f.status)), 1)} °C${f.valveKey ? " · Ventil " + (num(gv(f.valveKey)) === undefined ? "–" : fmt(num(gv(f.valveKey)), 0) + " %") : ""}</div>`;
+    if (f.modeKey) {
+      h += `<div class="hsec">Betriebsart</div><div class="modes m3">${HMODES.map(([x, n]) => `<button class="btn ${o === x ? "sel" : ""}" data-o="${x}">${n}</button>`).join("")}`;
+      if (!isLive) h += `<button class="btn ${o === null || o === undefined ? "sel" : ""}" data-o="-" title="Betriebsart in dieser Szene nicht senden">nicht senden</button>`;
+      h += `</div>`;
+    }
+    if (f.key) {
+      h += `<div class="hsec">Sollwert</div>`;
+      if (!isLive) h += `<div class="seg hseg"><button type="button" data-sp="0" class="${sp ? "" : "sel"}">${f.modeKey ? "nur Betriebsart" : "nicht senden"}</button><button type="button" data-sp="1" class="${sp ? "sel" : ""}">${f.modeKey ? "Betriebsart + Sollwert" : "Sollwert senden"}</button></div>`;
+      const off = !isLive && !sp;
+      h += `<div class="hsp ${off ? "off" : ""}"><button class="btn" id="hMinus" ${off ? "disabled" : ""}>−</button><input type="number" id="hV" min="${min}" max="${max}" step="${step}" value="${v}" ${off ? "disabled" : ""}><span>°C</span><button class="btn" id="hPlus" ${off ? "disabled" : ""}>+</button>
+        <button class="btn small pri" id="hOk">${isLive ? "Senden" : "OK"}</button></div>`;
+      if (off) h += `<div class="mu" style="font-size:12px;margin-top:4px">Der Sollwert bleibt unverändert, es wird nur die Betriebsart gesendet.</div>`;
+    }
+    if (isLive) h += `<div class="hsec">Zeitprogramm</div><div class="row" style="margin-top:4px"><span class="mu" style="flex:1">${{ scene: "Freigabe nach Szene", plan: "Freigabe nach Zeitprogramm", both: "Szene + Zeitprogramm" }[f.ctl || (f.plan && f.plan.on ? "both" : "scene")]}${f.plan && f.plan.on && planNext(f) ? "<br>" + esc(planNext(f)) : ""}</span><button class="btn small" id="hPlan">⏱ Zeitprogramm …</button></div>`;
+    p.innerHTML = h; placePop(p, anchor);
+    const hp = $("#hPlan"); if (hp) hp.onclick = () => openPlan(g, f);
+    p.querySelectorAll("[data-o]").forEach(b => b.onclick = () => {
+      if (!POP) return;
+      o = b.dataset.o === "-" ? null : +b.dataset.o; save({ o }); draw();
+      if (isLive) toast(f.name + ": " + HMODE_N[o], 1500);
+    });
+    const V = $("#hV");
+    if (V) {
+      const setV = x => { v = Math.min(max, Math.max(min, Math.round((num(x) ?? v) / step) * step)); V.value = v; };
+      // Sollwert ändern schaltet die Wahl „nur Betriebsart / + Sollwert“ nicht mehr um
+      $("#hMinus").onclick = () => { setV(v - step); if (!isLive) save({ v, sp }); };
+      $("#hPlus").onclick = () => { setV(v + step); if (!isLive) save({ v, sp }); };
+      V.onchange = () => { setV(V.value); if (!isLive) save({ v, sp }); };
+      $("#hOk").onclick = () => {
+        if (isLive) { setV(V.value); save({ v }); toast(f.name + ": Sollwert " + fmt(v, 1) + " °C", 1500); }
+        else if (sp && num(V.value) !== num(e[K.v])) { setV(V.value); save({ v, sp }); }
+        closePop();
+      };
+    }
+    p.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => { if (!POP) return; sp = b.dataset.sp === "1"; save({ sp }); draw(); });
+  };
+  draw();
+}
+/* ---------- Feiertage (wie im Baustein) ---------- */
+const STATES = [["BW", "Baden-Württemberg"], ["BY", "Bayern"], ["BE", "Berlin"], ["BB", "Brandenburg"], ["HB", "Bremen"], ["HH", "Hamburg"], ["HE", "Hessen"], ["MV", "Mecklenburg-Vorpommern"],
+  ["NI", "Niedersachsen"], ["NW", "Nordrhein-Westfalen"], ["RP", "Rheinland-Pfalz"], ["SL", "Saarland"], ["SN", "Sachsen"], ["ST", "Sachsen-Anhalt"], ["SH", "Schleswig-Holstein"], ["TH", "Thüringen"]];
+const PRE_T = [10, 5, 0, -5, -10, -15, -20], PRE_DEF = [30, 45, 60, 90, 120, 150, 180];
+const iso = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+function easter(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const n = h + l - 7 * m + 114; return new Date(y, Math.floor(n / 31) - 1, (n % 31) + 1);
+}
+function holidays(y, st, mh) {
+  const e = easter(y), D = (mo, d) => iso(new Date(y, mo - 1, d)), E = n => iso(new Date(e.getFullYear(), e.getMonth(), e.getDate() + n));
+  const h = { [D(1, 1)]: "Neujahr", [E(-2)]: "Karfreitag", [E(1)]: "Ostermontag", [D(5, 1)]: "Tag der Arbeit", [E(39)]: "Christi Himmelfahrt",
+    [E(50)]: "Pfingstmontag", [D(10, 3)]: "Tag der Deutschen Einheit", [D(12, 25)]: "1. Weihnachtstag", [D(12, 26)]: "2. Weihnachtstag" };
+  if (["BW", "BY", "ST"].includes(st)) h[D(1, 6)] = "Heilige Drei Könige";
+  if (st === "BE" || (st === "MV" && y >= 2023)) h[D(3, 8)] = "Frauentag";
+  if (st === "BB") { h[E(0)] = "Ostersonntag"; h[E(49)] = "Pfingstsonntag"; }
+  if (["BW", "BY", "HE", "NW", "RP", "SL"].includes(st)) h[E(60)] = "Fronleichnam";
+  if (st === "SL" || (st === "BY" && mh)) h[D(8, 15)] = "Mariä Himmelfahrt";
+  if (st === "TH" && y >= 2019) h[D(9, 20)] = "Weltkindertag";
+  if (["BB", "MV", "SN", "ST", "TH"].includes(st) || (["HB", "HH", "NI", "SH"].includes(st) && y >= 2018)) h[D(10, 31)] = "Reformationstag";
+  if (["BW", "BY", "NW", "RP", "SL"].includes(st)) h[D(11, 1)] = "Allerheiligen";
+  if (st === "SN") { const d = new Date(y, 10, 22); while (d.getDay() !== 3) d.setDate(d.getDate() - 1); h[iso(d)] = "Buß- und Bettag"; }
+  return h;
+}
+/* Brückentag: einzelner Arbeitstag zwischen Feiertag und freiem Tag (wie im Baustein) */
+function isBridge(dt, wd, cal) {
+  if (!cal || !cal.bridge) return false;
+  const dow = x => (x.getDay() + 6) % 7, hol = x => !!holidays(x.getFullYear(), cal.state, cal.mh)[iso(x)];
+  if (dow(dt) >= wd || hol(dt)) return false;
+  const free = x => (cal.days || {})[iso(x)] === 1 || dow(x) >= wd || hol(x);
+  const a = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() - 1), b = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1);
+  return free(a) && free(b) && (hol(a) || hol(b));
+}
+function preMin(pre, t) {
+  if (t === null || t === undefined) return Math.max(...pre);
+  if (t >= PRE_T[0]) return pre[0]; if (t <= PRE_T[6]) return pre[6];
+  for (let i = 0; i < 6; i++) if (t <= PRE_T[i] && t >= PRE_T[i + 1]) return pre[i] + (pre[i + 1] - pre[i]) * (PRE_T[i] - t) / (PRE_T[i] - PRE_T[i + 1]);
+  return pre[6];
+}
+const WD = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+function planNext(f) {
+  const pi = ST.sensors && ST.sensors.plans ? ST.sensors.plans[f.id] : null;
+  if (!pi || !pi.next) return "";
+  const d = new Date(pi.at), today = new Date(); today.setHours(0, 0, 0, 0);
+  const dd = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - today) / 864e5);
+  const when = (dd === 0 ? "heute" : dd === 1 ? "morgen" : WD[d.getDay()] + " " + String(d.getDate()).padStart(2, "0") + "." + String(d.getMonth() + 1).padStart(2, "0") + ".") + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  return pi.next === "k" ? "⏱ Heizen ab " + when + " (Vorlauf " + pi.pre + " min, Kommen " + pi.come + ")" : "⏱ Gehen " + when;
+}
+let PLAN_CAL = null, PLAN_MON = null;
+function openPlan(g, f) {
+  closePop();
+  const p = Object.assign({ on: false, wd: 5, k: "07:00", g: "17:00", ko: 1, ksp: false, kv: 21, go: 3, gsp: false, gv: 18, pre: PRE_DEF.slice() }, f.plan || {});
+  PLAN_CAL = JSON.parse(JSON.stringify(CFG.cal || { state: "BY", mh: true, days: {} }));
+  if (!PLAN_CAL.days) PLAN_CAL.days = {};
+  const now = new Date(); PLAN_MON = new Date(now.getFullYear(), now.getMonth(), 1);
+  $("#dPlanT").textContent = "Zeitprogramm „" + f.name + "“";
+  const mopts = (sel) => `<option value="">nicht senden</option>` + HMODES.map(([x, n]) => `<option value="${x}" ${sel === x ? "selected" : ""}>${n}</option>`).join("");
+  $("#pCtl").value = f.ctl || (p.on ? "both" : "scene"); $("#pWd").value = String(p.wd);
+  $("#pK").value = p.k; $("#pG").value = p.g; $("#pKo").innerHTML = mopts(p.ko); $("#pGo").innerHTML = mopts(p.go);
+  $("#pKsp").checked = !!p.ksp; $("#pKv").value = p.kv; $("#pGsp").checked = !!p.gsp; $("#pGv").value = p.gv;
+  for (const [i, el] of [["#pKv", 0], ["#pGv", 0]]) { $(i).min = f.min ?? 5; $(i).max = f.max ?? 30; }
+  $("#pKo").value = p.ko === null || p.ko === undefined ? "" : String(p.ko); $("#pGo").value = p.go === null || p.go === undefined ? "" : String(p.go);
+  const PRE_MO = [45, 60, 90, 120, 150, 180, 240];
+  let rows = Array.isArray(p.pre) && Array.isArray(p.pre[0]) ? p.pre : [0, 1, 2, 3, 4, 5].map(i => Array.isArray(p.pre) && p.pre.length === 7 ? p.pre.slice() : (i ? PRE_DEF : PRE_MO).slice());
+  const DN = ["Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+  $("#pPre").innerHTML = `<div></div>` + PRE_T.map(t => `<div>${t > 0 ? "+" : ""}${t} °C</div>`).join("") + `<div>Start</div>`
+    + rows.map((r, d) => `<div class="pd" data-row="${d}">${DN[d]}</div>` + r.map((m, i) => `<input type="number" min="0" max="720" step="5" data-pd="${d}" data-pi="${i}" value="${m}">`).join("") + `<div class="ps" id="pS${d}"></div>`).join("");
+  $("#pAf").checked = p.af !== false;
+  const readRows = () => [0, 1, 2, 3, 4, 5].map(d => [...document.querySelectorAll(`#pPre input[data-pd="${d}"]`)].map(x => Math.max(0, Math.round(+x.value || 0))));
+  $("#pCopy").onclick = () => { const r = readRows()[1]; for (let d = 2; d < 6; d++) r.forEach((m, i) => { document.querySelector(`#pPre input[data-pd="${d}"][data-pi="${i}"]`).value = m; }); upd(); };
+  $("#pState").innerHTML = STATES.map(([k, n]) => `<option value="${k}">${n}</option>`).join(""); $("#pState").value = PLAN_CAL.state || "BY";
+  $("#pMh").checked = PLAN_CAL.mh !== false; $("#pBr").checked = !!PLAN_CAL.bridge;
+  const upd = () => {
+    $("#pMhL").hidden = $("#pState").value !== "BY";
+    const T = ST.sensors ? (ST.sensors.tavg ?? ST.sensors.temp) : null;
+    const [kh, km] = ($("#pK").value || "07:00").split(":").map(Number), wd = +$("#pWd").value;
+    const hh = x => String(x.getHours()).padStart(2, "0") + ":" + String(x.getMinutes()).padStart(2, "0");
+    readRows().forEach((r, d) => {
+      const m = Math.round(preMin(r, T)), on = d < wd;
+      $("#pS" + d).innerHTML = on ? hh(new Date(2000, 0, 1, kh, km - m)) + ` <span class="mu">(${m})</span>` : "–";
+      document.querySelectorAll(`#pPre [data-pd="${d}"], #pPre [data-row="${d}"], #pS${d}`).forEach(e => e.classList.toggle("off", !on));
+    });
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    $("#pPreLive").innerHTML = "Außentemperatur (Ø 3 h): <b>" + (T === null || T === undefined ? "unbekannt → längster Vorlauf" : fmt(T, 1) + " °C") + "</b>" + (ST.sensors && ST.sensors.plans && ST.sensors.plans[f.id] && f.plan && f.plan.on ? " · nächste Aktion: <b>" + esc(planNext(f).replace("⏱ ", "")) + "</b>" : "");
+    drawCal();
+  };
+  const drawCal = () => {
+    PLAN_CAL.state = $("#pState").value; PLAN_CAL.mh = $("#pMh").checked; PLAN_CAL.bridge = $("#pBr").checked;
+    const y = PLAN_MON.getFullYear(), mo = PLAN_MON.getMonth(), hol = holidays(y, PLAN_CAL.state, PLAN_CAL.mh), wd = +$("#pWd").value;
+    $("#pMon").textContent = PLAN_MON.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+    let h = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map(x => `<div class="dw">${x}</div>`).join("");
+    const first = (new Date(y, mo, 1).getDay() + 6) % 7, days = new Date(y, mo + 1, 0).getDate(), td = iso(new Date());
+    for (let i = 0; i < first; i++) h += "<i></i>";
+    for (let d = 1; d <= days; d++) {
+      const dt = new Date(y, mo, d), k = iso(dt), dow = (dt.getDay() + 6) % 7, man = PLAN_CAL.days[k];
+      const brg = man === undefined && isBridge(dt, wd, PLAN_CAL);
+      const cls = [dow >= wd ? "we" : "", hol[k] ? "hol" : "", brg ? "brg" : "", man === 1 ? "man" : "", man === 0 ? "wrk" : "", k === td ? "today" : ""].join(" ");
+      const lab = man === 1 ? "frei" : man === 0 ? "Arbeit" : hol[k] ? hol[k] : brg ? "Brückentag" : "";
+      h += `<button type="button" class="${cls}" data-d="${k}" title="${esc(hol[k] || "")}">${d}<small>${esc(lab)}</small></button>`;
+    }
+    $("#pCal").innerHTML = h;
+  };
+  $("#pCal").onclick = e => {
+    const b = e.target.closest("[data-d]"); if (!b) return;
+    const k = b.dataset.d, cur = PLAN_CAL.days[k];
+    const [y, mo, dd] = k.split("-").map(Number), dt = new Date(y, mo - 1, dd);
+    const natFree = (dt.getDay() + 6) % 7 >= +$("#pWd").value || !!holidays(y, PLAN_CAL.state, PLAN_CAL.mh)[k] || isBridge(dt, +$("#pWd").value, PLAN_CAL);
+    if (cur !== undefined) delete PLAN_CAL.days[k];           // zurück auf automatisch
+    else PLAN_CAL.days[k] = natFree ? 0 : 1;                  // freien Tag zum Arbeitstag, Arbeitstag zum freien Tag
+    drawCal();
+  };
+  $("#pPrev").onclick = () => { PLAN_MON = new Date(PLAN_MON.getFullYear(), PLAN_MON.getMonth() - 1, 1); drawCal(); };
+  $("#pNext").onclick = () => { PLAN_MON = new Date(PLAN_MON.getFullYear(), PLAN_MON.getMonth() + 1, 1); drawCal(); };
+  ["#pState", "#pMh", "#pBr", "#pWd", "#pK"].forEach(x => $(x).onchange = upd);
+  $("#pPre").oninput = upd;
+  upd();
+  const d = $("#dPlan");
+  d.onclose = () => {
+    if (d.returnValue !== "ok") return;
+    const ov = x => x === "" ? null : +x;
+    f.ctl = $("#pCtl").value;
+    f.plan = { on: f.ctl !== "scene", wd: +$("#pWd").value, k: $("#pK").value || "07:00", g: $("#pG").value || "17:00",
+      ko: ov($("#pKo").value), ksp: $("#pKsp").checked, kv: num($("#pKv").value) ?? 21, go: ov($("#pGo").value), gsp: $("#pGsp").checked, gv: num($("#pGv").value) ?? 18,
+      pre: readRows(), af: $("#pAf").checked };
+    CFG.cal = { state: $("#pState").value, mh: $("#pMh").checked, bridge: $("#pBr").checked, days: PLAN_CAL.days };
+    saveConfig(); toast("Zeitprogramm gespeichert");
+  };
+  d.returnValue = ""; d.showModal();
+}
+async function liveHeat(g, f, body) {
+  try {
+    const direct = wsOpen();
+    const r = await api("api/set", Object.assign({ g: g.id, f: f.id, nosend: direct }, body));
+    if (direct && r.kos) wsSendAll(r.kos);
+    if (r.stored) { REV = r.rev; await loadConfig(); }
+  } catch (e) { toast(e.message); }
+}
+/* Rollo/Dachfenster: Fahren (1 Bit Langzeit) oder Position absolut */
+function openBlindPop(anchor, g, f, s, isLive, w) {
+  closePop();
+  const p = $("#pop"), hasPos = !!f.key, hasMove = !!f.moveKey;
+  const e = isLive ? null : f.sv[s - 1];
+  let mode = isLive ? "pos" : ((w ? e.mw : e.m) === "move" || !hasPos ? "move" : "pos");
+  let v = isLive ? num(liveVal(f)) : num(w ? e.vw : e.v);
+  if (v === undefined) v = 0;
+  const curLine = !f.season || (ST.sensors && ST.sensors.summer === true) ? !w : w;
+  const sub = isLive ? "Aktuell – wird sofort gesendet" : esc(g.scenes[s - 1].name.replace(/\n/g, " – ")) + (f.season ? (w ? " · Winter" : " · Sommer") : "")
+    + ((ST.active[g.id] || 0) === s && curLine ? " (aktiv – wird gesendet)" : " – wird nur gespeichert");
+  POP = { g, f, s, w, live: isLive, fid: f.id, anchor, v, m: mode, committed: isLive ? null : v + "|" + mode };
+  const L = lbl(f);
+  const draw = () => {
+    let h = `<h4>${esc(f.name)}</h4><div class="mu">${sub}</div>`;
+    if (isLive) {
+      if (hasMove) h += `<div class="mvb ${f.stopKey ? "three" : ""}"><button class="btn" data-mv="0">${L[0] === "Auf" ? "▲" : "▼"} ${esc(L[0])}</button>${f.stopKey ? `<button class="btn" data-stop="1">■ Stopp</button>` : ""}<button class="btn" data-mv="100">${L[1] === "Auf" ? "▲" : "▼"} ${esc(L[1])}</button></div>`;
+      if (hasPos) h += posHtml();
+    } else {
+      if (hasPos && hasMove) h += `<div class="seg"><button data-md="move" class="${mode === "move" ? "sel" : ""}">Auf/Ab fahren (1 Bit)</button><button data-md="pos" class="${mode === "pos" ? "sel" : ""}">Position 0–100 %</button></div>`;
+      if (mode === "move") h += `<div class="mvb"><button class="btn ${v < 50 ? "sel" : ""}" data-mv="0">${L[0] === "Auf" ? "▲" : "▼"} ${esc(L[0])} fahren</button><button class="btn ${v >= 50 ? "sel" : ""}" data-mv="100">${L[1] === "Auf" ? "▲" : "▼"} ${esc(L[1])} fahren</button></div>`;
+      else h += posHtml();
+    }
+    p.innerHTML = h;
+    placePop(p, anchor);
+    p.querySelectorAll("[data-md]").forEach(b => b.onclick = () => { if (!POP) return; mode = b.dataset.md; POP.m = mode; if (mode === "move") { v = v >= 50 ? 100 : 0; POP.v = v; } draw(); commitBlind(); });
+    p.querySelectorAll("[data-mv]").forEach(b => b.onclick = () => {
+      if (!POP) return;
+      v = +b.dataset.mv; POP.v = v;
+      if (isLive) live(g, f, v, "move"); else { POP.m = mode = "move"; commitBlind(); closePop(); }
+    });
+    p.querySelectorAll("[data-stop]").forEach(b => b.onclick = () => live(g, f, 0, "stop"));
+    const R = $("#pR"), N = $("#pN");
+    if (R) {
+      const setV = (x, send) => { if (!POP) return; x = Math.min(100, Math.max(0, num(x) ?? 0)); v = x; POP.v = x; R.value = x; N.value = x;
+        anchor.innerHTML = valHtml(f, x, "pos", isLive);
+        if (isLive && send) { clearTimeout(popSendT); popSendT = setTimeout(() => live(g, f, POP.v, "pos"), 250); } };
+      const fin = () => { if (!POP) return; if (isLive) live(g, f, v, "pos"); else { POP.m = mode = "pos"; commitBlind(); } };
+      R.oninput = () => setV(R.value, true);
+      R.onchange = () => { setV(R.value); if (!isLive) fin(); };
+      N.onchange = () => { setV(N.value); fin(); };
+      N.onkeydown = ev => { if (ev.key === "Enter") { setV(N.value); fin(); closePop(); } };
+      p.querySelectorAll("[data-q]").forEach(b => b.onclick = () => { setV(b.dataset.q); fin(); });
+    }
+  };
+  const posHtml = () => `<input type="range" id="pR" min="0" max="100" step="${f.step || 1}" value="${v}">
+    <div class="row"><input type="number" id="pN" min="0" max="100" step="${f.step || 1}" value="${v}"><span>%</span></div>
+    <div class="row">${[0, 25, 50, 75, 100].map(q => `<button class="btn small" data-q="${q}">${esc(q <= 0 ? L[0] : q >= 100 ? L[1] : q + " %")}</button>`).join("")}</div>`;
+  draw();
+}
+/* ---------- RGBW: Farbrad + Weiß + Helligkeit ---------- */
+function hsv2rgb(h, s, v) {
+  const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+  return [f(5), f(3), f(1)];
+}
+function rgb2hs(r, g, b) {
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let h = 0;
+  if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [(h * 60 + 360) % 360, mx ? d / mx : 0];
+}
+let wheelImg = null;
+function drawWheel(cv, c) {
+  const ctx = cv.getContext("2d"), N = cv.width, R = N / 2 - 2;
+  if (!wheelImg) {
+    wheelImg = ctx.createImageData(N, N);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const dx = x - N / 2, dy = y - N / 2, d = Math.hypot(dx, dy), i = (y * N + x) * 4;
+      if (d > R) { wheelImg.data[i + 3] = 0; continue; }
+      const [r, g, b] = hsv2rgb((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360, d / R, 1);
+      wheelImg.data[i] = r * 255; wheelImg.data[i + 1] = g * 255; wheelImg.data[i + 2] = b * 255; wheelImg.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(wheelImg, 0, 0);
+  if (c[0] || c[1] || c[2]) {
+    const [h, sat] = rgb2hs(c[0], c[1], c[2]), a = h * Math.PI / 180;
+    const x = N / 2 + Math.cos(a) * sat * R, y = N / 2 + Math.sin(a) * sat * R;
+    ctx.lineWidth = 3; ctx.strokeStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.stroke();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "#000"; ctx.beginPath(); ctx.arc(x, y, 10, 0, 7); ctx.stroke();
+  }
+}
+const PRESETS = [["Warmweiß", [0, 0, 0, 100]], ["Kaltweiß", [100, 100, 100, 0]], ["Neutral", [60, 55, 45, 70]], ["Rot", [100, 0, 0, 0]],
+  ["Orange", [100, 45, 0, 0]], ["Gelb", [100, 90, 0, 0]], ["Grün", [0, 100, 0, 0]], ["Cyan", [0, 100, 100, 0]], ["Blau", [0, 0, 100, 0]], ["Violett", [60, 0, 100, 0]]];
+function openColorPop(anchor, g, f, s, isLive, w) {
+  closePop();
+  const p = $("#pop"), e = isLive ? null : f.sv[s - 1];
+  let c = (isLive ? liveColor(f) : (w ? (e.cw || e.c) : e.c) || [0, 0, 0, 100]).slice();
+  let v = isLive ? num(liveVal(f)) : num(w ? e.vw : e.v);
+  if (v === undefined) v = 0;
+  const curLine = !f.season || (ST.sensors && ST.sensors.summer === true) ? !w : w;
+  const sub = isLive ? "Aktuell – wird sofort gesendet" : esc(g.scenes[s - 1].name.replace(/\n/g, " – ")) + (f.season ? (w ? " · Winter" : " · Sommer") : "")
+    + ((ST.active[g.id] || 0) === s && curLine ? " (aktiv – wird gesendet)" : " – wird nur gespeichert");
+  p.classList.add("wide");
+  p.innerHTML = `<h4>${esc(f.name)}</h4><div class="mu">${sub}</div>
+    <canvas id="cw" width="200" height="200"></canvas>
+    <div class="crow"><span>Weiß</span><input type="range" id="cW" min="0" max="100" step="1" value="${Math.round(c[3])}"><b id="cWt">${Math.round(c[3])} %</b></div>
+    ${f.key ? `<div class="crow"><span>Helligkeit</span><input type="range" id="cV" min="0" max="100" step="1" value="${Math.round(v)}"><b id="cVt">${Math.round(v)} %</b></div>` : ""}
+    <div class="presets">${PRESETS.map(([n, pc], i) => `<button title="${n}" data-p="${i}" style="background:${rgbCss(pc)}"></button>`).join("")}</div>
+    <div class="row"><span class="mu" id="cTxt" style="margin:0"></span><span style="flex:1"></span>${f.key ? `<button class="btn small" id="cOff">Aus</button>` : ""}<button class="btn small pri" id="cOk">OK</button></div>`;
+  placePop(p, anchor);
+  POP = { g, f, s, w, live: isLive, fid: f.id, anchor, v, c, committed: isLive ? null : JSON.stringify([v, c]) };
+  const cv = $("#cw");
+  const show = () => {
+    drawWheel(cv, c);
+    $("#cTxt").textContent = "R " + Math.round(c[0]) + " · G " + Math.round(c[1]) + " · B " + Math.round(c[2]) + " · W " + Math.round(c[3]);
+    anchor.innerHTML = valHtml(f, v, "rgbw", isLive, c);
+  };
+  const send = now => {
+    if (!POP) return;
+    POP.v = v; POP.c = c;
+    if (isLive) { clearTimeout(popSendT); popSendT = setTimeout(() => live(g, f, v, "rgbw", c), now ? 0 : 200); }
+    else if (now) commitColor();
+  };
+  const pick = ev => {
+    const r = cv.getBoundingClientRect(), N = cv.width, R = N / 2 - 2;
+    const dx = (ev.clientX - r.left) * N / r.width - N / 2, dy = (ev.clientY - r.top) * N / r.height - N / 2;
+    const sat = Math.min(1, Math.hypot(dx, dy) / R), h = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
+    const rgb = hsv2rgb(h, sat, 1);
+    c = [rgb[0] * 100, rgb[1] * 100, rgb[2] * 100, c[3]].map(x => Math.round(x));
+    if (f.key && v === 0) { v = 100; if ($("#cV")) { $("#cV").value = 100; $("#cVt").textContent = "100 %"; } }
+    show(); send(false);
+  };
+  cv.onpointerdown = ev => { cv.setPointerCapture(ev.pointerId); pick(ev); cv.onpointermove = pick; };
+  cv.onpointerup = () => { cv.onpointermove = null; send(true); };
+  $("#cW").oninput = () => { c[3] = +$("#cW").value; $("#cWt").textContent = c[3] + " %"; show(); send(false); };
+  $("#cW").onchange = () => send(true);
+  if ($("#cV")) {
+    $("#cV").oninput = () => { v = +$("#cV").value; $("#cVt").textContent = v + " %"; show(); send(false); };
+    $("#cV").onchange = () => send(true);
+    $("#cOff").onclick = () => { v = 0; $("#cV").value = 0; $("#cVt").textContent = "0 %"; show(); send(true); };
+  }
+  p.querySelectorAll("[data-p]").forEach(b => b.onclick = () => {
+    c = PRESETS[+b.dataset.p][1].slice(); $("#cW").value = c[3]; $("#cWt").textContent = c[3] + " %";
+    if (f.key && v === 0) { v = 100; $("#cV").value = 100; $("#cVt").textContent = "100 %"; }
+    show(); send(true);
+  });
+  $("#cOk").onclick = () => { send(true); closePop(); };
+  show();
+}
+function commitColor() {
+  if (!POP || POP.live) return;
+  const key = JSON.stringify([POP.v, POP.c]);
+  if (key === POP.committed) return;
+  POP.committed = key;
+  const { g, f, s, w, v, c } = POP;
+  const e = f.sv[s - 1];
+  e[w ? "vw" : "v"] = v; e[w ? "cw" : "c"] = c.slice();
+  cell(g, f, s, { v, w, c });
+}
+function commitBlind() {
+  if (!POP || POP.live) return;
+  const key = POP.v + "|" + POP.m;
+  if (key === POP.committed) return;
+  POP.committed = key;
+  const { g, f, s, w, v, m } = POP;
+  const e = f.sv[s - 1];
+  e[w ? "vw" : "v"] = v;
+  if (m === "move") e[w ? "mw" : "m"] = "move"; else delete e[w ? "mw" : "m"];
+  POP.anchor.innerHTML = valHtml(f, v, m);
+  cell(g, f, s, { v, w, m });
+}
+function placePop(p, anchor) {
+  p.hidden = false;
+  p.classList.toggle("sheet", MOB);
+  if (MOB) return;                       // Handy: als Blatt von unten
+  const r = anchor.getBoundingClientRect();
+  const w = p.offsetWidth, hgt = p.offsetHeight;
+  const x = Math.min(window.innerWidth - w - 8, Math.max(8, r.left + r.width / 2 - w / 2));
+  let y = r.bottom + 6; if (y + hgt > window.innerHeight - 40) y = Math.max(8, r.top - hgt - 6);
+  p.style.left = x + "px"; p.style.top = y + "px";
+}
+function commitPop() {
+  if (!POP) return;
+  if (POP.f && POP.f.type === "heat") return;   // Heizung sendet/speichert direkt
+  if (POP.f && POP.f.type === "blind") { commitBlind(); return; }
+  if (POP.f && POP.f.type === "rgbw") { commitColor(); return; }
+  if (POP.v === POP.committed) return;
+  POP.committed = POP.v;
+  const { g, f, s, v, w } = POP;
+  if (POP.live) live(g, f, v);
+  else { f.sv[s - 1][w ? "vw" : "v"] = v; cell(g, f, s, { v, w }); }
+}
+function closePop() {
+  if (!POP) return;
+  if (POP.live && POP.f && POP.f.type === "rgbw" && popSendT) { clearTimeout(popSendT); live(POP.g, POP.f, POP.v, "rgbw", POP.c); }
+  clearTimeout(popSendT); commitPop(); POP = null; $("#pop").hidden = true; $("#pop").classList.remove("wide"); updateLive();
+}
+document.addEventListener("pointerdown", e => { if (POP && !e.target.closest("#pop") && !e.target.closest(".vb") && !e.target.closest(".cd")) closePop(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closePop(); });
+
+/* ---------- Sortieren per Ziehen (Maus + Touch) ---------- */
+let drag = null;
+$("#grid").addEventListener("pointerdown", e => {
+  const hd = e.target.closest(".handle"); if (!hd || !EDIT) return;
+  e.preventDefault();
+  const tr = hd.closest("tr"); tr.classList.add("dragging");
+  const wr = tr.nextElementSibling && tr.nextElementSibling.dataset.fw === tr.dataset.f ? tr.nextElementSibling : null;
+  drag = { tr, w: wr, x: e.clientX, moved: false };
+  window.addEventListener("pointermove", dragMove);
+  window.addEventListener("pointerup", dragEnd);
+  window.addEventListener("pointercancel", dragEnd);
+});
+function dragMove(ev) {
+  if (!drag) return;
+  ev.preventDefault();
+  const over = document.elementFromPoint(drag.x, ev.clientY);
+  let t2 = over && over.closest("#grid tbody tr");
+  if (t2 && t2.classList.contains("win")) t2 = t2.previousElementSibling;
+  if (!t2 || t2 === drag.tr || t2 === drag.w) return;
+  const r = t2.getBoundingClientRect();
+  const before = ev.clientY < r.top + r.height / 2;
+  const partner = t2.nextElementSibling && t2.nextElementSibling.classList.contains("win") ? t2.nextElementSibling : null;
+  const last = drag.w || drag.tr;
+  if (before && t2.previousElementSibling === last) return;              // steht schon davor
+  if (!before && (partner || t2).nextElementSibling === drag.tr) return;  // steht schon dahinter
+  t2.parentNode.insertBefore(drag.tr, before ? t2 : (partner || t2).nextSibling);
+  if (drag.w) drag.tr.after(drag.w);
+  drag.moved = true;
+}
+function dragEnd() {
+  window.removeEventListener("pointermove", dragMove);
+  window.removeEventListener("pointerup", dragEnd);
+  window.removeEventListener("pointercancel", dragEnd);
+  if (!drag) return;
+  drag.tr.classList.remove("dragging");
+  if (drag.moved) {
+    const g = grp(), old = JSON.stringify(g.funcs.map(f => [f.id, f.trade]));
+    // Gewerk aus dem Abschnitt übernehmen, in den die Zeile gezogen wurde
+    let p = drag.tr.previousElementSibling;
+    while (p && !p.classList.contains("sec")) p = p.previousElementSibling;
+    const f = g.funcs.find(x => x.id === drag.tr.dataset.f);
+    if (p && f) f.trade = p.dataset.trade;
+    else if (f && !p && drag.tr.parentNode.querySelector("tr.sec")) f.trade = drag.tr.parentNode.querySelector("tr.sec").dataset.trade;
+    // neue Reihenfolge der sichtbaren Zeilen, ausgeblendete behalten ihren Platz
+    const order = [...document.querySelectorAll("#grid tbody tr[data-f]")].map(t => t.dataset.f);
+    const visSet = new Set(order); let k = 0;
+    const byId = Object.fromEntries(g.funcs.map(x => [x.id, x]));
+    g.funcs = g.funcs.map(x => visSet.has(x.id) ? byId[order[k++]] : x);
+    if (JSON.stringify(g.funcs.map(x => [x.id, x.trade])) !== old) saveConfig(); else render();
+  }
+  drag = null;
+}
+
+/* ---------- Einrichtung speichern ---------- */
+async function saveConfig() {
+  saving = true;
+  try {
+    const r = await api("api/config", { base: REV, config: CFG });
+    REV = r.rev;
+    await loadConfig();
+  } catch (e) {
+    if (e.status === 409) toast("Inzwischen auf einem anderen Gerät geändert – neu geladen. Bitte Änderung wiederholen.", 4500);
+    else toast("Nicht gespeichert: " + e.message, 4000);
+    await loadConfig().catch(() => {});
+  } finally { saving = false; }
+}
+const rid = p => p + Math.random().toString(16).slice(2, 8);
+
+/* ---------- Szenenname ---------- */
+function renameScene(s) {
+  const g = grp(), d = $("#dScene");
+  $("#sName").value = g.scenes[s - 1].name;
+  d.onclose = () => { if (d.returnValue !== "ok") return; g.scenes[s - 1].name = $("#sName").value.trim() || "Szene " + s; saveConfig(); };
+  d.returnValue = ""; d.showModal();
+}
+
+/* ---------- Funktion ---------- */
+$("#fTrade").innerHTML = TRADES.map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
+/* Beschriftungen und sichtbare Felder je Art und Gewerk */
+const FT = {
+  switch: { key: "Steuer-KO (1 Bit)", keyPh: "z. B. 1/1/0 oder CO@1_1_0", st: "Status-KO", stPh: "optional, 1 Bit, leer = Steuer-KO", lbl: true, cond: ["dusk", "rain", "season"] },
+  lock:   { key: "Sperr-KO (1 Bit)", keyPh: "1 = gesperrt, 0 = freigegeben", st: "Sperr-Status", stPh: "optional, 1 Bit, leer = Sperr-KO", lbl: true, cond: ["season"],
+            hint: "Bedingungen: nur Sommer/Winter (z. B. im Winter sperren). Dämmerung/Regen gibt es bei der Sperre nicht." },
+  dim:    { key: "Helligkeit-KO (0–100 %)", keyPh: "8 Bit, DPT 5.001, z. B. 1/2/0", st: "Helligkeit-Status (%)", stPh: "optional, leer = Helligkeit-KO", nv: true, cond: ["dusk", "season"] },
+  updown: { key: "", keyPh: "", st: "Positions-Rückmeldung (%)", stPh: "optional, für „Aktuell“ in %", lbl: true, bl: true, cond: ["dusk", "rain", "season"] },
+  blind:  { key: "Position-KO (0–100 %)", keyPh: "absolut %, z. B. 4/0/0 (optional, wenn Fahren-KO)", st: "Positions-Rückmeldung (%)", stPh: "optional, leer = Position-KO", lbl: true, bl: true, cond: ["dusk", "rain", "season"] },
+  value:  { key: "Wert-KO", keyPh: "z. B. Sollwert DPT 9.001 oder 8 Bit", st: "Wert-Status", stPh: "optional, leer = Wert-KO", nv: true, unit: true, cond: ["season"],
+            hint: "Bedingung: Sommer/Winter (zwei Zeilen mit eigenem Wert)." },
+  mode:   { key: "Betriebsart-KO (8 Bit)", keyPh: "im HS DPT 5.010: 0 Auto, 1 Komfort, 2 Standby, 3 Nacht, 4 Frost", st: "Betriebsart-Status", stPh: "optional, leer = Betriebsart-KO", cond: ["season"],
+            hint: "Bedingung: Sommer/Winter (zwei Zeilen mit eigener Betriebsart)." },
+  heat:   { key: "Sollwert-KO (°C)", keyPh: "Basis-Sollwert DPT 9.001, z. B. 3/1/0 (optional)", st: "Ist-Temperatur", stPh: "Raumtemperatur DPT 9.001, z. B. 3/1/3", nv: true, minL: "Sollwert min / max / Schritt", cond: ["season"],
+            hint: "Bedingung: Sommer/Winter (zwei Zeilen). Zeitprogramm mit Vorlauf: in „Aktuell“ → ⏱ Zeitprogramm." },
+  rgbw:   { key: "Helligkeit-KO (0–100 %)", keyPh: "optional, 8 Bit, DPT 5.001", st: "Helligkeit-Status (%)", stPh: "optional, leer = Helligkeit-KO", cond: ["dusk", "season"] }
+};
+/* Anzeige-Texte 0/1 je Art und Gewerk (Platzhalter) */
+function lblDefaults(t, tr) {
+  if (t === "lock") return ["Freigegeben", "Gesperrt"];
+  if (t === "blind" || t === "updown") return tr === "rollo" ? ["Auf", "Zu"] : ["Zu", "Auf"];     // Rollo: 0 % = offen; Fenster/Tor: 0 % = zu
+  return LBL[tr] || LBL.sonst;
+}
+function syncFuncForm() {
+  const isRollo = $("#fTrade").value === "rollo", oSw = $('#fType option[value="switch"]');
+  oSw.hidden = oSw.disabled = isRollo;
+  if (isRollo && $("#fType").value === "switch") { $("#fType").value = "updown"; }
+  const tt = $("#fType").value, ud = tt === "updown", t = ud ? "blind" : tt, tr = $("#fTrade").value, c = FT[tt] || FT.switch;
+  const show = (sel, on) => document.querySelectorAll("#dFunc " + sel).forEach(e => e.style.display = on ? "" : "none");
+  show(".nv", !!c.nv); show(".lb", !!c.lbl); show(".bl", !!c.bl); show(".rg", t === "rgbw"); show(".hk", t === "heat"); show(".ky", !ud);
+  if (c.nv && !c.unit) { document.querySelectorAll('#dFunc .nv:is([for="fUnit"],#fUnit)').forEach(e => e.style.display = "none"); }
+  if (t === "heat") $("#fUnit").value = "°C";
+  $("#fMinL").textContent = c.minL || "Min / Max / Schritt";
+  $("#fKeyL").textContent = c.key || "Steuer-KO"; $("#fKey").placeholder = c.keyPh || "";
+  $("#fStatusL").textContent = c.st; $("#fStatus").placeholder = c.stPh;
+  $("#fMove").placeholder = ud ? "Auf/Ab Langzeit, z. B. 4/0/2" : "Auf/Ab Langzeit, z. B. 4/0/2 (optional)";
+  $("#fL0t").textContent = t === "blind" ? "0 % =" : "0 ="; $("#fL1t").textContent = t === "blind" ? "100 % =" : "1 =";
+  const d = lblDefaults(tt, tr); $("#fL0").placeholder = d[0]; $("#fL1").placeholder = d[1];
+  // Bedingungen nur, wo sie Sinn ergeben (gesetzte bleiben sichtbar, damit man sie abwählen kann)
+  const cond = new Set(c.cond);
+  if (!["dachfenster", "tor", "sonst"].includes(tr) && !$("#fRain").checked) cond.delete("rain");
+  $("#fDuskL").style.display = cond.has("dusk") || $("#fDusk").checked ? "" : "none";
+  $("#fRainL").style.display = cond.has("rain") || $("#fRain").checked ? "" : "none";
+  $("#fTminL").style.display = ["dachfenster", "tor", "rollo", "sonst", "licht"].includes(tr) && t !== "lock" && t !== "heat" || $("#fTminOn").checked ? "" : "none";
+  $("#fTmin").disabled = !$("#fTminOn").checked;
+  $("#fCondHint").textContent = c.hint || "Bedingungen gelten nur für Werte > 0 (Ein, Auf, Rollo zu). Aus und Schließen wird immer gesendet.";
+}
+function applyTypeDefaults() {
+  const d = tradeDefaults($("#fTrade").value, $("#fType").value);
+  if (d.unit !== undefined) { $("#fMin").value = d.min; $("#fMax").value = d.max; $("#fStep").value = d.step; $("#fUnit").value = d.unit; }
+  syncFuncForm();
+}
+$("#fType").onchange = applyTypeDefaults;
+$("#fDusk").onchange = $("#fRain").onchange = $("#fTminOn").onchange = syncFuncForm;
+$("#fTrade").onchange = () => {
+  if ($("#dFunc").dataset.isnew === "1") {
+    const tr = $("#fTrade").value;
+    $("#fRain").checked = tr === "dachfenster"; $("#fSeason").checked = tr === "dachfenster";
+    $("#fType").value = { rollo: "blind", heizung: "heat", tor: "switch", dachfenster: "switch" }[tr] || $("#fType").value;
+    applyTypeDefaults();
+  } else syncFuncForm();
+};
+function editFunc(f) {
+  const g = grp(), d = $("#dFunc"), isNew = !f;
+  f = f || { type: "switch", trade: TRADE || "licht", key: "", status: "", name: "", dusk: false, min: 0, max: 100, step: 1, unit: "" };
+  d.dataset.isnew = isNew ? "1" : "";
+  $("#fTrade").value = f.trade || "licht"; $("#fL0").value = f.lbl0 || ""; $("#fL1").value = f.lbl1 || "";
+  $("#fMove").value = f.moveKey || ""; $("#fStop").value = f.stopKey || ""; $("#fMoveInv").checked = !!f.moveInv; $("#fPosInv").checked = !!f.posInv;
+  $("#fCtl").value = f.ctl || (f.plan && f.plan.on ? "both" : "scene");
+  $("#fModeKey").value = f.modeKey || ""; $("#fModeSt").value = f.modeStatus || ""; $("#fSetSt").value = f.setStatus || ""; $("#fValve").value = f.valveKey || "";
+  $("#fR").value = f.rKey || ""; $("#fG").value = f.gKey || ""; $("#fB").value = f.bKey || ""; $("#fW").value = f.wKey || ""; $("#fChMax").value = String(f.chMax || 100);
+  $("#dFuncT").textContent = isNew ? "Neue Funktion" : "Funktion bearbeiten";
+  $("#fName").value = f.name; $("#fType").value = f.type === "blind" && !f.key && f.moveKey ? "updown" : f.type; $("#fKey").value = f.key; $("#fStatus").value = f.status || "";
+  $("#fMin").value = f.min ?? 0; $("#fMax").value = f.max ?? 100; $("#fStep").value = f.step ?? 1; $("#fUnit").value = f.unit ?? "";
+  $("#fDusk").checked = !!f.dusk; $("#fDel").hidden = isNew;
+  $("#fRain").checked = !!f.rain; $("#fSeason").checked = !!f.season;
+  $("#fTminOn").checked = f.tmin != null; $("#fTmin").value = f.tmin != null ? f.tmin : (f.trade === "dachfenster" ? 15 : "");
+  syncFuncForm();
+  d.onclose = () => {
+    if (d.returnValue === "del") {
+      if (!confirm("„" + f.name + "“ mit allen Szenenwerten löschen?")) return;
+      g.funcs = g.funcs.filter(x => x !== f); saveConfig(); return;
+    }
+    if (d.returnValue !== "ok") return;
+    const ud = $("#fType").value === "updown";
+    if (ud) $("#fKey").value = "";
+    Object.assign(f, {
+      name: $("#fName").value.trim(), type: ud ? "blind" : $("#fType").value, key: normKey($("#fKey").value), status: normKey($("#fStatus").value),
+      dusk: $("#fDusk").checked, min: num($("#fMin").value) ?? 0, max: num($("#fMax").value) ?? 100, step: num($("#fStep").value) || 1, unit: $("#fUnit").value.trim(),
+      trade: $("#fTrade").value, lbl0: $("#fL0").value.trim(), lbl1: $("#fL1").value.trim(),
+      rain: $("#fRain").checked, season: $("#fSeason").checked,
+      tmin: $("#fTminOn").checked && num($("#fTmin").value) !== undefined ? num($("#fTmin").value) : null,
+      moveKey: normKey($("#fMove").value), stopKey: normKey($("#fStop").value), moveInv: $("#fMoveInv").checked, posInv: $("#fPosInv").checked,
+      rKey: normKey($("#fR").value), gKey: normKey($("#fG").value), bKey: normKey($("#fB").value), wKey: normKey($("#fW").value), chMax: +$("#fChMax").value,
+      modeKey: normKey($("#fModeKey").value), modeStatus: normKey($("#fModeSt").value), setStatus: normKey($("#fSetSt").value), valveKey: normKey($("#fValve").value)
+    });
+    if (f.type === "heat") { f.unit = "°C"; if (f.sv) f.sv.forEach(e => heatDefaults(e)); f.ctl = $("#fCtl").value; f.plan = Object.assign(f.plan || {}, { on: f.ctl !== "scene" }); }
+    if (f.type === "rgbw" && f.sv) f.sv.forEach(e => { if (!e.c) e.c = [0, 0, 0, 100]; });
+    if (f.season && f.sv) f.sv.forEach(e => { if (e.vw === undefined) { e.ew = e.en; e.vw = e.v; } });
+    if (f.type === "blind") Object.assign(f, { min: 0, max: 100, unit: "%" });
+    if (isNew) {
+      f.id = rid("f");
+      f.sv = g.scenes.map(() => Object.assign(f.season ? { en: false, v: 0, ew: false, vw: 0 } : { en: false, v: 0 }, f.type === "rgbw" ? { c: [0, 0, 0, 100] } : {}));
+      if (f.type === "heat") f.sv.forEach(e => heatDefaults(e, true));
+      g.funcs.push(f);
+    }
+    saveConfig();
+  };
+  d.returnValue = ""; d.showModal(); koBadgesAll();
+}
+$("#dFunc form").addEventListener("submit", e => {
+  const rgbOk = ($("#fType").value === "rgbw" && ["#fR", "#fG", "#fB", "#fW"].some(x => $(x).value.trim())) || ($("#fType").value === "heat" && $("#fModeKey").value.trim());
+  const ud = $("#fType").value === "updown";
+  if (e.submitter && e.submitter.value === "ok" && (ud ? !$("#fMove").value.trim() : !$("#fKey").value.trim() && !rgbOk && !($("#fType").value === "blind" && $("#fMove").value.trim()))) {
+    e.preventDefault(); toast(ud ? "Bitte Fahren-KO (Auf/Ab) eintragen" : $("#fType").value === "blind" ? "Bitte Position-KO und/oder Fahren-KO eintragen" : "Bitte Steuer-KO eintragen");
+  }
+});
+$("#bAdd").onclick = () => editFunc(null);
+$("#bAdd2").onclick = () => editFunc(null);
+
+/* ---------- Gruppe ---------- */
+function syncGroupForm() {
+}
+$("#gTrig").onchange = syncGroupForm;
+$("#cLimit").oninput = updateSensLive; $("#gTrigKey").oninput = updateSensLive; $("#gNum").onchange = updateSensLive;
+function editGroup(g, isNew) {
+  const d = $("#dGroup");
+  $("#dGroupT").textContent = isNew ? "Neue Szenengruppe" : "Gruppe „" + g.name + "“";
+  $("#gName").value = g.name; $("#gCount").value = g.scenes.length; $("#gTrig").checked = !!g.trigger;
+  $("#gTrigKey").value = g.triggerKey || ""; $("#gNum").value = String(g.numbering ?? 0); DLG_G = g;
+  $("#cDuskKey").value = CFG.duskKey || ""; $("#cRainKey").value = CFG.rainKey || ""; $("#cTempKey").value = CFG.tempKey || "";
+  $("#cLimit").value = CFG.tempLimit ?? 16; $("#cDelay").value = CFG.rainDelay ?? 5;
+  updateSensLive();
+  $("#gCatch").checked = !!g.duskCatchUp; $("#gLive").checked = !!g.liveToScene; $("#gTitle").value = CFG.title || "";
+  $("#gDel").hidden = isNew || CFG.groups.length < 2;
+  syncGroupForm();
+  d.onclose = () => {
+    if (d.returnValue === "del") {
+      if (!confirm("Gruppe „" + g.name + "“ mit " + g.funcs.length + " Funktionen löschen?")) return;
+      CFG.groups = CFG.groups.filter(x => x !== g); GID = CFG.groups[0].id; saveConfig(); return;
+    }
+    if (d.returnValue !== "ok") return;
+    const n = Math.max(1, Math.min(32, parseInt($("#gCount").value) || 8));
+    while (g.scenes.length < n) g.scenes.push({ name: "Szene " + (g.scenes.length + 1) });
+    if (n < g.scenes.length && !confirm("Szenen " + (n + 1) + "–" + g.scenes.length + " mit ihren Werten entfernen?")) return;
+    g.scenes.length = n;
+    g.funcs.forEach(f => { while (f.sv.length < n) f.sv.push({ en: false, v: 0 }); f.sv.length = n; });
+    Object.assign(g, {
+      name: $("#gName").value.trim() || "Gruppe", trigger: $("#gTrig").checked ? 1 : 0, triggerKey: normKey($("#gTrigKey").value),
+      numbering: +$("#gNum").value, duskCatchUp: $("#gCatch").checked, liveToScene: $("#gLive").checked
+    });
+    Object.assign(CFG, {
+      duskKey: normKey($("#cDuskKey").value), rainKey: normKey($("#cRainKey").value), tempKey: normKey($("#cTempKey").value),
+      tempLimit: num($("#cLimit").value) ?? 16, rainDelay: Math.max(0, parseInt($("#cDelay").value) || 0)
+    });
+    CFG.title = $("#gTitle").value.trim() || "Szenen";
+    if (g.trigger) CFG.groups.forEach(x => { if (x !== g) x.trigger = 0; });
+    if (isNew) { CFG.groups.push(g); GID = g.id; }
+    saveConfig();
+  };
+  d.returnValue = ""; d.showModal(); koBadgesAll(); updateSensLive();
+}
+$("#bGroup").onclick = () => editGroup(grp(), false);
+$("#condInfo").onclick = () => { editGroup(grp(), false); setTimeout(() => $("#fsSens").scrollIntoView({ block: "start" }), 50); };
+function addGroup() {
+  const trig = CFG.groups.some(g => g.trigger) ? 0 : 1;
+  editGroup({ id: rid("g"), name: "Neue Gruppe", trigger: trig, triggerKey: "", numbering: 0, duskCatchUp: true, liveToScene: false,
+    scenes: Array.from({ length: 8 }, (_, i) => ({ name: "Szene " + (i + 1) })), funcs: [] }, true);
+}
+
+/* ---------- Sicherung ---------- */
+$("#bExport").onclick = async () => {
+  try {
+    const d = await api("api/export");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(d, null, 1)], { type: "application/json" }));
+    a.download = "szenen-sicherung-" + new Date().toISOString().slice(0, 10) + ".json"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  } catch (e) { toast(e.message); }
+};
+$("#fImport").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  const mode = $("#impMode").value;
+  if (!confirm("Sicherung „" + f.name + "“ einspielen?\n" + (mode === "merge" ? "Nur fehlende Gruppen und Funktionen werden ergänzt." : "Die gesamte Einrichtung wird ÜBERSCHRIEBEN."))) return;
+  try { const r = await api("api/import?mode=" + mode, await f.text()); toast(mode === "merge" ? r.added + " Funktionen ergänzt" : "Sicherung eingespielt"); $("#dGroup").close(); await loadConfig(); }
+  catch (err) { toast(err.message, 4000); }
+};
+
+/* ===================== KO-Gateway direkt aus dem Browser (wie HTML5-Visu) ===================== */
+const GW_LS = "hs-szenen-gw";
+let GW_BLOCK = null;   // Antwort von api/gateway (Zugang im Baustein)
+let GWC = (() => {
+  let c = null;
+  try { c = JSON.parse(localStorage.getItem(GW_LS) || "null"); } catch (e) {}
+  if (!c) {   // gleiche Herkunft wie die HTML5-Visu → deren Zugang übernehmen
+    try { const v = JSON.parse(localStorage.getItem("hs-visu-config-v1") || "null"); if (v && v.host && v.user) c = { host: v.host, user: v.user, pass: v.pass || "", ssl: v.ssl !== false, fromVisu: true }; } catch (e) {}
+  }
+  return Object.assign({ host: location.hostname, user: "", pass: "", ssl: location.protocol !== "http:", toBlock: true }, c || {});
+})();
+let ws = null, wsTimer = null, wsBackoff = 1000, wsTag = 0;
+const GWV = new Map(), wsSubs = new Set(), GWLOG = [];
+const gv = k => GWV.has(k) ? GWV.get(k) : ST.values[k];
+const hostBase = () => String(GWC.host || "").replace(/^\w+:\/\//, "").replace(/\/+$/, "");
+const wsOpen = () => !!(ws && ws.readyState === 1);
+function glog(cls, msg) {
+  GWLOG.push([Date.now(), cls, String(msg).slice(0, 500)]); if (GWLOG.length > 400) GWLOG.shift();
+  if ($("#dDbg").open && DBG_T === "page") renderPageDbg();
+}
+function wsConnect() {
+  clearTimeout(wsTimer);
+  if (ws) { ws.onclose = null; try { ws.close(); } catch (e) {} ws = null; }
+  wsSubs.clear();
+  if (!GWC.host || !GWC.user) { glog("hint", "Kein Zugang eingetragen – Verbindung (Stecker oben) öffnen."); updateLive(); return; }
+  const auth = btoa(unescape(encodeURIComponent(GWC.user + ":" + GWC.pass)));
+  const url = (GWC.ssl ? "wss://" : "ws://") + hostBase() + "/endpoints/ws?authorization=" + encodeURIComponent(auth);
+  glog("t", "Verbinde " + url.replace(/authorization=[^&]+/, "authorization=***") + "  (Benutzer: " + GWC.user + ")");
+  if (location.protocol === "https:" && !GWC.ssl) glog("hint", "⚠ Seite läuft über https, Verbindung ist ws:// → Browser blockiert das. „verschlüsselt“ anhaken.");
+  const t0 = Date.now();
+  try { ws = new WebSocket(url); } catch (e) { glog("err", "WebSocket konnte nicht erstellt werden: " + e.message); wsRetry(); return; }
+  ws.onopen = () => { ws._open = true; wsBackoff = 1000; glog("in", "✓ verbunden nach " + (Date.now() - t0) + " ms"); wsSubscribe(); updateLive(); };
+  ws.onmessage = ev => { glog("in", "⇐ " + ev.data); let m; try { m = JSON.parse(ev.data); } catch (e) { return; } wsHandle(m); };
+  ws.onerror = () => glog("err", "WebSocket-Fehler (Details zeigt der Browser aus Sicherheitsgründen nicht)");
+  ws.onclose = ev => {
+    const opened = ev.target._opened || ev.target._open;
+    glog("err", "Getrennt: Code " + ev.code + (ev.reason ? " – " + ev.reason : "") + " (nach " + (Date.now() - t0) + " ms)");
+    if (ev.code === 1006 && !opened) glog("hint", GWC.ssl ? "→ Zertifikat im Browser nicht akzeptiert, falscher Port oder HS nicht erreichbar – „Zertifikat prüfen“." : "→ ws:// abgelehnt – der HS spricht meist nur verschlüsselt: „verschlüsselt“ anhaken.");
+    else if (opened || ev.code === 1008) glog("hint", "→ Verbindung vom HS beendet: Benutzer/Passwort oder Endpunkt-Rechte der Benutzergruppe prüfen.");
+    glog("t", "Nächster Versuch in " + Math.round(wsBackoff / 1000) + " s");
+    wsSubs.clear(); updateLive(); wsRetry();
+  };
+}
+function wsRetry() { clearTimeout(wsTimer); wsTimer = setTimeout(wsConnect, wsBackoff); wsBackoff = Math.min(wsBackoff * 2, 30000); }
+function wsSend(o) { if (!wsOpen()) return false; const d = JSON.stringify(o); glog("out", "⇒ " + d); ws.send(d); return true; }
+function wsSet(key, v) { return wsSend({ type: "call", param: { key, method: "set", value: String(v) }, tag: "t" + (++wsTag) }); }
+function wsSendAll(list) { let n = 0; for (const [k, v] of list || []) if (wsSet(k, v)) n++; return n; }
+function wantedKeys() {
+  const ks = new Set(); if (!CFG) return ks;
+  for (const k of [CFG.duskKey, CFG.rainKey, CFG.tempKey]) if (k) ks.add(k);
+  for (const g of CFG.groups) {
+    if (g.triggerKey) ks.add(g.triggerKey);
+    for (const f of g.funcs) { const k = f.status || f.key; if (k) ks.add(k); for (const c of ["rKey", "gKey", "bKey", "wKey", "modeKey", "modeStatus", "setStatus", "valveKey"]) if (f[c]) ks.add(f[c]); if (f.type === "heat" && f.key) ks.add(f.key); }
+  }
+  return ks;
+}
+function wsSubscribe() {
+  if (!wsOpen()) return;
+  const keys = [...wantedKeys()].filter(k => k.startsWith("CO@") && !wsSubs.has(k));
+  for (let i = 0; i < keys.length; i += 100) { const part = keys.slice(i, i + 100); if (wsSend({ type: "subscribe", param: { keys: part } })) part.forEach(k => wsSubs.add(k)); }
+}
+function wsHandle(m) {
+  if (m.data && Array.isArray(m.data.items)) {
+    let failed = 0;
+    for (const it of m.data.items) {
+      const k = normKey(it.key ?? it.uid); if (!k) continue;
+      if (it.code !== undefined && it.code !== 0) { WS_FAIL.set(k, it.code); if (!PICK_SUBS.has(k)) failed++; glog("err", "Abo fehlgeschlagen: " + k + " (Code " + it.code + ") – KO fehlt oder nicht für den Benutzer freigegeben"); continue; }
+      const v = it.data && it.data.value !== undefined ? it.data.value : it.value;
+      if (v !== undefined) GWV.set(k, v);
+    }
+    if (failed) toast(failed + " KO(s) nicht abonnierbar – siehe Debug");
+    updateLive(); koBadgesAll(); return;
+  }
+  if (m.code !== undefined && m.code !== 0) { toast("KO-Gateway: Code " + m.code + (m.request && m.request.key ? " (" + m.request.key + ")" : "")); return; }
+  const k = normKey(m.subscription && m.subscription.key || m.data && (m.data.key ?? m.data.uid));
+  if (k && m.data && m.data.value !== undefined) { GWV.set(k, m.data.value); updateLive(); if (PICK_SUBS.has(k)) koBadgesAll(); }
+}
+/* Werte, die der Baustein nicht senden konnte (nicht mit dem Gateway verbunden), sendet die Seite */
+function pageSend(r) {
+  if (!r || !r.page_send || !r.page_send.length) return 0;
+  const n = wsSendAll(r.page_send);
+  if (!n) toast("Weder Baustein noch Seite mit dem KO-Gateway verbunden – nichts gesendet", 4000);
+  return n;
+}
+/* Zugang „für alle Endgeräte“ aus dem Baustein holen (nur wenn dieses Gerät keinen eigenen hat) */
+async function gwShared() {
+  try { GW_BLOCK = await api("api/gateway"); } catch (e) { return false; }
+  if (GWC.user && !GWC.shared) return false;          // eigener Zugang auf diesem Gerät hat Vorrang
+  if (GW_BLOCK.share && GW_BLOCK.user) {
+    GWC = { host: location.host, user: GW_BLOCK.user, pass: GW_BLOCK.pw || "", ssl: location.protocol !== "http:", toBlock: true, shared: true };
+    glog("t", "Zugang für alle Endgeräte aus dem Baustein übernommen (Benutzer " + GWC.user + ")");
+    return true;
+  }
+  if (GWC.shared) { GWC = Object.assign({}, GWC, { user: "", pass: "" }); glog("hint", "Zugang „für alle Endgeräte“ wurde im Baustein abgeschaltet."); }
+  return false;
+}
+async function openConn() {
+  $("#cHost").value = GWC.host || ""; $("#cUser").value = GWC.user || ""; $("#cPass").value = GWC.pass || "";
+  $("#cSsl").checked = !!GWC.ssl; $("#cToBlock").checked = GWC.toBlock !== false; $("#cFromVisu").hidden = !GWC.fromVisu;
+  const sh = GW_BLOCK ? !!GW_BLOCK.share : !!GWC.shared;
+  $("#cShare1").checked = sh || !GWC.user; $("#cShare0").checked = !$("#cShare1").checked; syncShare();
+  $("#cState").textContent = "Seite: " + (wsOpen() ? "verbunden" : "nicht verbunden") + " · Baustein: …";
+  const d = $("#dConn"); d.returnValue = ""; d.showModal();
+  try { const b = GW_BLOCK = await api("api/gateway"); $("#cState").innerHTML = "Seite: <b>" + (wsOpen() ? "verbunden" : "nicht verbunden") + "</b> · Baustein: <b>" + (b.ok ? "verbunden" : esc(b.msg)) + "</b>" + (b.user ? " (" + esc(b.user) + ", " + esc(b.url) + ")" : ""); } catch (e) {}
+}
+$("#bConn").onclick = openConn;
+function syncShare() { const sh = $("#cShare1").checked; if (sh) $("#cToBlock").checked = true; $("#cToBlock").disabled = sh; }
+$("#cShare1").onchange = $("#cShare0").onchange = syncShare;
+$("#cDbg").onclick = () => { $("#dConn").close(); DBG_T = "page"; openDbg(); };
+$("#cCert").onclick = async () => {
+  const url = "https://" + String($("#cHost").value || "").replace(/^\w+:\/\//, "").replace(/\/+$/, "") + "/";
+  try { await fetch(url, { mode: "no-cors", cache: "no-store" }); $("#cState").innerHTML = "<span style='color:var(--ok)'>✓ HTTPS erreichbar, Zertifikat akzeptiert.</span>"; }
+  catch (e) { $("#cState").innerHTML = "<span style='color:var(--err)'>✗ Nicht erreichbar – <a href='" + esc(url) + "' target='_blank' rel='noopener'>" + esc(url) + "</a> öffnen, Warnung bestätigen, dann erneut speichern.</span>"; }
+};
+$("#dConn").addEventListener("close", async () => {
+  if ($("#dConn").returnValue !== "ok") return;
+  const share = $("#cShare1").checked;
+  GWC = { host: $("#cHost").value.trim(), user: $("#cUser").value.trim(), pass: $("#cPass").value, ssl: $("#cSsl").checked, toBlock: share || $("#cToBlock").checked, shared: share };
+  // für alle Endgeräte: im Browser nur die Wahl merken, Passwort kommt immer aktuell aus dem Baustein
+  lsSet(GW_LS, JSON.stringify(share ? { shared: true, toBlock: true } : GWC));
+  wsBackoff = 1000; wsConnect();
+  if (GWC.toBlock) {
+    try { await api("api/gateway", { url: (GWC.ssl ? "wss://" : "ws://") + hostBase(), user: GWC.user, pw: GWC.pass, share }); GW_BLOCK = Object.assign(GW_BLOCK || {}, { share, user: GWC.user });
+      toast(share ? "Zugang für alle Endgeräte gespeichert – verbinde …" : "Zugang gespeichert – Seite und Baustein verbinden …"); }
+    catch (e) { toast("Baustein: " + e.message, 4000); }
+  } else {
+    if (GW_BLOCK && GW_BLOCK.share) { try { await api("api/gateway", { share: false, keep: true }); GW_BLOCK.share = false; } catch (e) {} }
+    toast("Zugang nur auf diesem Gerät gespeichert");
+  }
+});
+
+/* ===================== Debug ===================== */
+let dbgTimer = null, dbgText = "";
+let DBG_T = "page";
+const tfmt = t => new Date(t).toLocaleTimeString("de-DE", { hour12: false }) + "." + String(t % 1000).padStart(3, "0");
+function renderPageDbg() {
+  $("#dbgInfo").innerHTML = "Seite → <b>" + esc((GWC.ssl ? "wss://" : "ws://") + hostBase()) + "</b> · Benutzer: <b>" + esc(GWC.user || "–") + "</b> · " +
+    (wsOpen() ? "<span style='color:var(--ok)'>verbunden</span>" : "<span style='color:var(--err)'>nicht verbunden</span>") + " · " + wsSubs.size + " KOs abonniert";
+  $("#dbgErr").textContent = "";
+  dbgText = GWLOG.map(([t, k, x]) => tfmt(t) + "  " + x).join("\n");
+  const el = $("#dbgLog"), atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
+  el.innerHTML = GWLOG.map(([t, k, x]) => `<span class="t">${tfmt(t)}</span>  <span class="${k === "hint" ? "err" : k}">${esc(x)}</span>`).join("\n") || "Noch keine Einträge.";
+  if (atEnd) el.scrollTop = el.scrollHeight;
+}
+document.querySelectorAll("#dDbg [data-dt]").forEach(b => b.onclick = () => {
+  DBG_T = b.dataset.dt; document.querySelectorAll("#dDbg [data-dt]").forEach(x => x.classList.toggle("sel", x === b)); loadDbg(); $("#dbgLog").scrollTop = 1e9;
+});
+async function loadDbg() {
+  if (DBG_T === "page") return renderPageDbg();
+  try {
+    const d = await api("api/log");
+    $("#dbgInfo").innerHTML = "Baustein → <b>" + esc(d.gw.url || "–") + "</b> · Benutzer: <b>" + esc(d.gw.user || "–") + "</b> · " +
+      (d.gw.ok ? "<span style='color:var(--ok)'>verbunden</span>" : "<span style='color:var(--err)'>" + esc(d.gw.msg) + "</span>") + " · " + d.subscribed + " KOs abonniert";
+    const errs = Object.entries(d.errors);
+    $("#dbgErr").textContent = errs.length ? "Nicht verfügbar (Code): " + errs.map(([k, c]) => k + " (" + c + ")").join(", ") + " – KO fehlt oder nicht für den Gateway-Benutzer freigegeben." : "";
+    const tf = t => new Date(t).toLocaleTimeString("de-DE", { hour12: false }) + "." + String(t % 1000).padStart(3, "0");
+    dbgText = d.log.map(([t, k, x]) => tf(t) + "  " + x).join("\n");
+    const el = $("#dbgLog"), atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
+    el.innerHTML = d.log.map(([t, k, x]) => `<span class="t">${tf(t)}</span>  <span class="${k}">${esc(x)}</span>`).join("\n") || "Noch keine Einträge.";
+    if (atEnd) el.scrollTop = el.scrollHeight;
+  } catch (e) { $("#dbgInfo").textContent = e.message; }
+}
+function openDbg() {
+  $("#dDbg").showModal(); loadDbg(); $("#dbgLog").scrollTop = 1e9;
+  clearInterval(dbgTimer); dbgTimer = setInterval(() => { if ($("#dDbg").open && $("#dbgAuto").checked) loadDbg(); }, 2000);
+}
+$("#dDbg").addEventListener("close", () => clearInterval(dbgTimer));
+$("#dbgRef").onclick = loadDbg;
+$("#dbgCopy").onclick = () => { navigator.clipboard && navigator.clipboard.writeText($("#dbgInfo").textContent + "\n" + $("#dbgErr").textContent + "\n" + dbgText).then(() => toast("Kopiert")); };
+$("#conn").onclick = openDbg;
+
+/* ===================== KO-Auswahl an den Eingabefeldern ===================== */
+const KIND_N = { bool: "1 Bit", pct: "0–100 %", float: "Gleitkomma (DPT 9)", u8: "8 Bit", u16: "16 Bit", u32: "32 Bit", bit4: "4 Bit (Dimmen/Jalousie)", num: "Zahl" };
+const PICK_SUBS = new Set(), WS_FAIL = new Map();
+function koWatch(keys) {
+  if (!wsOpen()) return;
+  const add = keys.filter(k => k && k.startsWith("CO@") && !wsSubs.has(k));
+  if (!add.length) return;
+  add.forEach(k => { PICK_SUBS.add(k); wsSubs.add(k); });
+  wsSend({ type: "subscribe", param: { keys: add } });
+}
+/* bevorzugte KO-Art je Feld */
+function pickPref(id) {
+  const t = $("#fType") ? $("#fType").value : "";
+  const ctl = { switch: ["bool"], updown: ["bool"], dim: ["pct"], blind: ["pct"], rgbw: ["pct"], heat: ["float"], value: ["float", "u8", "u16", "u32", "num"], mode: ["u8"] }[t] || null;
+  const P = {
+    fKey: t === "heat" ? { k: ctl, st: false, re: /soll|setpoint/i, not: /\bist|istwert|raumtemp|ventil|stell/i } : { k: ctl, st: false },
+    fStatus: t === "heat" ? { k: ["float"], ist: true, not: /soll/i } : { k: ctl, st: true },
+    fMove: { k: ["bool"], st: false, re: /fahr|auf\s*\/\s*ab|lang|bewegen/i }, fStop: { k: ["bool"], st: false, re: /stop|kurz|schritt|lamell/i },
+    fR: { k: ["pct", "u8"], re: /rot|red|\br\b/i }, fG: { k: ["pct", "u8"], re: /gr(ü|ue)n|green|\bg\b/i }, fB: { k: ["pct", "u8"], re: /blau|blue|\bb\b/i }, fW: { k: ["pct", "u8"], re: /wei(ß|ss)|white|\bw\b/i },
+    // Betriebsart: im HS als 8 Bit DPT 5.010 (0..255) angelegt – der HS kennt kein DPT 20.102
+    fModeKey: { k: ["u8"], dpt: ["5.010", "20.102"], st: false, re: /betriebsart|hvac|modus/i }, fModeSt: { k: ["u8"], dpt: ["5.010", "20.102"], st: true, re: /betriebsart|hvac|modus/i },
+    fSetSt: { k: ["float"], st: true, re: /soll/i }, fValve: { k: ["pct", "bool"], re: /ventil|stell|valve/i },
+    gTrigKey: { k: ["u8"], dpt: ["17.001", "18.001", "5.010"], re: /szene|scene|lz/i }, cDuskKey: { k: ["bool"], re: /d(ä|ae)mmer|dunkel|nacht|dusk/i },
+    cRainKey: { k: ["bool"], re: /regen|rain/i }, cTempKey: { k: ["float"], re: /au(ß|ss)en|outdoor|temp/i }
+  };
+  return P[id] || {};
+}
+let KDROP = null;
+function koPickInit(ids) {
+  ids.forEach(id => {
+    const inp = $("#" + id); if (!inp || inp.dataset.kp) return;
+    inp.dataset.kp = "1"; inp.autocomplete = "off";
+    const w = document.createElement("div"); w.className = "kpw " + [...inp.classList].join(" ");
+    inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+    const b = document.createElement("span"); b.className = "kvb"; w.appendChild(b);
+    inp.addEventListener("focus", () => koDropOpen(inp));
+    inp.addEventListener("input", () => { koDropOpen(inp); koBadge(inp); });
+    inp.addEventListener("change", () => koBadge(inp));
+    inp.addEventListener("keydown", e => koDropKey(e, inp));
+    inp.addEventListener("blur", () => setTimeout(() => { if (KDROP && KDROP.inp === inp && !KDROP.el.matches(":hover")) koDropClose(); }, 150));
+  });
+}
+const MODE_FIELDS = new Set(["fModeKey", "fModeSt"]);
+function koFmtVal(v, kind, field) {
+  const n = num(v); if (n === undefined) return v === undefined ? "" : String(v);
+  if (MODE_FIELDS.has(field)) return HMODE_N[Math.round(n)] || "Wert " + fmt(n);   // DPT 20.102: Betriebsart als Text
+  return kind === "pct" ? fmt(n, 0) + " %" : kind === "float" ? fmt(n, 1) : fmt(n);
+}
+function koBadge(inp) {
+  const b = inp.parentNode.querySelector(".kvb"); if (!b) return;
+  const k = normKey(inp.value);
+  const w = inp.parentNode; w.classList.remove("hasv");
+  if (!k) { b.textContent = ""; b.className = "kvb"; return; }
+  w.classList.add("hasv");
+  koWatch([k]);
+  const ko = impKos.find(x => coKey(x) === k || ("CO@" + x.id) === k || (x.ga && "CO@" + x.ga.replace(/\//g, "_") === k));
+  if (WS_FAIL.has(k) || ST.errors[k]) { b.textContent = "✗ nicht erreichbar"; b.className = "kvb err"; b.title = "KO fehlt oder ist nicht für den Gateway-Benutzer freigegeben"; return; }
+  const v = gv(k);
+  b.className = "kvb" + (v !== undefined ? " ok" : ""); b.title = ko ? ko.name : "";
+  b.textContent = v !== undefined ? "= " + koFmtVal(v, ko ? koKind(ko) : "", inp.id) : (wsOpen() ? "…" : "");
+}
+function koBadgesAll() { document.querySelectorAll("dialog[open] input[data-kp]").forEach(koBadge); if (KDROP) koDropRender(); }
+async function koDropOpen(inp) {
+  if (!impKos.length && !koDropOpen.tried) { koDropOpen.tried = true; impFetch().then(() => { if (KDROP && KDROP.inp === inp) koDropRender(); }); }
+  if (!KDROP || KDROP.inp !== inp) {
+    koDropClose();
+    const el = document.createElement("div"); el.className = "kdrop";
+    inp.closest("dialog").appendChild(el);
+    KDROP = { inp, el, sel: 0, all: false, list: [] };
+    el.addEventListener("mousedown", e => e.preventDefault());
+    el.addEventListener("click", e => {
+      const a = e.target.closest("[data-all]"); if (a) { KDROP.all = !KDROP.all; koDropRender(); return; }
+      const r = e.target.closest("[data-ki]"); if (r) koDropPick(+r.dataset.ki);
+    });
+  }
+  koDropRender();
+}
+function koDropClose() { if (KDROP) { KDROP.el.remove(); KDROP = null; } }
+function koDropRender() {
+  if (!KDROP) return;
+  const { inp, el } = KDROP, id = inp.id, pref = pickPref(id);
+  const r = inp.getBoundingClientRect();
+  el.style.left = r.left + "px"; el.style.width = Math.max(r.width, 320) + "px";
+  const below = window.innerHeight - r.bottom;
+  if (below < 220 && r.top > below) { el.style.top = ""; el.style.bottom = (window.innerHeight - r.top + 4) + "px"; } else { el.style.bottom = ""; el.style.top = (r.bottom + 4) + "px"; }
+  el.style.maxHeight = Math.max(160, Math.min(320, (below < 220 && r.top > below ? r.top : below) - 16)) + "px";
+  if (!impKos.length) { el.innerHTML = `<div class="ke">Lade KO-Liste vom HomeServer (/hscl?sys/cobjects.xml) …<br><small>Klappt das nicht: „⤓ Aus HomeServer übernehmen“ → XML-Datei wählen.</small></div>`; return; }
+  const raw = inp.value.trim(), q = raw.toLowerCase().replace(/^co@/, "").replace(/_/g, "/");
+  const words = q.split(/\s+/).filter(Boolean);
+  const nameWords = ($("#fName") && inp.closest("#dFunc") ? $("#fName").value : "").toLowerCase().split(/[\s\-–_]+/).filter(x => x.length > 2);
+  let list = impKos.map(k => {
+    const hay = (k.name + " " + k.path.join(" ") + " " + k.ga + " " + k.id).toLowerCase();
+    if (words.length && !words.every(w => hay.includes(w))) return null;
+    const kind = koKind(k), st = isSt(k), dpt = koDpt(k);
+    let sc = 0;
+    // passende Art; mit DPT im Export entscheidet der DPT (z. B. 20.102 statt anderer 8-Bit-Objekte)
+    const kindOk = !pref.k || (pref.dpt && dpt && kind !== "pct" ? pref.dpt.includes(dpt) : pref.k.includes(kind));
+    if (pref.dpt && pref.dpt.includes(dpt)) sc += 2;
+    if (kindOk) sc += 4;
+    if (pref.st === true && st) sc += 2; if (pref.st === false && !st) sc += 2;
+    if (pref.ist && /\bist|raumtemp|temperatur|istwert/i.test(k.name) && !/soll/i.test(k.name)) sc += 3;
+    if (pref.re && pref.re.test(k.name)) sc += 3;
+    if (pref.not && pref.not.test(k.name)) sc -= 4;
+    for (const w of nameWords) if (hay.includes(w)) sc += 4;
+    return { k, sc, kindOk };
+  }).filter(Boolean);
+  if (!KDROP.all && pref.k) list = list.filter(x => x.kindOk);
+  list.sort((a, b) => b.sc - a.sc || a.k.path.join("/").localeCompare(b.k.path.join("/")) || a.k.name.localeCompare(b.k.name));
+  list = list.slice(0, 80);
+  KDROP.list = list; KDROP.sel = Math.min(KDROP.sel, Math.max(0, list.length - 1));
+  koWatch(list.slice(0, 40).map(x => coKey(x.k)));
+  const cur = normKey(inp.value);
+  let h = `<div class="kh"><span>${list.length ? list.length + (list.length === 80 ? "+" : "") + " K.-Objekte" : "keine Treffer"}${pref.k ? " · passend: " + pref.k.map(x => KIND_N[x]).join(", ") + (pref.dpt ? " (DPT " + pref.dpt.join(" / ") + ")" : "") : ""}</span>${pref.k ? `<label data-all="1"><input type="checkbox" ${KDROP.all ? "checked" : ""} tabindex="-1"> alle Arten</label>` : ""}</div>`;
+  h += list.map((x, i) => {
+    const key = coKey(x.k), v = gv(key), fail = WS_FAIL.has(key);
+    return `<div class="kr ${i === KDROP.sel ? "sel" : ""} ${x.kindOk ? "" : "weak"}" data-ki="${i}" title="${esc(key)}"><b>${esc(x.k.name)}${key === cur ? " ✓" : ""}</b>
+      <span class="kv">${esc(x.k.ga || "#" + x.k.id)}<i>${fail ? "✗" : v !== undefined ? esc(koFmtVal(v, koKind(x.k), KDROP.inp.id)) : ""}</i></span>
+      <small>${esc(x.k.path.map(cleanSeg).join(" › "))} · ${koDpt(x.k) ? "DPT " + koDpt(x.k) : KIND_N[koKind(x.k)] || ""}${isSt(x.k) ? " · Status" : ""}</small></div>`;
+  }).join("");
+  el.innerHTML = h;
+  const s = el.querySelector(".kr.sel"); if (s && KDROP.scroll) { s.scrollIntoView({ block: "nearest" }); KDROP.scroll = false; }
+}
+function koDropPick(i) {
+  if (!KDROP) return;
+  const x = KDROP.list[i]; if (!x) return;
+  const inp = KDROP.inp; inp.value = coKey(x.k);
+  if (inp.id === "fName" || (inp.closest("#dFunc") && !$("#fName").value.trim())) $("#fName").value = prettyName(x.k.name);
+  koDropClose(); koBadge(inp); inp.dispatchEvent(new Event("change"));
+  if (typeof updateSensLive === "function") updateSensLive();
+}
+function koDropKey(e, inp) {
+  if (!KDROP) { if (e.key === "ArrowDown") koDropOpen(inp); return; }
+  if (e.key === "ArrowDown") { KDROP.sel = Math.min(KDROP.list.length - 1, KDROP.sel + 1); KDROP.scroll = true; koDropRender(); e.preventDefault(); }
+  else if (e.key === "ArrowUp") { KDROP.sel = Math.max(0, KDROP.sel - 1); KDROP.scroll = true; koDropRender(); e.preventDefault(); }
+  else if (e.key === "Enter") { e.preventDefault(); if (KDROP.list.length) koDropPick(KDROP.sel); else koDropClose(); }
+  else if (e.key === "Escape") { koDropClose(); e.preventDefault(); e.stopPropagation(); }
+}
+document.addEventListener("scroll", e => { if (KDROP && !KDROP.el.contains(e.target)) koDropRender(); }, true);
+koPickInit(["fKey", "fStatus", "fMove", "fStop", "fR", "fG", "fB", "fW", "fModeKey", "fModeSt", "fSetSt", "fValve", "gTrigKey", "cDuskKey", "cRainKey", "cTempKey"]);
+["#dFunc", "#dGroup"].forEach(d => $(d).addEventListener("close", koDropClose));
+
+/* ===================== Import aus cobjects.xml ===================== */
+let impKos = [], impCands = [], impAddr = lsGet("hs-szenen-addr") || "ga";
+const STATUS_RE = /(^|[\s_\-.(\/])(rm|rückmeldung|rueckmeldung|status|zustand|stat|feedback|rück)([\s_\-.)\/]|$)/i;
+const isSt = k => STATUS_RE.test(k.name);
+const STRIP_WORDS = ["rm", "rückmeldung", "rueckmeldung", "status", "zustand", "stat", "feedback", "schalten", "ein/aus", "an/aus",
+  "ein", "aus", "on/off", "dimmen", "dimmwert", "helligkeitswert", "helligkeit", "wert", "absolut", "abs", "relativ", "1bit", "8bit",
+  "position", "pos", "höhe", "hoehe", "sollwert", "soll", "auf/ab", "auf/zu", "fahren", "langzeit", "lang", "kurzzeit", "kurz",
+  "stop", "stopp", "step", "schritt", "bewegen", "absolut", "rot", "grün", "gruen", "blau", "weiß", "weiss", "red", "green", "blue", "white",
+  "r", "g", "b", "w", "rgb", "rgbw", "farbe", "kanal"];
+const STRIP_RE = new RegExp("(^|\\s)(" + STRIP_WORDS.map(w => w.replace(/[/]/g, "\\/")).join("|") + ")(?=\\s|$)", "gi");
+const baseName = n => n.toLowerCase().replace(/[_\-.,()]+/g, " ").replace(STRIP_RE, " ").replace(STRIP_RE, " ").replace(/[^a-z0-9äöüß/ ]+/g, " ").replace(/\s+/g, " ").trim();
+const prettyName = n => n.replace(/[_]+/g, " ").replace(STATUS_RE, " ").replace(STRIP_RE, " ").replace(STRIP_RE, " ").replace(/\s+/g, " ").trim() || n;
+const HEAT_STRIP = /(^|[^a-zäöüß])(ist(wert|temperatur|temp)?|raumtemp[a-zäöüß]*|temperatur[a-zäöüß]*|temp|soll[a-zäöüß]*|basis[a-zäöüß]*|verschiebung|betriebs[a-zäöüß]*|modus[a-zäöüß]*|hvac|ventil[a-zäöüß]*|stell[a-zäöüß]*|heiz[a-zäöüß]*|status|rm|rückmeldung|wert|aktuell[a-zäöüß]*|vorgabe|umschalt[a-zäöüß]*|°c)(?=$|[^a-zäöüß])/gi;
+const heatBase = n => n.toLowerCase().replace(/[_\-.,()|]+/g, " ").replace(HEAT_STRIP, " ").replace(/\s+/g, " ").trim();
+const cleanSeg = s => s.replace(/^\d+[\s._-]*/, "").trim() || s.trim();
+/* DPT aus fmtex/fmt (z. B. „DPT 20.102“, „20.102“, „DPST-20-102“), sonst "" */
+function koDpt(k) {
+  const t = (k.fmtex || "") + " " + (k.fmt || "") + " " + (k.dpt || "");
+  const m = t.match(/DPS?T[\s_-]*(\d{1,3})[.\-_ ](\d{1,5})/i) || t.match(/(?:^|\s)(\d{1,3})\.(\d{3})(?:\s|$)/);
+  return m ? (+m[1]) + "." + m[2].padStart(3, "0") : "";
+}
+function koKind(k) {
+  // HS-Formate z. B. fmt="EIS1_1BIT", "EIS2+EIS6_8BIT" fmtex="integer" (0..255), "EIS6_8BIT" fmtex="percent", "EIS5_16BIT" (Gleitkomma), "EIS15_14BYTE"
+  const f = (k.fmt || "").toUpperCase(), fx = (k.fmtex || "").toLowerCase(), dpt = koDpt(k);
+  if (/14BYTE|EIS15/.test(f) || /string|text/.test(fx)) return "text";
+  if (/(^|[^0-9])1\s*BIT/.test(f) || (k.max === 1 && k.min === 0 && /EIS1\b|EIS1\+/.test(f)) || /^1\./.test(dpt)) return "bool";
+  if (/EIS5|FLOAT/.test(f) || /float/.test(fx) || /^9\./.test(dpt)) return "float";
+  if (/8\s*BIT|EIS14|1BYTE/.test(f) || /^(5|6|17|18|20)\./.test(dpt)) {
+    if (dpt === "5.001" || /percent|prozent|%/.test(fx) || k.max === 100) return "pct";
+    if (/int|unsigned|signed|count/.test(fx) || k.max > 100 || /^(5\.0(0[2-9]|10)|6\.|17\.|18\.|20\.)/.test(dpt)) return "u8";
+    return /EIS6/.test(f) ? "pct" : "u8";
+  }
+  if (/(^|[^0-9])(2|3|4)\s*BIT|EIS2\b|EIS8\b/.test(f) || /^(2|3)\./.test(dpt)) return "bit4";   // Dimmen/Jalousie relativ, Zwangsführung
+  if (/16\s*BIT|EIS10|2BYTE/.test(f) || /^(7|8)\./.test(dpt)) return "u16";
+  if (/32\s*BIT|EIS11|4BYTE|3BYTE|24\s*BIT/.test(f)) return "u32";
+  return "num";
+}
+const coKey = k => !k ? "" : impAddr === "id" ? (k.id ? "CO@" + k.id : "") : (k.ga ? "CO@" + k.ga.replace(/\//g, "_") : (k.id ? "CO@" + k.id : ""));
+const kindType = { bool: "switch", pct: "dim", float: "value", num: "value", u8: "value", u16: "value", u32: "value", bit4: "value" };
+
+$("#bImport").onclick = $("#bImport2").onclick = () => { $("#impMode2").value = impAddr; $("#dImp").showModal(); if (!impKos.length) impFetch(); };
+$("#impX").onclick = $("#impCancel").onclick = () => $("#dImp").close();
+async function impFetch() {
+  const h = $("#impHint"); h.className = "hint"; h.textContent = "Lade /hscl?sys/cobjects.xml …";
+  try {
+    const r = await fetch("/hscl?sys/cobjects.xml", { cache: "no-store", credentials: "include" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    parseXml(await r.arrayBuffer(), "HomeServer");
+  } catch (e) {
+    h.className = "hint warn";
+    h.innerHTML = "Direktes Laden nicht möglich (" + esc(e.message) + "). So geht's: „XML im Browser öffnen“ → ggf. anmelden → mit Strg+S speichern → „XML-Datei wählen“.";
+  }
+}
+$("#impFetch").onclick = impFetch;
+$("#impFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; parseXml(await f.arrayBuffer(), f.name); e.target.value = ""; };
+function parseXml(buf, src) {
+  const head = new TextDecoder("latin1").decode(buf.slice(0, 200));
+  const enc = (head.match(/encoding=["']([^"']+)/i) || [])[1] || "utf-8";
+  let text; try { text = new TextDecoder(enc).decode(buf); } catch (e) { text = new TextDecoder("utf-8").decode(buf); }
+  const doc = new DOMParser().parseFromString(text, "text/xml");
+  let nodes = [...doc.getElementsByTagName("cobject")];
+  if (doc.getElementsByTagName("parsererror").length || !nodes.length) {
+    nodes = [...text.matchAll(/<cobject\s([^>]*?)\/?>/g)].map(m => {
+      const o = {}; for (const a of m[1].matchAll(/(\w+)="([^"]*)"/g)) o[a[1]] = a[2].replace(/&#(\d+);/g, (_, n) => String.fromCharCode(n)).replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+      return { getAttribute: k => o[k] ?? null };
+    });
+  }
+  const h = $("#impHint");
+  if (!nodes.length) { h.className = "hint err"; h.textContent = "Keine K.-Objekte in " + src + " gefunden."; return; }
+  impKos = nodes.map(n => {
+    const a = k => n.getAttribute(k) ?? "";
+    return { id: a("id"), type: a("type"), path: a("path").split(/\\+/).map(s => s.trim()).filter(Boolean), fmt: a("fmt"), fmtex: a("fmtex"),
+      name: a("name").trim() || "KO " + a("id"), min: num(a("min")), max: num(a("max")), ga: a("ga") };
+  }).filter(k => koKind(k) !== "text");
+  h.className = "hint ok"; h.textContent = "✓ " + impKos.length + " K.-Objekte aus " + src + " gelesen.";
+  $("#impS2").hidden = false; $("#impS3").hidden = false;
+  buildCands(); renderImp();
+}
+function buildCands() {
+  impCands = [];
+  const byF = new Map();
+  for (const k of impKos) { const f = k.path.join("\\"); if (!byF.has(f)) byF.set(f, []); byF.get(f).push(k); }
+  for (const [folder, kos] of byF) {
+    const path = folder ? folder.split("\\") : [];
+    const group = path.map(cleanSeg).join(" › ") || "Ohne Ordner";
+    const room = path.length ? cleanSeg(path[path.length - 1]) : "";
+    if ($("#impAll").checked) {
+      for (const k of kos) {
+        const trade = guessTrade(k.name, folder);
+        let t = kindType[koKind(k)] || "value";
+        if (t === "dim" && ["rollo", "tor", "dachfenster"].includes(trade)) t = "blind";
+        if (t === "switch" && trade === "rollo" && !isSt(k)) { impCands.push({ group, name: k.name, type: "updown", trade, alt: { updown: { key: null, moveKey: k } }, kos: [k] }); continue; }
+        if (t === "switch" && /sperr|verriegel/i.test(k.name)) { impCands.push({ group, name: k.name, type: "lock", trade, alt: { lock: { key: k }, switch: { key: k } }, kos: [k] }); continue; }
+        impCands.push({ group, name: k.name, type: t, trade, alt: { [t]: { key: k } }, kos: [k] });
+      }
+      continue;
+    }
+    const byB = new Map();
+    for (const k of kos) {
+      let b = baseName(k.name) || k.name.toLowerCase();
+      if (guessTrade(k.name, folder) === "heizung") b = "heat:" + heatBase(k.name);   // Soll, Ist, Betriebsart, Ventil eines Raums zusammen
+      if (!byB.has(b)) byB.set(b, []); byB.get(b).push(k);
+    }
+    for (const [b, ks] of byB) {
+      const MODE_RE = /betriebsart|hvac|betriebsmodus|\bmodus\b/i;
+      const isMode = k => koDpt(k) === "20.102" || (MODE_RE.test(k.name) && koKind(k) === "u8");
+      const mc = ks.find(k => isMode(k) && !isSt(k));
+      const f = (kind, st) => ks.find(k => koKind(k) === kind && isSt(k) === st && k !== mc && !(st && MODE_RE.test(k.name)));
+      const alt = {};
+      const MOVE_RE = /auf\s*\/\s*ab|auf\s*\/\s*zu|fahren|langzeit|\blang\b|bewegen|hoch\s*\/\s*runter|\bmove\b/i, STOP_RE = /stopp?\b|kurzzeit|\bkurz\b|schritt|\bstep\b|lamelle/i;
+      const moveC = ks.find(k => koKind(k) === "bool" && !isSt(k) && MOVE_RE.test(k.name));
+      const stopC = ks.find(k => koKind(k) === "bool" && !isSt(k) && STOP_RE.test(k.name));
+      const pc = f("pct", false), bc = ks.find(k => koKind(k) === "bool" && !isSt(k) && k !== stopC && k !== mc), vc = f("float", false) || f("u16", false) || f("num", false);
+      const trade = guessTrade((pc || bc || vc || mc || ks[0]).name, folder);
+      const posT = ["rollo", "tor", "dachfenster"].includes(trade) ? "blind" : "dim";
+      if (pc) alt[posT] = { key: pc, status: f("pct", true) };
+      if (posT === "blind" && pc) alt.blind = { key: pc || null, status: f("pct", true), moveKey: moveC, stopKey: stopC };
+      if (posT === "blind" && trade !== "tor" && (moveC || bc)) alt.updown = { key: null, status: f("pct", true), moveKey: moveC || bc, stopKey: stopC !== (moveC || bc) ? stopC : null };
+      const LOCK_RE = /sperr|verriegel|\block\b/i;
+      const lc = ks.find(k => koKind(k) === "bool" && !isSt(k) && LOCK_RE.test(k.name));
+      if (lc) alt.lock = { key: lc, status: ks.find(k => koKind(k) === "bool" && isSt(k) && LOCK_RE.test(k.name)) || null };
+      if (bc && trade !== "rollo" && !(lc && bc === lc)) alt.switch = { key: bc, status: f("bool", true) };
+      if (vc) alt.value = { key: vc, status: f("float", true) || f("u16", true) || f("num", true) };
+      if (mc) alt.mode = { key: mc, status: ks.find(k => isMode(k) && isSt(k)) };
+      // Heizung Raum: Sollwert, Ist, Betriebsart, Ventil
+      if (trade === "heizung" && (vc || mc)) {
+        const IST_RE = /\bist\b|ist-?temp|istwert|raumtemp|temperatur|actual|\btemp\b/i, SOLL_RE = /soll|setpoint/i, VALVE_RE = /ventil|stellgr|stellwert|stellantrieb|valve|heizen\b|anforderung/i;
+        const flts = ks.filter(k => koKind(k) === "float" && k !== mc);
+        const ist = flts.find(k => IST_RE.test(k.name) && !SOLL_RE.test(k.name));
+        const setC = flts.find(k => !isSt(k) && SOLL_RE.test(k.name)) || flts.find(k => !isSt(k) && k !== ist);
+        const setSt = flts.find(k => isSt(k) && SOLL_RE.test(k.name) && k !== setC);
+        const valve = ks.find(k => VALVE_RE.test(k.name) && k !== mc && (koKind(k) === "pct" || koKind(k) === "bool"));
+        if (setC || mc) alt.heat = { key: setC || null, status: ist || null, modeKey: mc || null, modeStatus: alt.mode ? alt.mode.status : null, setStatus: setSt || null, valveKey: valve || null };
+      }
+      // RGBW: mindestens 3 Farbkanäle (Prozent) in einer Gruppe
+      const COL = { r: /(^|[\s_\-])(rot|red|r)([\s_\-]|$)/i, g: /(^|[\s_\-])(grün|gruen|green|g)([\s_\-]|$)/i,
+        b: /(^|[\s_\-])(blau|blue|b)([\s_\-]|$)/i, w: /(^|[\s_\-])(weiß|weiss|white|w)([\s_\-]|$)/i };
+      const chan = {};
+      for (const [cn, re] of Object.entries(COL)) chan[cn] = ks.find(k => koKind(k) === "pct" && !isSt(k) && re.test(k.name.replace(/rgbw?/i, " ")));
+      if (["r", "g", "b", "w"].filter(x => chan[x]).length >= 3) {
+        const bright = ks.find(k => koKind(k) === "pct" && !isSt(k) && !Object.values(chan).includes(k));
+        alt.rgbw = { key: bright || null, status: bright ? ks.find(k => koKind(k) === "pct" && isSt(k) && !Object.values(COL).some(re => re.test(k.name))) : null,
+          rKey: chan.r, gKey: chan.g, bKey: chan.b, wKey: chan.w };
+        delete alt.dim;
+      }
+      const order = alt.rgbw ? ["rgbw"] : trade === "heizung" ? ["heat", "value", "mode", "switch", "dim"] : (lc && !pc && !bc ? ["lock"] : []).concat(["dim", "blind", "updown", "lock", "switch", "value", "mode"]);
+      const type = order.find(t => alt[t]);
+      if (!type) continue;
+      const nk = alt[type].key || alt[type].moveKey || alt[type].rKey || alt[type].modeKey;
+      let name = type === "value" || type === "mode" || type === "heat" ? (type === "heat" ? (nk.name.replace(/[_|]+/g, " ").replace(HEAT_STRIP, " ").replace(/\s*[-–]\s*(?=[-–]|$)/g, " ").replace(/\s+/g, " ").replace(/^[\s\-–]+|[\s\-–]+$/g, "") || room || "Heizung") : nk.name.replace(/_+/g, " ").trim()) : prettyName(nk.name);
+      if (room && name.length < 4 && type !== "heat") name = room + " " + name;
+      if (type === "rgbw" && !/rgb/i.test(name)) name += " RGBW";
+      impCands.push({ group, name, type, trade, alt, kos: ks });
+    }
+  }
+  impCands.forEach((c, i) => c.i = i);
+}
+function candKeys(c) {
+  const a = c.alt[c.type] || Object.values(c.alt)[0];
+  const o = { key: a.key ? coKey(a.key) : "", status: a.status ? coKey(a.status) : "", moveKey: a.moveKey ? coKey(a.moveKey) : "", stopKey: a.stopKey ? coKey(a.stopKey) : "" };
+  for (const k of ["rKey", "gKey", "bKey", "wKey", "modeKey", "modeStatus", "setStatus", "valveKey"]) o[k] = a[k] ? coKey(a[k]) : "";
+  return o;
+}
+/* Arten je Kandidat; bei Rollo kein „Schalten“ (Auf/Ab statt Ein/Aus) */
+function impTypes(c) {
+  let ts = Object.keys(c.alt);
+  if (c.trade === "rollo") {
+    if (ts.includes("switch") && !ts.includes("updown")) { c.alt.updown = { key: null, status: null, moveKey: c.alt.switch.key, stopKey: null }; ts = Object.keys(c.alt); }
+    ts = ts.filter(t => t !== "switch");
+  }
+  if (!ts.includes(c.type)) c.type = ts[0];
+  return ts;
+}
+function renderImp() {
+  const q = $("#impQ").value.trim().toLowerCase();
+  const have = new Set(grp().funcs.map(f => f.key || f.moveKey || f.modeKey).filter(Boolean));
+  const list = impCands.filter(c => !q || (c.group + " " + c.name + " " + c.kos.map(k => k.name + " " + k.ga).join(" ")).toLowerCase().includes(q));
+  const byG = new Map(); list.forEach(c => { if (!byG.has(c.group)) byG.set(c.group, []); byG.get(c.group).push(c); });
+  let h = "";
+  for (const [gname, cs] of byG) {
+    h += `<div class="impg"><span>${esc(gname)}</span><button class="btn small" data-all="${esc(gname)}">alle</button></div>`;
+    for (const c of cs.slice(0, 400)) {
+      impTypes(c);
+      const k = candKeys(c), isHave = have.has(k.key || k.moveKey || k.modeKey);
+      h += `<div class="impr ${isHave ? "have" : ""}"><input type="checkbox" data-i="${c.i}" ${c.sel ? "checked" : ""} ${isHave ? "disabled title='schon in der Gruppe'" : ""}>
+        <input type="text" data-n="${c.i}" value="${esc(c.name)}">
+        <select data-t="${c.i}">${impTypes(c).map(t => `<option value="${t}" ${t === c.type ? "selected" : ""}>${{ switch: "Schalten", lock: "Sperre", updown: "Auf/Ab", dim: "Dimmen %", blind: "Position %", value: "Wert", mode: "Betriebsart", rgbw: "RGBW", heat: "Heizung" }[t]}</option>`).join("")}</select>
+        <select data-tr="${c.i}">${TRADES.map(([k, n]) => `<option value="${k}" ${k === c.trade ? "selected" : ""}>${n}</option>`).join("")}</select>
+        <small>${c.type === "heat"
+          ? [k.key && "Soll " + esc(k.key), k.modeKey && "BA " + esc(k.modeKey), k.status && "Ist " + esc(k.status), k.valveKey && "Ventil " + esc(k.valveKey)].filter(Boolean).join(" · ")
+          : (k.key ? esc(k.key) : "") + (k.moveKey ? (k.key ? " · " : "") + "Fahren " + esc(k.moveKey) : "") + (k.stopKey ? " · Stopp " + esc(k.stopKey) : "") + (k.rKey || k.gKey ? " · RGBW " + [k.rKey, k.gKey, k.bKey, k.wKey].filter(Boolean).map(esc).join(", ") : "") + (k.status ? " · RM " + esc(k.status) : "")}${isHave ? " · bereits vorhanden" : ""}</small></div>`;
+    }
+  }
+  $("#impList").innerHTML = h || `<div class="hint" style="padding:10px">Nichts gefunden.</div>`;
+  updImpCnt();
+}
+function updImpCnt() { const n = impCands.filter(c => c.sel).length; $("#impCnt").textContent = n ? n + " ausgewählt" : ""; $("#impAdd").disabled = !n; $("#impAdd").textContent = n ? n + " hinzufügen" : "Hinzufügen"; }
+$("#impQ").oninput = renderImp;
+$("#impAll").onchange = () => { buildCands(); renderImp(); };
+$("#impMode2").onchange = () => { impAddr = $("#impMode2").value; lsSet("hs-szenen-addr", impAddr); renderImp(); };
+$("#impList").addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset.i !== undefined) { impCands[+t.dataset.i].sel = t.checked; updImpCnt(); }
+  if (t.dataset.t !== undefined) { impCands[+t.dataset.t].type = t.value; renderImp(); }
+  if (t.dataset.tr !== undefined) { impCands[+t.dataset.tr].trade = t.value; renderImp(); }
+});
+$("#impList").addEventListener("input", e => { if (e.target.dataset.n !== undefined) impCands[+e.target.dataset.n].name = e.target.value; });
+$("#impList").addEventListener("click", e => {
+  const b = e.target.closest("[data-all]"); if (!b) return;
+  const cs = [...$("#impList").querySelectorAll("input[type=checkbox]:not(:disabled)")].filter(x => x.closest(".impr").previousElementSibling && true);
+  let grpEl = b.closest(".impg"), el = grpEl.nextElementSibling; const boxes = [];
+  while (el && el.classList.contains("impr")) { const x = el.querySelector("input[type=checkbox]"); if (!x.disabled) boxes.push(x); el = el.nextElementSibling; }
+  const on = boxes.some(x => !x.checked);
+  boxes.forEach(x => { x.checked = on; impCands[+x.dataset.i].sel = on; }); updImpCnt(); void cs;
+});
+$("#impProbe").onclick = async () => {
+  const h = $("#impProbeHint"); h.className = "hint"; h.textContent = "prüfe …";
+  const sample = impCands.map(c => (c.alt[c.type] || {}).key).filter(k => k && k.ga && k.id).slice(0, 8);
+  if (!sample.length) { h.textContent = "Keine KOs mit Gruppenadresse und Nummer gefunden."; return; }
+  const keys = [...sample.map(k => "CO@" + k.ga.replace(/\//g, "_")), ...sample.map(k => "CO@" + k.id)];
+  try {
+    const r = await api("api/probe", { keys });
+    const ok = k => r.codes[k] === 0;
+    const ga = sample.filter(k => ok("CO@" + k.ga.replace(/\//g, "_"))).length, id = sample.filter(k => ok("CO@" + k.id)).length;
+    if (!ga && !id) { h.className = "hint err"; h.textContent = "Keine Schreibweise erkannt – sind die KOs für den Gateway-Benutzer freigegeben?"; return; }
+    impAddr = ga >= id ? "ga" : "id"; $("#impMode2").value = impAddr; lsSet("hs-szenen-addr", impAddr);
+    h.className = "hint ok"; h.textContent = "✓ " + (impAddr === "ga" ? "Gruppenadresse" : "KO-Nummer") + " (" + Math.max(ga, id) + "/" + sample.length + " KOs erreichbar)";
+    renderImp();
+  } catch (e) { h.className = "hint err"; h.textContent = e.message; }
+};
+$("#impAdd").onclick = async () => {
+  const g = grp();
+  const sel = impCands.filter(c => c.sel);
+  for (const c of sel) {
+    impTypes(c);
+    const k = candKeys(c);
+    const f = { id: rid("f"), name: c.name.trim() || "Funktion", type: c.type === "updown" ? "blind" : c.type, trade: c.trade, key: k.key, status: k.status, dusk: false, rain: c.trade === "dachfenster", season: c.trade === "dachfenster", sv: g.scenes.map(() => c.trade === "dachfenster" ? { en: false, v: 0, ew: false, vw: 0 } : { en: false, v: 0 }) };
+    if (c.type === "value") {
+      const a = c.alt.value.key, d = tradeDefaults(c.trade, "value");
+      Object.assign(f, d.unit ? d : { min: a.min ?? 0, max: a.max ?? 100, step: 1, unit: "" });
+    } else if (c.type === "dim" || f.type === "blind") Object.assign(f, tradeDefaults(c.trade, "blind" === f.type ? "blind" : c.type));
+    if (f.type === "blind") Object.assign(f, { moveKey: k.moveKey, stopKey: k.stopKey });
+    if (c.type === "updown") f.sv.forEach(e => { e.m = "move"; if (e.vw !== undefined) e.mw = "move"; });
+    if (c.type === "heat") { Object.assign(f, { modeKey: k.modeKey, modeStatus: k.modeStatus, setStatus: k.setStatus, valveKey: k.valveKey, min: 5, max: 30, step: 0.5, unit: "°C" }); f.sv.forEach(e => heatDefaults(e, true)); }
+    if (c.type === "rgbw") { Object.assign(f, { rKey: k.rKey, gKey: k.gKey, bKey: k.bKey, wKey: k.wKey, chMax: 100, min: 0, max: 100, step: 1, unit: "%" }); f.sv.forEach(e => e.c = [0, 0, 0, 100]); }
+    g.funcs.push(f);
+    c.sel = false;
+  }
+  $("#dImp").close();
+  await saveConfig();
+  toast(sel.length + " Funktionen hinzugefügt – Freigaben und Werte jetzt im Gitter setzen");
+};
+
+start();
+</script>
+</body>
+</html>

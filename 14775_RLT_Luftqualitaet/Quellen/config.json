@@ -1,0 +1,497 @@
+{
+  "module": {
+    "category": "Ventilation",
+    "context": "ElektroRausch_14775",
+    "id": "14775",
+    "name": "14775 AHU air quality control",
+    "hsl_filename": "14775_RLT_Luftqualitaet.hsl",
+    "version": "1.5",
+    "inputs": [
+      {
+        "type": "number",
+        "identifier": "enable",
+        "init_value": 0,
+        "label": "I1 Enable time schedule (1=ON)"
+      },
+      {
+        "type": "number",
+        "identifier": "aq",
+        "init_value": 0,
+        "label": "I2 Air quality actual"
+      },
+      {
+        "type": "number",
+        "identifier": "t_room",
+        "init_value": 20,
+        "label": "I3 Room temperature"
+      },
+      {
+        "type": "number",
+        "identifier": "t_set",
+        "init_value": 20,
+        "label": "I4 Room setpoint"
+      },
+      {
+        "type": "number",
+        "identifier": "t_out",
+        "init_value": 10,
+        "label": "I5 Outdoor temperature"
+      },
+      {
+        "type": "number",
+        "identifier": "aq_good",
+        "init_value": 800,
+        "label": "I6 Limit good air quality"
+      },
+      {
+        "type": "number",
+        "identifier": "aq_bad",
+        "init_value": 1400,
+        "label": "I7 Limit bad air quality"
+      },
+      {
+        "type": "number",
+        "identifier": "rec_good",
+        "init_value": 80,
+        "label": "I8 Recirc damper at good %"
+      },
+      {
+        "type": "number",
+        "identifier": "rec_bad",
+        "init_value": 0,
+        "label": "I9 Recirc damper at bad %"
+      },
+      {
+        "type": "number",
+        "identifier": "oa_good",
+        "init_value": 20,
+        "label": "I10 Outdoor air damper at good %"
+      },
+      {
+        "type": "number",
+        "identifier": "oa_bad",
+        "init_value": 100,
+        "label": "I11 Outdoor air damper at bad %"
+      },
+      {
+        "type": "number",
+        "identifier": "ex_good",
+        "init_value": 20,
+        "label": "I12 Exhaust damper at good %"
+      },
+      {
+        "type": "number",
+        "identifier": "ex_bad",
+        "init_value": 100,
+        "label": "I13 Exhaust damper at bad %"
+      },
+      {
+        "type": "number",
+        "identifier": "ot_on",
+        "init_value": 1.0,
+        "label": "I14 Overtemperature ON above K"
+      },
+      {
+        "type": "number",
+        "identifier": "ot_off",
+        "init_value": 0.5,
+        "label": "I15 Overtemperature OFF below K"
+      },
+      {
+        "type": "number",
+        "identifier": "fan_min",
+        "init_value": 30,
+        "label": "I16 Fan minimum speed %"
+      },
+      {
+        "type": "number",
+        "identifier": "fan_max",
+        "init_value": 100,
+        "label": "I17 Fan maximum speed %"
+      },
+      {
+        "type": "number",
+        "identifier": "fc_t_out_min",
+        "init_value": 12,
+        "label": "I18 Free cooling min. outdoor temp. degC"
+      },
+      {
+        "type": "number",
+        "identifier": "fc_dt0",
+        "init_value": 0,
+        "label": "I19 Free cooling dT start K"
+      },
+      {
+        "type": "number",
+        "identifier": "fc_dt1",
+        "init_value": 5,
+        "label": "I20 Free cooling dT end K"
+      },
+      {
+        "type": "number",
+        "identifier": "fc_corr_max",
+        "init_value": 100,
+        "label": "I21 Free cooling correction at dT end %"
+      },
+      {
+        "type": "number",
+        "identifier": "fc_supply_min",
+        "init_value": 0,
+        "label": "I22 Supply min. during free cooling %"
+      },
+      {
+        "type": "number",
+        "identifier": "rec_off",
+        "init_value": 0,
+        "label": "I23 Recirc damper when plant OFF %"
+      },
+      {
+        "type": "number",
+        "identifier": "amp_yellow",
+        "init_value": 1000,
+        "label": "I24 Traffic light yellow from"
+      },
+      {
+        "type": "number",
+        "identifier": "amp_red",
+        "init_value": 1400,
+        "label": "I25 Traffic light red from"
+      },
+      {
+        "type": "number",
+        "identifier": "amp_hyst",
+        "init_value": 50,
+        "label": "I26 Traffic light hysteresis"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "number",
+        "identifier": "supply",
+        "init_value": 0,
+        "label": "O1 Supply fan %"
+      },
+      {
+        "type": "number",
+        "identifier": "exhaust",
+        "init_value": 0,
+        "label": "O2 Exhaust fan %"
+      },
+      {
+        "type": "number",
+        "identifier": "rec",
+        "init_value": 0,
+        "label": "O3 Recirculation damper %"
+      },
+      {
+        "type": "number",
+        "identifier": "oa",
+        "init_value": 0,
+        "label": "O4 Outdoor air damper %"
+      },
+      {
+        "type": "number",
+        "identifier": "ex",
+        "init_value": 0,
+        "label": "O5 Exhaust air damper %"
+      },
+      {
+        "type": "number",
+        "identifier": "on",
+        "init_value": 0,
+        "label": "O6 Plant ON / enable temperature control"
+      },
+      {
+        "type": "number",
+        "identifier": "ot",
+        "init_value": 0,
+        "label": "O7 Overtemperature active"
+      },
+      {
+        "type": "number",
+        "identifier": "fc",
+        "init_value": 0,
+        "label": "O8 Free cooling active"
+      },
+      {
+        "type": "number",
+        "identifier": "fc_corr",
+        "init_value": 0,
+        "label": "O9 Free cooling supply correction %"
+      },
+      {
+        "type": "number",
+        "identifier": "aq_level",
+        "init_value": 0,
+        "label": "O10 Air quality share bad %"
+      },
+      {
+        "type": "string",
+        "identifier": "status",
+        "init_value": "",
+        "label": "O11 Status"
+      },
+      {
+        "type": "number",
+        "identifier": "amp",
+        "init_value": 0,
+        "label": "O12 Air quality traffic light (0=green 1=yellow 2=red)"
+      }
+    ],
+    "stores": [],
+    "timers": [],
+    "scripts": [
+      {
+        "filename": "hsl3_14775_rlt_luftqualitaet.py"
+      }
+    ],
+    "translations": [
+      {
+        "language": "de",
+        "name": "14775 RLT Luftqualitätsregelung",
+        "category": "Lüftung",
+        "translation_inputs": [
+          {
+            "label": "E1 Freigabe Zeitprogramm (1=EIN)"
+          },
+          {
+            "label": "E2 Luftqualität Istwert"
+          },
+          {
+            "label": "E3 Raumtemperatur"
+          },
+          {
+            "label": "E4 Raumsolltemperatur"
+          },
+          {
+            "label": "E5 Außentemperatur"
+          },
+          {
+            "label": "E6 Grenze gute Luftqualität"
+          },
+          {
+            "label": "E7 Grenze schlechte Luftqualität"
+          },
+          {
+            "label": "E8 Umluftklappe bei gut %"
+          },
+          {
+            "label": "E9 Umluftklappe bei schlecht %"
+          },
+          {
+            "label": "E10 Außenluftklappe bei gut %"
+          },
+          {
+            "label": "E11 Außenluftklappe bei schlecht %"
+          },
+          {
+            "label": "E12 Fortluftklappe bei gut %"
+          },
+          {
+            "label": "E13 Fortluftklappe bei schlecht %"
+          },
+          {
+            "label": "E14 Übertemperatur EIN ab K"
+          },
+          {
+            "label": "E15 Übertemperatur AUS unter K"
+          },
+          {
+            "label": "E16 Ventilator Mindestdrehzahl %"
+          },
+          {
+            "label": "E17 Ventilator Maximaldrehzahl %"
+          },
+          {
+            "label": "E18 Freecooling Außentemp. mind. °C"
+          },
+          {
+            "label": "E19 Freecooling dT Beginn K"
+          },
+          {
+            "label": "E20 Freecooling dT Ende K"
+          },
+          {
+            "label": "E21 Freecooling Korrektur bei dT Ende %"
+          },
+          {
+            "label": "E22 Zuluft Untergrenze bei Freecooling %"
+          },
+          {
+            "label": "E23 Umluftklappe bei Anlage AUS %"
+          },
+          {
+            "label": "E24 Ampel gelb ab"
+          },
+          {
+            "label": "E25 Ampel rot ab"
+          },
+          {
+            "label": "E26 Ampel Hysterese"
+          }
+        ],
+        "translation_outputs": [
+          {
+            "label": "A1 Zuluftventilator %"
+          },
+          {
+            "label": "A2 Abluftventilator %"
+          },
+          {
+            "label": "A3 Umluftklappe %"
+          },
+          {
+            "label": "A4 Außenluftklappe %"
+          },
+          {
+            "label": "A5 Fortluftklappe %"
+          },
+          {
+            "label": "A6 Anlage EIN / Freigabe Temperaturregelung"
+          },
+          {
+            "label": "A7 Übertemperatur aktiv"
+          },
+          {
+            "label": "A8 Freecooling aktiv"
+          },
+          {
+            "label": "A9 Freecooling Zuluftkorrektur %"
+          },
+          {
+            "label": "A10 Luftqualität Anteil schlecht %"
+          },
+          {
+            "label": "A11 Status"
+          },
+          {
+            "label": "A12 Ampel Luftqualität (0=grün 1=gelb 2=rot)"
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "name": "14775 AHU air quality control",
+        "category": "Ventilation",
+        "translation_inputs": [
+          {
+            "label": "I1 Enable time schedule (1=ON)"
+          },
+          {
+            "label": "I2 Air quality actual"
+          },
+          {
+            "label": "I3 Room temperature"
+          },
+          {
+            "label": "I4 Room setpoint"
+          },
+          {
+            "label": "I5 Outdoor temperature"
+          },
+          {
+            "label": "I6 Limit good air quality"
+          },
+          {
+            "label": "I7 Limit bad air quality"
+          },
+          {
+            "label": "I8 Recirc damper at good %"
+          },
+          {
+            "label": "I9 Recirc damper at bad %"
+          },
+          {
+            "label": "I10 Outdoor air damper at good %"
+          },
+          {
+            "label": "I11 Outdoor air damper at bad %"
+          },
+          {
+            "label": "I12 Exhaust damper at good %"
+          },
+          {
+            "label": "I13 Exhaust damper at bad %"
+          },
+          {
+            "label": "I14 Overtemperature ON above K"
+          },
+          {
+            "label": "I15 Overtemperature OFF below K"
+          },
+          {
+            "label": "I16 Fan minimum speed %"
+          },
+          {
+            "label": "I17 Fan maximum speed %"
+          },
+          {
+            "label": "I18 Free cooling min. outdoor temp. degC"
+          },
+          {
+            "label": "I19 Free cooling dT start K"
+          },
+          {
+            "label": "I20 Free cooling dT end K"
+          },
+          {
+            "label": "I21 Free cooling correction at dT end %"
+          },
+          {
+            "label": "I22 Supply min. during free cooling %"
+          },
+          {
+            "label": "I23 Recirc damper when plant OFF %"
+          },
+          {
+            "label": "I24 Traffic light yellow from"
+          },
+          {
+            "label": "I25 Traffic light red from"
+          },
+          {
+            "label": "I26 Traffic light hysteresis"
+          }
+        ],
+        "translation_outputs": [
+          {
+            "label": "O1 Supply fan %"
+          },
+          {
+            "label": "O2 Exhaust fan %"
+          },
+          {
+            "label": "O3 Recirculation damper %"
+          },
+          {
+            "label": "O4 Outdoor air damper %"
+          },
+          {
+            "label": "O5 Exhaust air damper %"
+          },
+          {
+            "label": "O6 Plant ON / enable temperature control"
+          },
+          {
+            "label": "O7 Overtemperature active"
+          },
+          {
+            "label": "O8 Free cooling active"
+          },
+          {
+            "label": "O9 Free cooling supply correction %"
+          },
+          {
+            "label": "O10 Air quality share bad %"
+          },
+          {
+            "label": "O11 Status"
+          },
+          {
+            "label": "O12 Air quality traffic light (0=green 1=yellow 2=red)"
+          }
+        ]
+      }
+    ]
+  }
+}

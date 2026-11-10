@@ -1,0 +1,263 @@
+{
+  "module": {
+    "category": "Visualisation",
+    "context": "hsl3.visuserver",
+    "id": "14771",
+    "name": "14771 History for charts",
+    "hsl_filename": "14771_verlauf.hsl",
+    "version": "2.7",
+    "inputs": [
+      {
+        "type": "number",
+        "identifier": "value",
+        "init_value": 0,
+        "label": "I1 Value"
+      },
+      {
+        "type": "number",
+        "identifier": "decimals",
+        "init_value": 1,
+        "label": "I2 Decimals (0-4)"
+      },
+      {
+        "type": "number",
+        "identifier": "mode",
+        "init_value": 0,
+        "label": "I3 Mode 0=avg 1=last 2=diff(meter) 3=max"
+      },
+      {
+        "type": "number",
+        "identifier": "reset",
+        "init_value": 0,
+        "label": "I4 Reset (1 = clear)"
+      },
+      {
+        "type": "number",
+        "identifier": "server",
+        "init_value": 0,
+        "label": "I5 Visu server instance ID (O1 of 14770)"
+      },
+      {
+        "type": "string",
+        "identifier": "hist_id",
+        "init_value": "",
+        "label": "I6 ID (e.g. wz_temp)"
+      },
+      {
+        "type": "string",
+        "identifier": "name",
+        "init_value": "",
+        "label": "I7 Name"
+      },
+      {
+        "type": "string",
+        "identifier": "unit",
+        "init_value": "",
+        "label": "I8 Unit"
+      },
+      {
+        "type": "number",
+        "identifier": "ko_out",
+        "init_value": 1,
+        "label": "I9 Output O1 for 14-byte CO (1=on)"
+      },
+      {
+        "type": "number",
+        "identifier": "delete",
+        "init_value": 0,
+        "label": "I10 Delete row no. (-1 = all)"
+      },
+      {
+        "type": "number",
+        "identifier": "show",
+        "init_value": 1,
+        "label": "I11 Show in chart (1=yes 0=hide)"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "identifier": "history",
+        "init_value": "",
+        "label": "O1 History (14-byte CO, optional)"
+      },
+      {
+        "type": "number",
+        "identifier": "count",
+        "init_value": 0,
+        "label": "O2 Number of values"
+      },
+      {
+        "type": "string",
+        "identifier": "status",
+        "init_value": "",
+        "label": "O3 Status"
+      }
+    ],
+    "stores": [
+      {
+        "type": "string",
+        "identifier": "h01",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h02",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h03",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h04",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h05",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h06",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h07",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h08",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h09",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h10",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h11",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h12",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h13",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h14",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h15",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h16",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h17",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h18",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h19",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "h20",
+        "init_value": ""
+      }
+    ],
+    "timers": [
+      {
+        "identifier": "tick"
+      }
+    ],
+    "scripts": [
+      {
+        "filename": "hsl3_14771_verlauf.py"
+      }
+    ],
+    "translations": [
+      {
+        "language": "de",
+        "name": "14771 Verlaufsspeicher für Diagramme",
+        "category": "Visualisierung",
+        "translation_inputs": [
+          {
+            "label": "E1 Wert"
+          },
+          {
+            "label": "E2 Nachkommastellen (0-4)"
+          },
+          {
+            "label": "E3 Modus 0=Mittel 1=Letzter 2=Differenz(Zähler) 3=Max"
+          },
+          {
+            "label": "E4 Reset (1 = löschen)"
+          },
+          {
+            "label": "E5 Visu-Server Instanz-ID (A1 von 14770)"
+          },
+          {
+            "label": "E6 Kennung (z. B. wz_temp)"
+          },
+          {
+            "label": "E7 Name"
+          },
+          {
+            "label": "E8 Einheit"
+          },
+          {
+            "label": "E9 Ausgang A1 für 14-Byte-KO (1=an)"
+          },
+          {
+            "label": "E10 Zeile löschen (Nr., -1 = alle)"
+          },
+          {
+            "label": "E11 Im Diagramm anzeigen (1=ja 0=aus)"
+          }
+        ],
+        "translation_outputs": [
+          {
+            "label": "A1 Verlauf (14-Byte-KO, optional)"
+          },
+          {
+            "label": "A2 Anzahl Werte"
+          },
+          {
+            "label": "A3 Status"
+          }
+        ]
+      }
+    ]
+  }
+}

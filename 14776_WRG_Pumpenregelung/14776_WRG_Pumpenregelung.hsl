@@ -1,0 +1,101 @@
+################################################################################
+# 14776 WRG-Pumpenregelung  Version 1.0  (03.11.2026)
+# BadSmiley0815 · GPL-3.0
+#
+# Drehzahlregelung der WRG-Pumpe eines Kompressors auf eine Vorlauftemperatur.
+# - Verdichter läuft (E1=1): Pumpe sofort auf Mindestdrehzahl (E8).
+# - Bis der gefilterte Istwert (E3) den Sollwert (E4) erreicht, bleibt die Pumpe
+#   auf Mindestdrehzahl. Erst dann wird die Regelung aktiv (A2=1, bleibt aktiv bis
+#   der Verdichter aus ist).
+# - Regelung: PI-Regler, wirkt direkt (zu warm -> schneller). Startet stoßfrei bei
+#   der Mindestdrehzahl, Stellwert begrenzt auf E8..E9 und über Rampen E10/E11
+#   begrenzt. Integrator mit Anti-Windup (friert ein, solange die Rampe begrenzt).
+# - Verdichter aus (E1=0): Stellwert 0 (Pumpe aus), Regelung zurückgesetzt.
+# - E2<>1 (Hand): Baustein sendet nichts, beim Zurückschalten neu ab Mindestdrehzahl.
+# - Fühlerfehler (E3 < -30 oder > 130 °C): Stellwert E13, Status 5.
+# A3 Status: 0=Verdichter aus, 1=Mindestdrehzahl (wartet auf Soll), 2=Regelung,
+#            3=Regelung an Maximaldrehzahl, 4=Hand, 5=Fühlerfehler
+# A1 sendet ganzzahlig und nur bei Änderung (bzw. sofort bei E1/E2-Wechsel).
+################################################################################
+
+5000|"Rausch\14776 WRG-Pumpenregelung V1.0"|0|13|"E1 Verdichter läuft"|"E2 Betriebsart 1=Auto"|"E3 Istwert Vorlauf T2 [°C]"|"E4 Sollwert Vorlauf [°C]"|"E5 Verstärkung [%/K]"|"E6 Nachstellzeit [s]"|"E7 Taktzeit [s]"|"E8 Mindestdrehzahl [%]"|"E9 Maximaldrehzahl [%]"|"E10 Rampe auf [%/min]"|"E11 Rampe ab [%/min]"|"E12 Filterzeit Istwert [s]"|"E13 Stellwert bei Fühlerfehler [%]"|4|"A1 Stellwert Pumpe [%]"|"A2 Regelung aktiv (Soll erreicht)"|"A3 Status"|"A4 Istwert gefiltert [°C]"
+
+5001|13|4|1|15|1
+
+5002|1|0|0       # E1 Verdichter läuft
+5002|2|1|0       # E2 Betriebsart 1=Auto
+5002|3|0|0       # E3 Istwert Vorlauf T2 [°C]
+5002|4|80|0      # E4 Sollwert Vorlauf [°C]
+5002|5|3|0       # E5 Verstärkung [%/K]
+5002|6|300|0     # E6 Nachstellzeit [s]
+5002|7|10|0      # E7 Taktzeit [s]
+5002|8|15|0      # E8 Mindestdrehzahl [%]
+5002|9|100|0     # E9 Maximaldrehzahl [%]
+5002|10|5|0       # E10 Rampe auf [%/min]
+5002|11|20|0      # E11 Rampe ab [%/min]
+5002|12|60|0      # E12 Filterzeit Istwert [s]
+5002|13|15|0      # E13 Stellwert bei Fühlerfehler [%]
+
+5003|1|0|0   # SN1 aktiv
+5003|2|0|0   # SN2 I-Anteil
+5003|3|-999|0   # SN3 Istwert gefiltert
+5003|4|0|0   # SN4 Stellwert neu (temp)
+5003|5|0|0   # SN5 Regelabweichung
+5003|6|0|0   # SN6 I versuchsweise
+5003|7|0|0   # SN7 Stellwert ungerampt
+5003|8|0|0   # SN8 Stellwert aktuell
+5003|9|0|0   # SN9 Status
+5003|10|0|0   # SN10 Fühlerfehler
+5003|11|0|0   # SN11 Rampe auf je Takt
+5003|12|0|0   # SN12 Rampe ab je Takt
+5003|13|-1|0   # SN13 zuletzt gesendeter Stellwert
+5003|14|0|0   # SN14 Min
+5003|15|0|0   # SN15 Max
+
+5004|1|0|0|1|0   # A1 Stellwert Pumpe [%]
+5004|2|0|0|2|0   # A2 Regelung aktiv (Soll erreicht)
+5004|3|0|0|2|0   # A3 Status
+5004|4|0|0|2|0   # A4 Istwert gefiltert [°C]
+
+5012|0|"(EI==1) or OC[1] or EC[7]"|"1"|"max(1,EN[7])"|0|1|0|0   # Takt-Timer
+5012|1|"not (OC[1] or EC[1] or EC[2] or (EI==1))"|""|""|0|0|0|0   # sonst nichts rechnen
+5012|0|"SN[3]<-500"|"EN[3]"|""|0|0|3|0   # Filter initialisieren
+5012|0|"OC[1]"|"SN[3]+(EN[3]-SN[3])*min(1.0,max(1,EN[7])*1.0/max(1,EN[12]))"|""|0|0|3|0   # PT1-Filter
+5012|0|"OC[1] or (EI==1)"|"round(SN[3],1)"|""|4|0|0|0   # A4
+5012|0|"EN[1]==EN[1]"|"int((EN[3]<-30) or (EN[3]>130))"|""|0|0|10|0   # Fühlerfehler
+5012|0|"EN[2]!=1"|"4"|""|3|0|9|0
+5012|0|"EN[2]!=1"|"0"|""|2|0|1|0
+5012|0|"EN[2]!=1"|"0"|""|0|0|2|0
+5012|0|"EN[2]!=1"|"0"|""|0|0|8|0
+5012|1|"EN[2]!=1"|"-1"|""|0|0|13|0   # Hand: nichts senden
+5012|0|"EN[1]!=1"|"0"|""|2|0|1|0
+5012|0|"EN[1]!=1"|"0"|""|0|0|2|0
+5012|0|"EN[1]!=1"|"0"|""|0|0|8|0
+5012|0|"EN[1]!=1"|"0"|""|3|0|9|0
+5012|0|"(EN[1]!=1) and (SN[13]!=0)"|"0"|""|1|0|13|0
+5012|1|"EN[1]!=1"|""|""|0|0|0|0   # Verdichter aus: Pumpe aus
+5012|0|"SN[10]==1"|"5"|""|3|0|9|0
+5012|0|"SN[10]==1"|"0"|""|2|0|1|0
+5012|0|"SN[10]==1"|"0"|""|0|0|2|0
+5012|0|"SN[10]==1"|"max(0,min(100,EN[13]))"|""|0|0|8|0
+5012|0|"(SN[10]==1) and (int(SN[8]+0.5)!=SN[13])"|"int(SN[8]+0.5)"|""|1|0|13|0
+5012|1|"SN[10]==1"|""|""|0|0|0|0   # Fühlerfehler
+5012|0|"EN[1]==1"|"max(0,min(100,EN[8]))"|""|0|0|14|0   # Min
+5012|0|"EN[1]==1"|"max(SN[14],min(100,EN[9]))"|""|0|0|15|0   # Max
+5012|0|"SN[8]<SN[14]"|"SN[14]"|""|0|0|8|0   # Start auf Mindestdrehzahl
+5012|0|"SN[8]>SN[15]"|"SN[15]"|""|0|0|8|0
+5012|0|"(SN[1]==0) and (SN[3]>=EN[4])"|"1"|""|2|0|1|0   # Soll erreicht: Regelung aktiv
+5012|0|"EN[1]==1"|"SN[3]-EN[4]"|""|0|0|5|0   # e = Ist - Soll
+5012|0|"SN[1]==0"|"0"|""|0|0|2|0
+5012|0|"SN[1]==0"|"SN[14]"|""|0|0|8|0   # wartet auf Soll: Mindestdrehzahl
+5012|0|"(SN[1]==1) and OC[1]"|"max(0.0,min(SN[15]-SN[14],SN[2]+EN[5]*max(1,EN[7])*1.0/max(1,EN[6])*SN[5]))"|""|0|0|6|0   # I versuchsweise
+5012|0|"(SN[1]==1) and OC[1]"|"max(SN[14],min(SN[15],SN[14]+EN[5]*SN[5]+SN[6]))"|""|0|0|7|0   # u ungerampt
+5012|0|"(SN[1]==1) and OC[1]"|"max(0.1,EN[10])*max(1,EN[7])/60.0"|""|0|0|11|0
+5012|0|"(SN[1]==1) and OC[1]"|"max(0.1,EN[11])*max(1,EN[7])/60.0"|""|0|0|12|0
+5012|0|"(SN[1]==1) and OC[1]"|"max(SN[8]-SN[12],min(SN[8]+SN[11],SN[7]))"|""|0|0|4|0   # Rampe
+5012|0|"(SN[1]==1) and OC[1] and not (((SN[4]<SN[7]-0.001) and (SN[5]>0)) or ((SN[4]>SN[7]+0.001) and (SN[5]<0)))"|"SN[6]"|""|0|0|2|0   # Anti-Windup
+5012|0|"(SN[1]==1) and OC[1]"|"SN[4]"|""|0|0|8|0
+5012|0|"EN[1]==1"|"1+SN[1]+int((SN[1]==1) and (SN[8]>=SN[15]-0.01))"|""|3|0|9|0   # Status
+5012|0|"int(SN[8]+0.5)!=SN[13]"|"int(SN[8]+0.5)"|""|1|0|13|0   # A1 senden
+
+### 14776 WRG-Pumpenregelung.End

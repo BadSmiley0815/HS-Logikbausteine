@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>14778 Szenen-Server (v4.2)</title>
+<style>
+:root{--bg:#f6f7f9;--p:#fff;--l:#e3e5e8;--t:#1d2127;--m:#6b7280;--a:#6fa52a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111418;--p:#191d23;--l:#2c323b;--t:#e7eaee;--m:#98a1ad}}
+:root[data-theme="dark"]{--bg:#111418;--p:#191d23;--l:#2c323b;--t:#e7eaee;--m:#98a1ad}
+body{margin:0;background:var(--bg);color:var(--t);font:15px/1.55 system-ui,sans-serif}
+main{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:24px;margin:0}h2{font-size:18px;margin:28px 0 8px;border-bottom:2px solid var(--a);padding-bottom:4px}
+.mu{color:var(--m)}code{background:rgba(127,127,127,.15);padding:1px 5px;border-radius:5px}
+table{border-collapse:collapse;width:100%;background:var(--p);border:1px solid var(--l);border-radius:8px;overflow:hidden;font-size:14px}
+td,th{border-bottom:1px solid var(--l);padding:6px 9px;text-align:left;vertical-align:top}th{background:rgba(127,127,127,.08)}
+.box{background:var(--p);border:1px solid var(--l);border-left:4px solid var(--a);border-radius:8px;padding:10px 14px;margin:12px 0}
+</style></head><body><main>
+<h1>14778 Szenen-Server</h1>
+<div class="mu">Baustein-ID <b>14778</b> · Version <b>4.2</b> · HSL3 · Kontext <code>hsl3.szenenserver_14778</code></div>
+
+<p>Szenensteuerung für den Gira HomeServer mit eigener Webseite. Ersetzt die Gitter aus Matrix-8x1-Bausteinen, die bisher pro Funktion angelegt werden mussten. Funktionen werden auf der Webseite aus der KO-Struktur übernommen, die Seite baut sich daraus selbst auf. Beim Szenenaufruf sendet der Baustein die Werte über das KO-Gateway, eine Verdrahtung pro Funktion ist nicht mehr nötig.</p>
+
+<h2>1 · Verhalten</h2>
+<table>
+<tr><th>Aktion</th><th>Ergebnis</th></tr>
+<tr><td>Szene wird aufgerufen (Eingang, KO oder ▶)</td><td>Alle Funktionen mit <b>Freigabe</b> bekommen den <b>Wert</b> dieser Szene. Die Szene gilt ab jetzt als aktiv.</td></tr>
+<tr><td>Wert der <b>aktiven</b> Szene wird geändert</td><td>Wert wird gespeichert <b>und sofort gesendet</b>. Gleiches gilt, wenn bei der aktiven Szene die Freigabe eingeschaltet wird.</td></tr>
+<tr><td>Wert einer <b>inaktiven</b> Szene wird geändert</td><td>Wert wird nur gespeichert und beim nächsten Aufruf gesendet.</td></tr>
+<tr><td>Spalte <b>Aktuell</b></td><td>Zeigt den Istzustand (Status-KO) und schaltet/dimmt sofort. Optional je Gruppe: Änderung zusätzlich in die aktive Szene übernehmen.</td></tr>
+<tr><td>Bedingung <b>Dämmerung</b></td><td>Wird nur gesendet, wenn es dunkel ist (Dämmerungs-KO bzw. E4).</td></tr>
+<tr><td>Bedingung <b>Außentemperatur</b> (ab v4.2)</td><td>Je Funktion ein Grenzwert in °C (z. B. Dachluke 22,5 °C). Öffnen/Einschalten aus einer Szene wird nur gesendet, wenn die Außentemperatur (Temperatur-KO unter Sensoren bzw. E16) den Grenzwert erreicht. Darunter wird der Wert zurückgestellt und mit „Nachholen“ gesendet, sobald es wärmer ist. Schließen/Aus geht immer. Ist die Temperatur unbekannt, wird nicht geöffnet. Im Gitter: Thermometer mit Grenzwert, Klick zum Ändern; im Funktionsdialog unter Bedingungen.</td></tr>
+<tr><td><b>Position invertiert</b> (ab v4.2)</td><td>Für Aktoren, bei denen 0 % = offen und 100 % = zu bedeutet (z. B. Dachluken über Rollladenkanal). Die Seite zeigt und speichert wie gewohnt (Dachfenster 0 % = zu, 100 % = auf), der Baustein sendet 100 − Wert und rechnet die Rückmeldung zurück. Dadurch wirken Regen, Außentemperatur und Dämmerung richtig herum. Einstellbar im Funktionsdialog (Rollo/Dachfenster).</td></tr>
+<tr><td>Bedingung <b>Regen</b> (Dachfenster)</td><td>Bei Regen wird nicht geöffnet. Beim Regenbeginn merkt sich der Baustein die Stellung (Beispiel: „Gehen“ hat das Fenster auf 100 % gestellt). Nach Regenende + Verzögerung (Standard 5 min) stellt er sie wieder her, bzw. den Wert der inzwischen aufgerufenen Szene. Schließen während des Regens geht durch und ersetzt die gemerkte Stellung. Handbedienung in „Aktuell“ während des Regens wird als neue Stellung gemerkt. Die gemerkten Stellungen sind <b>remanent</b>: Endet der Regen während eines Neustarts, stellt der Baustein sie nach dem Start wieder her.</td></tr>
+<tr><td><b>KO-Auswahl</b></td><td>In allen KO-Feldern (Funktion und Gruppe) öffnet sich beim Anklicken eine Liste der K.-Objekte aus <code>/hscl?sys/cobjects.xml</code>, passend zur Art des Feldes vorsortiert (z. B. Betriebsart → 8 Bit DPT 5.010, Regen → 1 Bit, Ist-Temperatur → Gleitkomma). Tippen filtert nach Name, Ordner oder Gruppenadresse; ↑/↓ und Enter wählen. Der aktuelle Wert kommt live über das KO-Gateway und steht in der Liste und rechts im Feld („✗ nicht erreichbar“ = KO fehlt oder nicht für den Gateway-Benutzer freigegeben).</td></tr>
+<tr><td><b>Sperre</b> (z. B. Tore)</td><td>Art „Sperre / 1 Bit“: 1 = gesperrt (🔒), 0 = freigegeben (🔓). Je Szene per Klick umschalten, in „Aktuell“ sofort sperren/freigeben. Der Import erkennt 1-Bit-KOs mit „Sperre“/„Verriegelung“ im Namen.</td></tr>
+<tr><td><b>Heizung (Raum)</b></td><td>Eine Funktion je Raum mit Sollwert-KO, Betriebsart-KO (8 Bit, im HomeServer als DPT 5.010 0..255 angelegt; Werte 0 Auto, 1 Komfort, 2 Standby, 3 Nacht, 4 Frost), Ist-Temperatur, optional Sollwert- und Betriebsart-Status sowie Ventil/Stellgröße. „Aktuell“ zeigt Ist, Soll, Betriebsart und Ventil; Klick darauf stellt Betriebsart und Sollwert sofort. Je Szene: Betriebsart (oder „nicht senden“) und Sollwert (Haken „Sollwert senden“). Beim Aufruf wird erst die Betriebsart, dann der Sollwert gesendet. Der Import fasst die Heizungs-KOs eines Raums automatisch zu einer Funktion zusammen.</td></tr>
+<tr><td><b>Zeitprogramm Heizung</b></td><td><b>Freigabe</b> je Heizung: „nach Szene“ (Zeitprogramm aus), „nach Zeitprogramm“ (Szenenaufrufe lassen diese Heizung aus, die Szenenzellen zeigen ⏱) oder „Szene und Zeitprogramm“ (der letzte Befehl gilt). Einstellbar im Zeitprogramm-Dialog und im Funktionsdialog. Je Heizungsfunktion (Klick auf „Aktuell“ → ⏱ Zeitprogramm): Arbeitstage Mo–Fr oder Mo–Sa, Kommen- und Gehen-Zeit mit Betriebsart und optional Sollwert. „Kommen“ wird um die Vorlaufzeit früher gesendet, damit der Raum zur Kommen-Zeit warm ist. Vorlaufzeit in Minuten je Wochentag (Mo–Sa) für 10 / 5 / 0 / −5 / −10 / −15 / −20 °C, dazwischen linear; optional gilt am ersten Arbeitstag nach freien Tagen (z. B. Dienstag nach Ostermontag) die Montags-Zeile; Außentemperatur = Mittel der letzten 3 Stunden (unbekannt → längster Vorlauf). Feiertage werden je Bundesland berechnet (Standard Bayern, Mariä Himmelfahrt abschaltbar); optional „Automatische Brückentag-Erkennung“ (ein einzelner Arbeitstag zwischen Feiertag und Wochenende bzw. freiem Tag wird frei, z. B. Freitag nach Christi Himmelfahrt; bei Mo–Sa entsprechend weniger); in der Monatsansicht lassen sich Tage frei bzw. als Arbeitstag setzen – gilt für alle Heizungen. Nach einem Neustart wird der aktuelle Zustand nachgeholt, aber nichts doppelt gesendet.</td></tr>
+<tr><td><b>Sommer/Winter</b> (Dachfenster, optional Heizung u. a.)</td><td>Die Funktion hat zwei Zeilen – Sommer und Winter – mit eigener Freigabe und eigenem Wert je Szene. Sommer/Winter in Anlehnung an DIN (Heizgrenze): Der Baustein speichert um 7, 14 und 22 Uhr die Außentemperatur (remanent) und bildet das Tagesmittel (T7 + T14 + T22 + T22) / 4. Ist es ≥ Grenze (Standard 16 °C), gilt Sommer, sonst bzw. ohne Temperatur Winter. Umgeschaltet wird nur zu den Messzeitpunkten; fehlen anfangs Messwerte, wird die aktuelle Temperatur eingesetzt. Das Tagesmittel steht oben in der Leiste (Ø) und im Gruppendialog. Die gültige Zeile ist markiert. Wechselt die Jahreszeit bei aktiver Szene, wird mit „Nachholen“ der Wert der anderen Zeile gesendet.</td></tr>
+<tr><td>Alle Bedingungen</td><td>Gelten nur für Werte &gt; 0 (Licht ein, Rollo zu, Fenster/Tor auf). Aus und Schließen werden immer gesendet. Mit „Nachholen“ (je Gruppe, Standard an) werden zurückgestellte Werte der aktiven Szene gesendet, sobald die Bedingung erfüllt ist. Das gilt auch nach einem Neustart.</td></tr>
+<tr><td>Szenen-KO DPT 17.001</td><td>Wert 0–63 ruft Szene 1–64 auf (Bit 6/7 reserviert). Je Gruppe auf der Seite als Gruppenadresse eintragen (über das KO-Gateway) oder für eine Gruppe im Experten an E5 legen (zusätzlich E6–E13 Szene 1–8 per 1 Bit). Kommt derselbe Aufruf über beide Wege, zählt er nur einmal. Option „Wert 1 = Szene 1“ für Quellen wie die bisherige Matrix (0 = keine Szene aktiv).</td></tr>
+
+<tr><td>Szenenwert 0 (Nummerierung „1 = Szene 1“)</td><td>Keine Szene aktiv, es wird nichts gesendet.</td></tr>
+</table>
+
+<h2>Gewerke</h2>
+<table>
+<tr><th>Gewerk</th><th>typische Art</th><th>Anzeige</th><th>Bedingung im Gitter</th></tr>
+<tr><td>Licht</td><td>Schalten, Dimmen, RGBW</td><td>I / 0, %, Farbpunkt</td><td>Dämmerung</td></tr>
+<tr><td>Rollo</td><td>Position (0 % = auf, 100 % = zu) oder 1 Bit Auf/Ab</td><td>Auf / Zu / %</td><td>Dämmerung</td></tr>
+<tr><td>Tore</td><td>1 Bit oder Position</td><td>Zu / Auf</td><td>Dämmerung</td></tr>
+<tr><td>Dachfenster</td><td>Position oder 1 Bit</td><td>Zu (0) / Auf</td><td>Regen, Sommer/Winter (an)</td></tr>
+<tr><td>Heizung</td><td>Sollwert °C, Betriebsart (1 Komfort, 2 Standby, 3 Nacht, 4 Frost, 0 Auto)</td><td>°C / Name</td><td>Sommer/Winter (wählbar)</td></tr>
+</table>
+<h3>RGBW-Licht</h3>
+<p>Art „RGBW-Licht“: vier Kanal-KOs <b>Rot, Grün, Blau, Weiß</b> (wählbar 0–100 % / DPT 5.001 oder 0–255 / DPT 5.010) und ein <b>Helligkeit-KO</b> 0–100 % (optional mit Status-KO). Je Szene: Farbe am <b>Farbrad</b> (Farbton + Sättigung), Regler für <b>Weiß</b> und <b>Helligkeit</b>, Vorlagen Warmweiß, Kaltweiß, Neutral, Rot, Orange, Gelb, Grün, Cyan, Blau, Violett. Gesendet werden zuerst R, G, B, W, dann die Helligkeit. Im Gitter erscheint ein Farbpunkt mit der Helligkeit; „Aktuell“ zeigt die Farbe aus den Kanal-KOs und lässt sich direkt einstellen. Dämmerung wirkt auf Helligkeit &gt; 0. Beim Import werden vier bzw. drei Prozent-KOs mit „Rot/Grün/Blau/Weiß“ (oder R/G/B/W) im Namen als RGBW zusammengefasst.</p>
+<h3>Rollo und Dachfenster: Fahren oder Position</h3>
+<p>Eine Rollo- oder Dachfenster-Funktion kann bis zu drei KOs haben: <b>Position-KO</b> (absolut 0–100 %), <b>Fahren-KO</b> (1 Bit, Langzeit Auf/Ab) und <b>Stopp-KO</b> (1 Bit, Kurzzeit – nur für „Aktuell“). Je Szene (und je Sommer-/Winter-Zeile) wählt man im Wert-Regler:</p>
+<table>
+<tr><th>Auswahl</th><th>gesendet</th></tr>
+<tr><td><b>Auf/Ab fahren (1 Bit, lang)</b> – Auf fahren / Zu fahren. Beim Import und im Funktionsdialog als eigene Art „Auf/Ab“ wählbar (nur Fahren-KO, ohne Positions-KO).</td><td>Fahren-KO: Auf = 0, Zu = 1 (KNX-Standard). Mit „Fahren invertiert“ getauscht.</td></tr>
+<tr><td><b>Position 0–100 %</b></td><td>Position-KO mit dem Wert. Rollo: 0 % = auf, 100 % = zu. Dachfenster: 0 % = zu, 100 % = auf.</td></tr>
+</table>
+<p>Im Gitter steht bei Fahren „▲ Auf“ bzw. „▼ Zu“, bei Position der Prozentwert. In „Aktuell“ gibt es die Tasten Auf, Stopp und Zu sowie den Positionsregler. Beim Import werden Fahren- und Stopp-KO (Namen mit „Auf/Ab“, „Auf/Zu“, „fahren“, „lang“ bzw. „Stopp“, „kurz“, „Schritt“) automatisch zugeordnet. Regen, Sommer/Winter und Dämmerung gelten für beide Arten gleich.</p>
+<p>Die Beschriftung für 0 und 1 bzw. 0 % und 100 % lässt sich je Funktion ändern (Stift → ✎). Die Gewerke werden beim Import anhand von Name und Ordner erkannt und lassen sich dort und im Funktionsdialog ändern. <b>Wichtig für Bedingungen:</b> 0 muss „aus/geschlossen“ bedeuten.</p>
+
+<h2>2 · Vorbereitung im Experten</h2>
+<ol>
+<li><b>KO-Gateway</b> (Projekteinstellungen): aktiv, Benutzer mit Passwort. In seiner <b>WebSocket-Gruppe</b> alle KOs mit <b>Lesen + Schreiben</b> freigeben, die der Baustein nutzt: Steuer-KOs, Status-KOs, ggf. Szenen- und Dämmerungs-KOs. Es kann derselbe Benutzer sein wie für die HTML5-Visu.</li>
+<li>Für den Import auf der Seite: „XML-Struktur der K.-Objekte auf Gerät laden“ anhaken (wie bei der Visu).</li>
+<li>Baustein bauen wie 14777: <code>config_14778.json</code> + <code>hsl3_14778_szenenserver.py</code> mit dem Gira-SDK-Generator → <code>14778_szenenserver.hslz</code>, im Experten importieren.</li>
+</ol>
+
+<h2>KO-Gateway – wie bei der HTML5-Visu</h2>
+<p>Der Zugang zum KO-Gateway wird <b>auf der Webseite</b> eingetragen, nicht im Experten: Stecker-Symbol oben rechts → <b>HomeServer</b> (IP/Name, ggf. mit Port), <b>Benutzer</b>, <b>Passwort</b>, <b>verschlüsselt (wss://)</b>. Liegt bereits die HTML5-Visu auf demselben HomeServer, ist der Zugang vorbelegt. Buttons „Zertifikat prüfen“ und „Debug“ wie bei der Visu.</p>
+<ul>
+<li><b>Die Seite</b> verbindet sich selbst mit dem KO-Gateway (<code>wss://&lt;HS&gt;/endpoints/ws</code>), zeigt Live-Werte und sendet „Aktuell“ direkt.</li>
+<li><b>Speichern – für alle Endgeräte</b>: Der Zugang wird im Baustein gespeichert (remanent). Jedes weitere Handy/Tablet/PC braucht nur noch den Seiten-Schlüssel (E3) und verbindet sich automatisch mit dem HomeServer, von dem die Seite geladen wurde. Der Baustein gibt das Passwort dafür an jede Seite mit gültigem Schlüssel heraus. <b>Nur auf diesem Gerät</b>: Zugang bleibt im Browser, jedes Gerät braucht eigene Zugangsdaten. Ein eigener Zugang auf einem Gerät hat Vorrang.</li>
+<li>Mit „Zugang auch im Baustein 14778 speichern“ (Standard) übergibt die Seite den Zugang an den Baustein. Der verbindet sich damit selbst und führt Szenenaufrufe vom Bus auch ohne offene Seite aus (A11 = 1).</li>
+<li>Ist der Baustein gerade nicht verbunden, sendet die Seite Szenenaufrufe und Änderungen der aktiven Szene über ihre eigene Verbindung.</li>
+<li>Status oben rechts: grün = Seite und Baustein verbunden, gelb = nur einer von beiden, rot = keiner.</li>
+</ul>
+
+<h2>3 · Baustein einfügen (einmal pro Projekt)</h2>
+<table>
+<tr><th>Ein-/Ausgang</th><th>Belegung</th></tr>
+<tr><td>E1 Basis-Pfad</td><td><code>szenen</code> → Webseite unter <code>https://&lt;HS&gt;/szenen/</code></td></tr>
+<tr><td>E2 Port</td><td><b>8093</b> – nicht 0 (sonst 503) und nicht 8092 (belegt 14777)</td></tr>
+<tr><td>E3 Schlüssel</td><td>Kennwort für die Webseite</td></tr>
+<tr><td>E4 Dämmerung</td><td>1 = dunkel – nur nötig, wenn auf der Seite kein Dämmerungs-KO eingetragen ist</td></tr>
+<tr><td>E5 Szene</td><td>Szenen-KO DPT 17.001 (0–63 = Szene 1–64) für die Gruppe mit „Über die Baustein-Ein-/Ausgänge“ (eine Gruppe). Für das bisherige KO „LZ Nr“ (Wert 1–8) in der Gruppe „Wert 1 = Szene 1“ wählen.</td></tr>
+<tr><td>E6 … E13 Szene 1 … 8</td><td>1 Bit: 1 = Szene aufrufen, 0 wird ignoriert (z. B. für Taster)</td></tr>
+<tr><td>E14 Neustart / Auslöser</td><td>1 = Webserver und Gateway-Verbindung neu starten</td></tr>
+<tr><td>E15 Regen</td><td>1 = Regen – nur nötig, wenn auf der Seite kein Regen-KO eingetragen ist</td></tr>
+<tr><td>E16 Außentemperatur</td><td>°C – nur nötig, wenn auf der Seite kein Temperatur-KO eingetragen ist. Unbelegt (−100) = unbekannt.</td></tr>
+<tr><td>A1 Status</td><td>Klartext (ASCII)</td></tr>
+<tr><td>A2 Szene</td><td>aktive Szene der Baustein-Gruppe als DPT 17.001 (0 = Szene 1); wird nur gesetzt, wenn eine Szene aktiv ist</td></tr>
+<tr><td>A3 … A10 Szene 1 … 8 aktiv</td><td>1 Bit: genau der Ausgang der aktiven Szene ist 1, alle anderen 0 (z. B. für Taster-LEDs)</td></tr>
+<tr><td>A11</td><td>1 = Baustein mit dem KO-Gateway verbunden</td></tr>
+<tr><td>A12</td><td>Stand der Einrichtung (Unix-Zeit in ms / 1000)</td></tr>
+<tr><td>A13 Sommer / A14 Winter</td><td>1 = Sommer bzw. 1 = Winter (Tagesmittel ≥ / &lt; Grenze)</td></tr>
+<tr><td>A15 Symbol</td><td>1 = Sommer, 2 = Winter (Symbolsteuerung in der Visu)</td></tr>
+<tr><td>A16 Text</td><td>„Sommer“ oder „Winter“</td></tr>
+<tr><td>A17 Debug</td><td>gespeicherte Werte und Berechnung, z. B. <code>T1:20 T2:31 T3:24 S:24.75 At:24.0</code> – T1/T2/T3 = 7/14/22 Uhr, S = Tagesmittel, At = aktuelle Temperatur, „-“ = noch kein Messwert</td></tr>
+</table>
+<div class="box">Szenenaufruf am besten über E5 bzw. E6–E13: der HomeServer ruft den Baustein bei jedem Telegramm auf, auch wenn dieselbe Szene zweimal nacheinander kommt. Der Aufruf über ein Szenen-KO am Gateway ist für weitere Gruppen gedacht. Ob das Gateway bei gleichem Wert erneut meldet, ist nicht zugesichert.</div>
+
+<h2>4 · Einrichtung auf der Webseite</h2>
+<ol>
+<li><code>https://&lt;HS&gt;/szenen/</code> öffnen, Schlüssel (E3) eingeben.</li>
+<li><b>Zahnrad</b>: Gruppe benennen (z. B. „Außen“), Anzahl Szenen, <b>Szenen-KO (DPT 17.001)</b> als Gruppenadresse eintragen – daneben erscheint der zuletzt empfangene Wert („zuletzt: 1 → Szene 2“). Wert 0 = Szene 1 … 63 = Szene 64.</li>
+<li><b>Pfeil nach unten</b>: KO-Struktur laden → „Automatisch erkennen“ (Gruppenadresse oder KO-Nummer) → Funktionen anhaken → Hinzufügen. Schalten + Rückmeldung und Dimmwert + Status werden anhand der Namen gepaart.</li>
+<li>Im Gitter je Szene Freigabe und Wert setzen, Dämmerung anhaken.</li>
+<li><b>Stift</b> (Bearbeiten): Zeilen an ⋮⋮ ziehen (oder ↑/↓), Funktionen ändern/löschen, Szenennamen ändern (✎, Zeilenumbruch erlaubt), ⤓ übernimmt die aktuellen Werte in eine Szene.</li>
+<li><b>Sensoren</b> (Zahnrad oder Klick auf die Leiste Hell/Trocken/°C): Gruppenadressen für Dämmerung, Regen (1 = Regen) und Außentemperatur eintragen, Sommer-Grenze in °C festlegen – die aktuelle Außentemperatur und Sommer/Winter werden direkt daneben angezeigt. Gilt für alle Gruppen.</li>
+<li>„+“ neben den Gruppen-Reitern legt weitere Gruppen an (eigenes Szenen-KO über das Gateway; die Baustein-Ein-/Ausgänge gelten nur für eine Gruppe).</li>
+</ol>
+<p>Alle Geräte sehen dieselbe Einrichtung und werden live abgeglichen. Szenenwechsel und Rückmeldungen erscheinen ohne Neuladen. Die Einrichtung liegt remanent im Baustein (10 Speicher à &lt; 10.000 Zeichen, komprimiert) und übersteht Neustart und Projektübertragung. Über Zahnrad → Sicherung kann sie als JSON gesichert und wieder eingespielt werden.</p>
+
+<h2>Desktop- und Handy-Ansicht</h2>
+<p>Das Symbol oben rechts schaltet die Ansicht: <b>Automatisch</b> (unter 760 px Bildschirmbreite Handy-Ansicht, sonst Desktop) → <b>Handy</b> → <b>Desktop</b>. Die Wahl merkt sich jeder Browser/jedes Gerät selbst.</p>
+<ul>
+<li><b>Desktop:</b> Gitter mit allen Szenen nebeneinander, Ziehen zum Sortieren.</li>
+<li><b>Handy:</b> Szene über die Leiste wählen (aktive Szene grün), großer „▶ Aufrufen“-Knopf, jede Funktion als Karte mit Freigabe, Wert, „Aktuell“ und Bedingungen; Sommer/Winter als zwei Zeilen in der Karte. Regler, Fahren-Tasten und Farbrad öffnen sich als Blatt vom unteren Rand. Sortieren im Bearbeiten-Modus mit ↑/↓.</li>
+</ul>
+<p>Tipp: Seite am Handy mit „Zum Home-Bildschirm“ ablegen.</p>
+
+<h2>Umstieg von Baustein 19108 auf 14778</h2>
+<p>Der Szenen-Server hat die offizielle Baustein-ID <b>14778</b> (vorher 19108). Für den Experten ist das ein neuer Baustein – Ein- und Ausgänge sind unverändert.</p>
+<ol>
+<li>Auf der Szenen-Seite: Zahnrad → <b>Sicherung herunterladen</b> (JSON).</li>
+<li><code>14778_szenenserver.hslz</code> im Experten importieren, auf dem Logikblatt den alten 19108 durch 14778 ersetzen und E1–E16 / A1–A17 genauso verdrahten (gleiche Nummern). E2 Port 8093 wie bisher.</li>
+<li>Projekt übertragen, Seite neu laden, Schlüssel (E3) eingeben.</li>
+<li>Zahnrad → <b>Sicherung einspielen</b> → „alles ersetzen“: Gruppen, Funktionen, Szenenwerte, Zeitprogramme und Feiertage sind wieder da.</li>
+<li>KO-Gateway-Zugang einmal neu speichern (Stecker-Symbol), damit der neue Baustein ihn kennt. Die Sommer/Winter-Messwerte (7/14/22 Uhr) sammelt er ab dem ersten Tag neu.</li>
+</ol>
+<h2>5 · Umstieg von den Matrix-Gittern</h2>
+<ol>
+<li>Baustein 14778 einfügen, „LZ Nr“-KO an E5 (oder als Szenen-KO auf der Seite eintragen).</li>
+<li>Funktionen übernehmen und die Werte aus der alten Visu eintragen.</li>
+<li>Testen, dann die alten Matrix-Bausteine und ihre internen KOs löschen. Solange beide aktiv sind, senden beide.</li>
+</ol>
+
+<h2>6 · Hinweise</h2>
+<ul>
+<li>Das Gateway-Passwort steht nicht mehr im Experten. Der Browser speichert es lokal (wie die HTML5-Visu), der Baustein remanent und nur verschleiert (Base64, keine Verschlüsselung). Die API gibt es nie aus.</li>
+<li>Spalte „Aktuell“ zeigt „?“ bzw. einen gestrichelten Rahmen, solange kein Status bekannt ist. Fehlerhafte KOs werden unter dem Funktionsnamen mit Gateway-Code angezeigt (meist fehlt die Freigabe in der WebSocket-Gruppe).</li>
+<li>Die Debug-Ansicht (Klick auf den Verbindungspunkt oben rechts) zeigt alle Nachrichten zum KO-Gateway – getrennt für „Diese Seite“ und „Baustein 14778“ – sowie nicht erreichbare KOs.</li>
+<li>Werte werden als Zahl gesendet: Schalten 0/1, Dimmen 0–100 (%), Wert frei (Min/Max/Schritt/Einheit je Funktion).</li>
+</ul>
+<p class="mu">14778 Szenen-Server · Version 4.0</p>
+</main></body></html>

@@ -1,0 +1,21 @@
+<html><head><meta charset="utf-8"><title>14771 Verlaufsspeicher für Diagramme (v2.7)</title></head><body style="font-family:sans-serif">
+<h2>14771 – Verlaufsspeicher für Diagramme (v2.7)</h2><p><b>Baustein-ID:</b> 14771 &nbsp; <b>Version:</b> 2.7 &nbsp; <span style="color:#777">(bis v2.5 als 19105)</span></p>
+<p>Zeichnet einen Wert im HomeServer auf. Die HTML5-Visu holt die Verläufe über den Visu-Server (Baustein 14770) – oder wie bisher über ein 14-Byte-KO an A1.</p>
+<table border="1" cellpadding="4" style="border-collapse:collapse">
+<tr><td>E1</td><td>Wert (Temperatur, Leistung, Zählerstand …)</td></tr>
+<tr><td>E2</td><td>Nachkommastellen (0–4)</td></tr>
+<tr><td>E3</td><td>Modus: 0 = Mittelwert, 1 = letzter Wert, 2 = Differenz (Zählerstand → Verbrauch), 3 = Maximum. Ein Wechsel behält die vorhandenen Werte (bei Bedarf E4 = 1 zum Löschen).</td></tr>
+<tr><td>E4</td><td>1 = Verlauf löschen</td></tr>
+<tr><td>E5</td><td>Instanz-ID des Visu-Servers (A1 von 14770)</td></tr>
+<tr><td>E6</td><td>Kennung, eindeutig, z. B. wz_temp (in der Visu: Quelle VS@wz_temp)</td></tr>
+<tr><td>E7</td><td>Name</td></tr><tr><td>E8</td><td>Einheit</td></tr>
+<tr><td>E9</td><td>1 = A1 für ein 14-Byte-KO ausgeben (kompakter Verlauf), 0 = aus</td></tr>
+<tr><td>E10</td><td>Zeile löschen (Zahl): die Nummer, die die Übersichtsseite des Visu-Servers vor jeder Zeile zeigt. Erste Ziffer = Ansicht (1 Minute, 2 Stunde, 3 Tag, 4 Woche, 5 Monat, 6 Jahr), der Rest zählt ab dem ältesten Wert. Die Zeile wird zur Lücke. <b>-1 = alle Werte löschen</b>. Ergebnis an A3.</td></tr>
+<tr><td>E11</td><td>Im Diagramm anzeigen: 1 = ja (Standard), 0 = ausblenden. Wirkt auf die SVG-Diagramme des Visu-Servers (<code>chart.svg</code>); ausgeblendete Verläufe stehen grau in der Legende. Zum Ein-/Ausblenden per Visu-Knopf ein 1-Bit-iKO anschließen. Die Aufzeichnung läuft immer weiter.</td></tr>
+<tr><td>A1</td><td>Verlauf als Text (optional, für 14-Byte-KO)</td></tr><tr><td>A2</td><td>Anzahl Werte</td></tr><tr><td>A3</td><td>Status</td></tr>
+</table>
+<p>Speicher: 24 h Minutenwerte, 1 Jahr Stundenwerte, 10 Jahre Tage/Wochen, 20 Jahre Monate, 50 Jahre Jahre – komprimiert in 20 remanenten Speichervariablen, alle 10 Minuten gesichert.
+Kalendergrenzen in Ortszeit, Woche ab Montag. Kontext „hsl3.visuserver“ (gemeinsam mit 14770).</p>
+<p><b>Umstieg von 19105:</b> neue ID = neuer Baustein. Vorher auf der Übersichtsseite <code>/visu-daten/</code> „Sicherung herunterladen“. Dann 14771 und 14770 (bisher 19107) einfügen, Eingänge wie bisher belegen, die alten Bausteine löschen (nicht parallel betreiben – gleicher Port), übertragen und die Sicherung mit „alles überschreiben“ einspielen. Kennungen (E6) und die Visu bleiben unverändert.</p>
+<p><b>Änderungen:</b> v2.7 – E11 „Im Diagramm anzeigen“ (Ein-/Ausblenden in chart.svg von 14770). v2.6 – offizielle Baustein-ID 14771 (bisher 19105), Funktion unverändert. v2.5 – Verlauf bleibt nach Neustart erhalten, auch wenn E3 beim Start noch nicht belegt ist (bisher wurde dann gelöscht); Sicherung alle 10 Minuten statt stündlich. v2.4 – E10 löscht per Zeilennummer (-1 = alle); Sicherung wahlweise ergänzen statt überschreiben. v2.3 – Texte an E6–E8 als UTF-8 (°C wurde zu Â°C). v2.2 – E10 Zeilen löschen. v2.1 – Status ohne Umlaute (Anzeige im Experten-Monitor). v2.0 – Visu-Server, Kalenderansichten.</p>
+<p style="font-size:12px;color:#5b6775;text-align:center;margin-top:18px">Diagramme in der Gira-Visu: siehe Hilfe 14770 (Abschnitt „Diagramm in der Gira-Visu – Schritt für Schritt“).<br>14771 Verlaufsspeicher v2.7 · Entwicklung: Claude (Anthropic), dirigiert von BadSmiley0815</p></body></html>

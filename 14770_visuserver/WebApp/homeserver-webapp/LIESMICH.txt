@@ -1,0 +1,86 @@
+HomeServer-Visualisierung als Web-App
+=====================================
+
+Inhalt
+  index.html        die Visualisierung (identisch mit homeserver.html)
+  manifest.json     App-Name, Farben, Symbole
+  sw.js             Service Worker (Oberfläche offline verfügbar)
+  icon-*.png        App-Symbole
+
+A) Direkt auf dem Gira HomeServer (empfohlen)
+---------------------------------------------
+  1. Im Experten: Projekteinstellungen → Oberfläche.
+     Unter „Zusätzliche Ordner und Dateien auf das Gerät laden“ mit
+     „Projekt“ den hsupload-Ordner dieses Projekts öffnen
+     („Global“ = gemeinsamer Ordner für alle Projekte).
+  2. Diesen Ordner "homeserver-webapp" mit allen Dateien dort hineinkopieren
+     (index.html, manifest.json, sw.js, icon-*.png).
+  3. Im Experten auf das Aktualisieren-Symbol neben der Liste klicken –
+     "homeserver-webapp" erscheint. Steht die Übertragung auf „Nur die markierten
+     Ordner/Dateien“, den Ordner anhaken; bei „Alle“ geht es automatisch mit.
+     Dann das Projekt übertragen.
+  4. Aufrufen:   https://<HS-IP>/opt/homeserver-webapp/index.html
+     (/opt/ statt hsupload – wie beim HS-Monitor unter /opt/hsmonitor/)
+  5. Zertifikatswarnung einmal bestätigen. Die HS-Adresse ist vorbelegt,
+     Benutzer/Passwort eintragen oder exportierte Konfiguration importieren.
+  6. Auf den Home-Bildschirm legen:
+       Android/Chrome:  Menü ⋮ → „App installieren“ / „Zum Startbildschirm“
+       iPhone/Safari:   Teilen → „Zum Home-Bildschirm“
+       PC/Chrome/Edge:  Installieren-Symbol rechts in der Adresszeile
+  Nach jeder Änderung an den Dateien das Projekt erneut übertragen.
+  Die Einrichtung liegt auf dem Visu-Server (Baustein 14770) und bleibt erhalten.
+
+B) Alternativ auf einem anderen Webserver (NAS, Raspberry Pi …)
+----------------------------------------------------------------
+  Alle Dateien in einen Ordner legen und aufrufen. Für „App installieren“ ist
+  HTTPS nötig (iPhone „Zum Home-Bildschirm“ geht auch ohne). Die KO-Liste
+  (cobjects.xml) kann der Browser dann evtl. nicht direkt laden → im Import
+  „XML im Browser öffnen“, speichern und als Datei wählen.
+
+Einrichtung auf allen Geräten gleich: empfohlen über den Visu-Server (unten).
+Alternative per KO
+  Im Experten ein internes K.-Objekt anlegen: Datentyp 14 Byte, remanent,
+  Endpunkt-ID VISU_CONFIG, WebSocket-Gruppe Lesen + Schreiben. Projekt
+  übertragen. Die Seite speichert ihre Einrichtung dann dort und gleicht alle
+  Geräte live ab (Wolken-Symbol oben: grün = synchron). Adresse, Benutzer und
+  Passwort bleiben pro Browser. Details: Hilfe (?) in der Seite.
+
+Alternative ohne Konfigurations-KO
+  Einstellungen → „Für alle Browser speichern“ → „In Seite speichern …“
+  erzeugt eine neue index.html mit der kompletten Einrichtung. Diese im
+  hsupload-Ordner ersetzen (Chrome/Edge am PC: direkt dort speichern) und das
+  Projekt übertragen. Jeder Browser startet danach mit dieser Einrichtung.
+  Das Passwort wird nur mitgespeichert, wenn man es ausdrücklich anhakt.
+
+Hinweise
+  - Bei selbstsigniertem HS-Zertifikat verlangen manche Browser für die
+    App-Installation ein vertrauenswürdiges Zertifikat; dann bleibt
+    „Zum Home-Bildschirm“ bzw. ein Lesezeichen.
+
+Lizenzen der Symbole
+  Ein Teil der Linien-Icons entspricht Feather Icons (MIT License,
+  (c) Cole Bemis) bzw. Lucide (ISC License, (c) Lucide Contributors).
+  Beide dürfen privat und gewerblich frei genutzt, verändert und
+  weitergegeben werden, solange der Lizenzhinweis erhalten bleibt –
+  er steht als Kommentar oben in index.html.
+  Die übrigen Symbole und das App-Symbol sind eigene Zeichnungen.
+
+Visu-Server und Diagramme (empfohlen)
+  Bausteine: 14770 Visu-Server (v1.7), 14771 Verlaufsspeicher für Diagramme (v2.6)
+  14770_visuserver.hslz und 14771_verlauf.hslz importieren. 14770 einmal einfügen
+  (E1 visu-daten, E2 8092 – unbedingt eintragen, sonst 503, E3 eigener Schlüssel, E4 beliebiges KO). Je Wert einen 14771: E1 = Wert,
+  E5 = A1 von 14770, E6 Kennung, E7 Name, E8 Einheit. Projekt übertragen.
+  In der Visu: Einstellungen → Visu-Server → Häkchen, Schlüssel, speichern,
+  „Diagramme für alle Verläufe anlegen“. Details: Hilfe (?) in der Seite.
+  Eine Kachel mit Quelle VS@* zeigt alle Verläufe mit Auswahlliste.
+  Übersicht, Werte, CSV und Sicherung: https://<HS>/visu-daten/
+  (aus jedem Diagramm über das Tabellen-Symbol, mit „Zurück zum Diagramm“)
+  Falsche Werte löschen: Zeilennummer von der Übersichtsseite an E10 von 14771
+  senden (z. B. 20017), -1 löscht alle Werte.
+
+Umstieg von 19107/19105 (alte IDs) auf 14770/14771 (offizielle IDs)
+  1. Übersichtsseite https://<HS>/visu-daten/ → "Sicherung herunterladen".
+  2. 14770 und je Verlauf 14771 einfügen, Eingänge wie bisher (gleiche Kennung E6).
+     Die alten 19107/19105 löschen – nicht parallel betreiben (gleicher Port).
+  3. Projekt übertragen.
+  4. Sicherung mit "alles überschreiben" einspielen. Visu und Kacheln bleiben gleich.
