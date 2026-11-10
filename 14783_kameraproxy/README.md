@@ -1,6 +1,6 @@
-# 14783 Kamera-Proxy – Version 0.3
+# 14783 Kamera-Proxy – Version 0.4
 
-**ID 14783 · Version 0.3 · HSL3**
+**ID 14783 · Version 0.4 · HSL3**
 
 Axis-Kameras per Digest für den QC-Client.
 

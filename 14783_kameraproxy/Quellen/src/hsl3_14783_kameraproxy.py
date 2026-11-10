@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14783 – Kamera-Proxy (v0.3, Prüffassung)
+HSL3 14783 – Kamera-Proxy (v0.4, Prüffassung)
 
 Holt Bilder und MJPEG-Ströme von Netzwerkkameras (z. B. Axis) mit Anmeldung (Digest oder Basic)
 und gibt sie über die Weiterleitung des HomeServers aus – gleiche Adresse und gleiches Zertifikat
@@ -34,7 +34,7 @@ import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "0.3"
+VERSION = "0.4"
 CAMS = 3
 JPG_PATH = "/axis-cgi/jpg/image.cgi"
 MJPG_PATH = "/axis-cgi/mjpg/video.cgi"
@@ -148,8 +148,11 @@ class CamClient:
         return conn.getresponse()
 
     def get(self, uri, stream=False):
-        """Liefert (Antwort, Verbindung). Bei stream=False ist der Inhalt schon gelesen (Antwort.body)."""
-        for attempt in range(3):
+        """Liefert (Antwort, Verbindung). Bei stream=False ist der Inhalt schon gelesen (Antwort.body).
+        Weiterleitungen (z. B. http -> https) werden befolgt und für die Kamera gemerkt."""
+        attempt = redirects = 0
+        while attempt < 3:
+            attempt += 1
             conn = None
             if not stream:
                 with self.lock:
@@ -163,7 +166,7 @@ class CamClient:
                 if reused:
                     continue                    # Kamera hat die offene Verbindung inzwischen geschlossen
                 raise
-            if r.status == 401 and attempt < 2:
+            if r.status == 401 and attempt < 3:
                 ch = self._parse(r.headers)
                 r.read()
                 if r.will_close:
@@ -181,6 +184,23 @@ class CamClient:
                 if ch and ch.get("stale", "").lower() == "true":
                     continue
                 raise urllib.error.HTTPError(uri, 401, "Unauthorized", r.headers, io.BytesIO(b""))
+            if r.status in (301, 302, 303, 307, 308) and r.headers.get("Location") and redirects < 3:
+                loc = r.headers.get("Location")
+                r.read()
+                conn.close()
+                redirects += 1
+                cur = "%s://%s:%d%s" % ("https" if self.https else "http", self.host, self.port, uri)
+                u = urllib.parse.urlsplit(urllib.parse.urljoin(cur, loc))
+                https, host = u.scheme == "https", u.hostname or self.host
+                port = u.port or (443 if https else 80)
+                if (https, host, port) != (self.https, self.host, self.port):
+                    self.close()                        # andere Adresse: alte offene Verbindungen verwerfen
+                    with self.lock:
+                        self.https, self.host, self.port = https, host, port
+                        self.auth, self.nc = None, 0
+                uri = (u.path or "/") + ("?" + u.query if u.query else "")
+                attempt -= 1                            # Weiterleitung zählt nicht als Versuch
+                continue
             if stream and r.status == 200:
                 return r, conn
             body = r.read()

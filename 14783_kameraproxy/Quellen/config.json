@@ -5,7 +5,7 @@
     "id": "14783",
     "name": "14783 Camera proxy",
     "hsl_filename": "14783_kameraproxy.hsl",
-    "version": "0.3",
+    "version": "0.4",
     "inputs": [
       {
         "type": "base_path",

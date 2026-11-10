@@ -1,4 +1,4 @@
-# 14783 Kamera-Proxy V0.3 (Prüffassung) – Einbau
+# 14783 Kamera-Proxy V0.4 (Prüffassung) – Einbau
 
 Stand 10.11.2026. Baustein: `14783_kameraproxy.hslz` (HSL3), Kategorie „Visualisierung“, Kontext `hsl3.kameraproxy`.
 
@@ -23,7 +23,7 @@ Stand 10.11.2026. Baustein: `14783_kameraproxy.hslz` (HSL3), Kategorie „Visual
 
 3. Übertragen.
 
-## Prüfen (Prüffassung 0.3)
+## Prüfen (Prüffassung 0.4)
 1. A1 Status zeigt „Bereit: /kamera/ (Port 8095), 3 Kamera(s)“.
 2. Im Browser `https://<HS>/kamera/` öffnen, Schlüssel eingeben, „Prüfen“.
    - Oben steht das Prüfergebnis je Kamera (OK / HTTP 401 = Anmeldung falsch / Fehler).
@@ -40,6 +40,7 @@ Die Prüfseite zeigt je Kamera `http` (Antwort der Kamera), `detail` (Fehlertext
 - Fehler ohne `http` – Kamera nicht erreichbar (IP, http/https)
 
 ## Änderungen
+- 0.4: Weiterleitungen der Kamera (z. B. http → https) werden befolgt
 - 0.3: Verbindung zur Kamera bleibt offen, Anmeldung wird gespeichert (Standbilder etwa doppelt so schnell) · `…/list` für den QC-Client
 - 0.2: Datentyp in jedem Ein-/Ausgang · keine feste Auflösung mehr · bei HTTP 400 automatisch ohne Zusatz-Parameter · ganze Kamera-URL als Adresse möglich (resolution/compression/camera als Vorgabe) · Fehlertext der Kamera auf der Prüfseite
 - 0.1: erste Prüffassung
