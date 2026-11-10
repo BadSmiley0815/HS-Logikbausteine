@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14783 – Kamera-Proxy (v0.1, Prüffassung)
+HSL3 14783 – Kamera-Proxy (v0.2, Prüffassung)
 
 Holt Bilder und MJPEG-Ströme von Netzwerkkameras (z. B. Axis) mit Anmeldung (Digest oder Basic)
 und gibt sie über die Weiterleitung des HomeServers aus – gleiche Adresse und gleiches Zertifikat
@@ -20,6 +20,7 @@ geschickt. Der Schlüssel E3 schützt alle Adressen außer der leeren Prüfseite
 import base64
 import hmac
 import json
+import re
 import socket
 import ssl
 import threading
@@ -29,7 +30,7 @@ import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "0.1"
+VERSION = "0.2"
 CAMS = 3
 JPG_PATH = "/axis-cgi/jpg/image.cgi"
 MJPG_PATH = "/axis-cgi/mjpg/video.cgi"
@@ -59,10 +60,10 @@ async function go(){K=document.getElementById("k").value;const t=document.getEle
  try{const r=await fetch(base+"test?k="+encodeURIComponent(K));const d=await r.json();t.textContent=JSON.stringify(d,null,1);
   if(!r.ok)return;document.getElementById("c").innerHTML=d.cams.map(c=>`<div class="cam"><b>${c.name}</b> <span class="${c.ok?"m":"e"}">${c.ok?"erreichbar":"Fehler"}</span>
    <div class="row"><div>Standbild, schnell nachgeladen: <span id="f_${c.name}">–</span><br><img id="j_${c.name}"></div>
-   <div>MJPEG-Strom über den HS:<br><img src="${q(c.name,"mjpg","&resolution=640x360")}"></div></div></div>`).join("");
+   <div>MJPEG-Strom über den HS:<br><img src="${q(c.name,"mjpg","")}"></div></div></div>`).join("");
   d.cams.forEach(c=>{const im=document.getElementById("j_"+c.name);let n=0,t0=Date.now();
-   im.onload=()=>{n++;const s=(Date.now()-t0)/1000;document.getElementById("f_"+c.name).textContent=(n/s).toFixed(1)+" Bilder/s";setTimeout(()=>im.src=q(c.name,"jpg","&resolution=640x360&_="+Date.now()),150)};
-   im.src=q(c.name,"jpg","&resolution=640x360");});
+   im.onload=()=>{n++;const s=(Date.now()-t0)/1000;document.getElementById("f_"+c.name).textContent=(n/s).toFixed(1)+" Bilder/s";setTimeout(()=>im.src=q(c.name,"jpg","&_="+Date.now()),150)};
+   im.src=q(c.name,"jpg","");});
  }catch(e){t.textContent="Fehler: "+e;}}
 </script></body></html>"""
 
@@ -114,7 +115,9 @@ class LogicModule:
                 continue
             if "://" not in addr:
                 addr = "http://" + addr
-            cams[name] = {"addr": addr.rstrip("/"),
+            u = urllib.parse.urlsplit(addr)            # nur Schema://Host[:Port], ein Pfad wird ignoriert
+            addr = "%s://%s" % (u.scheme or "http", u.netloc or u.path.split("/")[0])
+            cams[name] = {"addr": addr,
                           "user": self._text(inputs.value("cam%d_user" % i)),
                           "pwd": self._text(inputs.value("cam%d_pwd" % i))}
         with self._lock:
@@ -231,7 +234,22 @@ class LogicModule:
 
     def _open(self, cam, path, extra):
         url = cam["addr"] + path + ("?" + urllib.parse.urlencode(extra) if extra else "")
-        return self._opener(cam).open(urllib.request.Request(url, headers={"User-Agent": "HS-14783/" + VERSION}), timeout=TIMEOUT)
+        try:
+            return self._opener(cam).open(urllib.request.Request(url, headers={"User-Agent": "HS-14783/" + VERSION}), timeout=TIMEOUT)
+        except urllib.error.HTTPError as e:
+            if e.code == 400 and extra:                # Kamera kennt einen Parameter nicht (z. B. Auflösung) -> ohne
+                return self._open(cam, path, {})
+            raise
+
+    @staticmethod
+    def _detail(e):
+        """Kurzer Fehlertext der Kamera (ohne HTML), hilft bei HTTP 400/404."""
+        try:
+            t = e.read(600).decode("utf-8", "replace")
+        except Exception:
+            return ""
+        t = re.sub(r"<[^>]+>", " ", t)
+        return " ".join(t.split())[:160]
 
     def _jpg(self, h, cam, extra):
         try:
@@ -292,15 +310,17 @@ class LogicModule:
             t0 = time.time()
             res = {"name": name, "ok": False}
             try:
-                r = self._open(cam, JPG_PATH, {"resolution": "320x180"})
+                r = self._open(cam, JPG_PATH, {})
                 body = r.read()
                 res.update(ok=True, http=r.status, bytes=len(body), ms=int((time.time() - t0) * 1000),
                            type=r.headers.get("Content-Type", ""))
             except urllib.error.HTTPError as e:
                 res.update(http=e.code, error="HTTP %d%s" % (e.code, " (Anmeldung abgelehnt)" if e.code == 401 else ""),
-                           auth=(e.headers.get("WWW-Authenticate") or "").split(" ")[0])
+                           auth=(e.headers.get("WWW-Authenticate") or "").split(" ")[0],
+                           server=(e.headers.get("Server") or "")[:40], detail=self._detail(e))
             except Exception as e:
-                res.update(error=type(e).__name__)
+                res.update(error="%s: %s" % (type(e).__name__, str(getattr(e, "reason", e))[:120]))
+            res["ziel"] = cam["addr"].split("://")[0] + "://…" + JPG_PATH
             out.append(res)
         self.fw.run_in_context(self._publish_test, (out,))
         return {"version": VERSION, "cams": out}

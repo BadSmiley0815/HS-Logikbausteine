@@ -174,7 +174,7 @@
   {
    "id": 14783,
    "name": "Kamera-Proxy",
-   "version": "0.1 (Prüffassung)",
+   "version": "0.2 (Prüffassung)",
    "art": "HSL3",
    "kategorie": "Visualisierung",
    "port": 8095,

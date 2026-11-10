@@ -24,7 +24,7 @@ Stand 10.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14784**
 | 14780 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14781 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14782 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
-| 14783 | [Kamera-Proxy](14783_kameraproxy/) | 0.1 (Prüffassung) | 8095 `/kamera/` |
+| 14783 | [Kamera-Proxy](14783_kameraproxy/) | 0.2 (Prüffassung) | 8095 `/kamera/` |
 
 ## Auf einen Blick
 

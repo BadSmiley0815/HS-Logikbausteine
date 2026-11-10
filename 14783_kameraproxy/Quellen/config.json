@@ -5,103 +5,103 @@
     "id": "14783",
     "name": "14783 Camera proxy",
     "hsl_filename": "14783_kameraproxy.hsl",
-    "version": "0.1",
+    "version": "0.2",
     "inputs": [
       {
         "type": "base_path",
         "identifier": "base_path",
         "init_value": "kamera",
-        "label": "I1 Base path"
+        "label": "I1 Base path (text)"
       },
       {
         "type": "destination_port",
         "identifier": "destination_port",
         "init_value": 8095,
-        "label": "I2 Port"
+        "label": "I2 Port (number)"
       },
       {
         "type": "string",
         "identifier": "key",
         "init_value": "",
-        "label": "I3 Access key"
+        "label": "I3 Access key (text)"
       },
       {
         "type": "number",
         "identifier": "restart",
         "init_value": 0,
-        "label": "I4 Restart / trigger (any CO)"
+        "label": "I4 Restart / trigger (1 bit, any CO)"
       },
       {
         "type": "string",
         "identifier": "cam1_name",
         "init_value": "",
-        "label": "I5 Camera 1 name"
+        "label": "I5 Camera 1 name (text)"
       },
       {
         "type": "string",
         "identifier": "cam1_addr",
         "init_value": "",
-        "label": "I6 Camera 1 address (IP or URL)"
+        "label": "I6 Camera 1 address IP or URL (text)"
       },
       {
         "type": "string",
         "identifier": "cam1_user",
         "init_value": "",
-        "label": "I7 Camera 1 user"
+        "label": "I7 Camera 1 user (text)"
       },
       {
         "type": "string",
         "identifier": "cam1_pwd",
         "init_value": "",
-        "label": "I8 Camera 1 password"
+        "label": "I8 Camera 1 password (text)"
       },
       {
         "type": "string",
         "identifier": "cam2_name",
         "init_value": "",
-        "label": "I9 Camera 2 name"
+        "label": "I9 Camera 2 name (text)"
       },
       {
         "type": "string",
         "identifier": "cam2_addr",
         "init_value": "",
-        "label": "I10 Camera 2 address (IP or URL)"
+        "label": "I10 Camera 2 address IP or URL (text)"
       },
       {
         "type": "string",
         "identifier": "cam2_user",
         "init_value": "",
-        "label": "I11 Camera 2 user"
+        "label": "I11 Camera 2 user (text)"
       },
       {
         "type": "string",
         "identifier": "cam2_pwd",
         "init_value": "",
-        "label": "I12 Camera 2 password"
+        "label": "I12 Camera 2 password (text)"
       },
       {
         "type": "string",
         "identifier": "cam3_name",
         "init_value": "",
-        "label": "I13 Camera 3 name"
+        "label": "I13 Camera 3 name (text)"
       },
       {
         "type": "string",
         "identifier": "cam3_addr",
         "init_value": "",
-        "label": "I14 Camera 3 address (IP or URL)"
+        "label": "I14 Camera 3 address IP or URL (text)"
       },
       {
         "type": "string",
         "identifier": "cam3_user",
         "init_value": "",
-        "label": "I15 Camera 3 user"
+        "label": "I15 Camera 3 user (text)"
       },
       {
         "type": "string",
         "identifier": "cam3_pwd",
         "init_value": "",
-        "label": "I16 Camera 3 password"
+        "label": "I16 Camera 3 password (text)"
       }
     ],
     "outputs": [
@@ -109,25 +109,25 @@
         "type": "string",
         "identifier": "status",
         "init_value": "",
-        "label": "O1 Status"
+        "label": "O1 Status (14 byte text)"
       },
       {
         "type": "number",
         "identifier": "requests",
         "init_value": 0,
-        "label": "O2 Requests"
+        "label": "O2 Requests (number)"
       },
       {
         "type": "number",
         "identifier": "streams",
         "init_value": 0,
-        "label": "O3 Active streams"
+        "label": "O3 Active streams (number)"
       },
       {
         "type": "string",
         "identifier": "test",
         "init_value": "",
-        "label": "O4 Last check"
+        "label": "O4 Last check (14 byte text)"
       }
     ],
     "stores": [],
@@ -144,66 +144,66 @@
         "category": "Visualisierung",
         "translation_inputs": [
           {
-            "label": "E1 Basis-Pfad"
+            "label": "E1 Basis-Pfad (Text)"
           },
           {
-            "label": "E2 Port"
+            "label": "E2 Port (Zahl)"
           },
           {
-            "label": "E3 Schlüssel"
+            "label": "E3 Schlüssel (Text)"
           },
           {
-            "label": "E4 Neustart / Auslöser (beliebiges KO)"
+            "label": "E4 Neustart / Auslöser (1 Bit, beliebiges KO)"
           },
           {
-            "label": "E5 Kamera 1 Name"
+            "label": "E5 Kamera 1 Name (Text)"
           },
           {
-            "label": "E6 Kamera 1 Adresse (IP oder URL)"
+            "label": "E6 Kamera 1 Adresse IP oder URL (Text)"
           },
           {
-            "label": "E7 Kamera 1 Benutzer"
+            "label": "E7 Kamera 1 Benutzer (Text)"
           },
           {
-            "label": "E8 Kamera 1 Passwort"
+            "label": "E8 Kamera 1 Passwort (Text)"
           },
           {
-            "label": "E9 Kamera 2 Name"
+            "label": "E9 Kamera 2 Name (Text)"
           },
           {
-            "label": "E10 Kamera 2 Adresse (IP oder URL)"
+            "label": "E10 Kamera 2 Adresse IP oder URL (Text)"
           },
           {
-            "label": "E11 Kamera 2 Benutzer"
+            "label": "E11 Kamera 2 Benutzer (Text)"
           },
           {
-            "label": "E12 Kamera 2 Passwort"
+            "label": "E12 Kamera 2 Passwort (Text)"
           },
           {
-            "label": "E13 Kamera 3 Name"
+            "label": "E13 Kamera 3 Name (Text)"
           },
           {
-            "label": "E14 Kamera 3 Adresse (IP oder URL)"
+            "label": "E14 Kamera 3 Adresse IP oder URL (Text)"
           },
           {
-            "label": "E15 Kamera 3 Benutzer"
+            "label": "E15 Kamera 3 Benutzer (Text)"
           },
           {
-            "label": "E16 Kamera 3 Passwort"
+            "label": "E16 Kamera 3 Passwort (Text)"
           }
         ],
         "translation_outputs": [
           {
-            "label": "A1 Status"
+            "label": "A1 Status (14 Byte Text)"
           },
           {
-            "label": "A2 Abrufe"
+            "label": "A2 Abrufe (Zahl)"
           },
           {
-            "label": "A3 Aktive Ströme"
+            "label": "A3 Aktive Ströme (Zahl)"
           },
           {
-            "label": "A4 Letzte Prüfung"
+            "label": "A4 Letzte Prüfung (14 Byte Text)"
           }
         ]
       }
