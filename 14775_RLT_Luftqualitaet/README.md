@@ -1,8 +1,22 @@
-# 14775 RLT Luftqualitätsregelung – Version 1.5
+# 14775 RLT Luftqualitätsregelung – Version 1.6
 
-**ID 14775 · Version 1.5 · HSL3 · Kategorie Lüftung**
+**ID 14775 · Version 1.6 · HSL3**
 
 Lüftungsanlage (RLT) mit Luftqualitätsregelung.
+
+## Baustein
+
+![Baustein](bilder/baustein.png)
+
+## Beispiel
+
+**Funktionsprinzip**
+
+![Funktionsprinzip](bilder/beispiel_funktionsprinzip.png)
+
+**Beispiel: Klappenstellungen**
+
+![Beispiel: Klappenstellungen](bilder/beispiel_klappen.png)
 
 ## Eingänge
 
@@ -50,8 +64,10 @@ Lüftungsanlage (RLT) mit Luftqualitätsregelung.
 
 ## Dateien
 
-- `14775_RLT_Luftqualitaet.hslz` – zum Import im Experten (Logikbausteine → Importieren)
+- `14775_RLT_Luftqualitaet.hslz` – Import im Experten: Logikbausteine → Importieren
 - `Quellen/DE-log14775.html` – ausführliche Hilfe (im Experten über die Bausteinhilfe)
 - `Quellen/src/…py`, `Quellen/config.json` – Quellcode; die `.hsl` erzeugt der Gira-Generator (HSL3 SDK, nicht enthalten)
 
 iKOs bei Bedarf per CSV-Import anlegen: Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren.
+
+[← zur Übersicht](../README.md)

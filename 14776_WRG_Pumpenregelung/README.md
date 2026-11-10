@@ -1,8 +1,18 @@
 # 14776 WRG-Pumpenregelung – Version 1.0
 
-**ID 14776 · Version 1.0 · HSL 1.0 (Formelbaustein)**
+**ID 14776 · Version 1.0 · HSL 1.0**
 
 WRG-Pumpe an einem Druckluft-Kompressor.
+
+## Baustein
+
+![Baustein](bilder/baustein.png)
+
+## Beispiel
+
+**Beispiel: Verlauf beim Einschalten des Verdichters (vereinfachte Simulation)**
+
+![Beispiel: Verlauf beim Einschalten des Verdichters (vereinfachte Simulation)](bilder/beispiel_simulation.png)
 
 ## Beschreibung (aus dem Baustein)
 
@@ -26,6 +36,33 @@ A1 sendet ganzzahlig und nur bei Änderung (bzw. sofort bei E1/E2-Wechsel).
 ## 14776 WRG-Pumpenregelung.End
 ```
 
-Import im Experten: Logikbausteine → Importieren → `14776_WRG_Pumpenregelung.hsl`.
+## Eingänge
+
+- E1 Verdichter läuft
+- E2 Betriebsart 1=Auto
+- E3 Istwert Vorlauf T2 [°C]
+- E4 Sollwert Vorlauf [°C]
+- E5 Verstärkung [%/K]
+- E6 Nachstellzeit [s]
+- E7 Taktzeit [s]
+- E8 Mindestdrehzahl [%]
+- E9 Maximaldrehzahl [%]
+- E10 Rampe auf [%/min]
+- E11 Rampe ab [%/min]
+- E12 Filterzeit Istwert [s]
+- E13 Stellwert bei Fühlerfehler [%]
+
+## Ausgänge
+
+- A1 Stellwert Pumpe [%]
+- A2 Regelung aktiv (Soll erreicht)
+- A3 Status
+- A4 Istwert gefiltert [°C]
+
+## Dateien
+
+- `14776_WRG_Pumpenregelung.hsl` – Import im Experten: Logikbausteine → Importieren
 
 iKOs bei Bedarf per CSV-Import anlegen: Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren.
+
+[← zur Übersicht](../README.md)

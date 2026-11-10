@@ -5,7 +5,7 @@
     "id": "14775",
     "name": "14775 AHU air quality control",
     "hsl_filename": "14775_RLT_Luftqualitaet.hsl",
-    "version": "1.5",
+    "version": "1.6",
     "inputs": [
       {
         "type": "number",

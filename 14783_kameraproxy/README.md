@@ -1,10 +1,20 @@
 # 14783 Kamera-Proxy – Version 0.1
 
-**ID 14783 · Version 0.1 · HSL3 · Kategorie Visualisierung**
+**ID 14783 · Version 0.1 · HSL3**
 
 Axis-Kameras per Digest für den QC-Client.
 
-Der HomeServer leitet `https://<HS>/kamera/` an den Baustein (Port 8095) weiter.
+Der HomeServer leitet `https://<HS>/kamera/` an den Baustein (Port 8095) weiter – gleiche Adresse und gleiches Zertifikat wie der HS.
+
+## Baustein
+
+![Baustein](bilder/baustein.png)
+
+## Beispiel
+
+**Ergebnis: Prüfseite mit zwei Testkameras – Standbild schnell nachgeladen und MJPEG-Strom**
+
+![Ergebnis: Prüfseite mit zwei Testkameras – Standbild schnell nachgeladen und MJPEG-Strom](bilder/beispiel_pruefseite.png)
 
 ## Eingänge
 
@@ -34,9 +44,11 @@ Der HomeServer leitet `https://<HS>/kamera/` an den Baustein (Port 8095) weiter.
 
 ## Dateien
 
-- `14783_kameraproxy.hslz` – zum Import im Experten (Logikbausteine → Importieren)
+- `14783_kameraproxy.hslz` – Import im Experten: Logikbausteine → Importieren
 - `Quellen/DE-log14783.html` – ausführliche Hilfe (im Experten über die Bausteinhilfe)
 - `Quellen/src/…py`, `Quellen/config.json` – Quellcode; die `.hsl` erzeugt der Gira-Generator (HSL3 SDK, nicht enthalten)
-- `Anleitung_Einbau.md` – Einbau Schritt für Schritt
+- [`Anleitung_Einbau.md`](Anleitung_Einbau.md) – Einbau Schritt für Schritt
 
 iKOs bei Bedarf per CSV-Import anlegen: Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren.
+
+[← zur Übersicht](../README.md)

@@ -1,8 +1,22 @@
 # 14771 Verlaufsspeicher für Diagramme – Version 2.7
 
-**ID 14771 · Version 2.7 · HSL3 · Kategorie Visualisierung**
+**ID 14771 · Version 2.7 · HSL3**
 
 zusammen mit 14770.
+
+## Baustein
+
+![Baustein](bilder/baustein.png)
+
+## Beispiel
+
+**Ergebnis: interaktives Diagramm in der Visu (Testdaten)**
+
+![Ergebnis: interaktives Diagramm in der Visu (Testdaten)](bilder/beispiel_diagramm.jpg)
+
+**Beispiel: Verdrahtung im Experten (Testprojekt mit Zufallswerten)**
+
+![Beispiel: Verdrahtung im Experten (Testprojekt mit Zufallswerten)](bilder/beispiel_verdrahtung.jpg)
 
 ## Eingänge
 
@@ -26,9 +40,11 @@ zusammen mit 14770.
 
 ## Dateien
 
-- `14771_verlauf.hslz` – zum Import im Experten (Logikbausteine → Importieren)
+- `14771_verlauf.hslz` – Import im Experten: Logikbausteine → Importieren
 - `Quellen/DE-log14771.html` – ausführliche Hilfe (im Experten über die Bausteinhilfe)
 - `Quellen/src/…py`, `Quellen/config.json` – Quellcode; die `.hsl` erzeugt der Gira-Generator (HSL3 SDK, nicht enthalten)
-- `Anleitung_Einbau.md` – Einbau Schritt für Schritt
+- [`Anleitung_Einbau.md`](Anleitung_Einbau.md) – Einbau Schritt für Schritt
 
 iKOs bei Bedarf per CSV-Import anlegen: Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren.
+
+[← zur Übersicht](../README.md)

@@ -1,10 +1,24 @@
 # 14770 Visu-Server – Version 1.10
 
-**ID 14770 · Version 1.10 · HSL3 · Kategorie Visualisierung**
+**ID 14770 · Version 1.10 · HSL3**
 
 homeserver-webapp, Diagramme.
 
-Der HomeServer leitet `https://<HS>/visu-daten/` an den Baustein (Port 8092) weiter.
+Der HomeServer leitet `https://<HS>/visu-daten/` an den Baustein (Port 8092) weiter – gleiche Adresse und gleiches Zertifikat wie der HS.
+
+## Baustein
+
+![Baustein](bilder/baustein.png)
+
+## Beispiel
+
+**Ergebnis: interaktives Diagramm in der Visu (Testdaten)**
+
+![Ergebnis: interaktives Diagramm in der Visu (Testdaten)](bilder/beispiel_diagramm.jpg)
+
+**Beispiel: Verdrahtung im Experten (Testprojekt mit Zufallswerten)**
+
+![Beispiel: Verdrahtung im Experten (Testprojekt mit Zufallswerten)](bilder/beispiel_verdrahtung.jpg)
 
 ## Eingänge
 
@@ -24,9 +38,12 @@ Der HomeServer leitet `https://<HS>/visu-daten/` an den Baustein (Port 8092) wei
 
 ## Dateien
 
-- `14770_visuserver.hslz` – zum Import im Experten (Logikbausteine → Importieren)
+- `14770_visuserver.hslz` – Import im Experten: Logikbausteine → Importieren
 - `Quellen/DE-log14770.html` – ausführliche Hilfe (im Experten über die Bausteinhilfe)
 - `Quellen/src/…py`, `Quellen/config.json` – Quellcode; die `.hsl` erzeugt der Gira-Generator (HSL3 SDK, nicht enthalten)
-- `Anleitung_Einbau.md` – Einbau Schritt für Schritt
+- [`Anleitung_Einbau.md`](Anleitung_Einbau.md) – Einbau Schritt für Schritt
+- `WebApp/homeserver-webapp/` – die HTML5-Visu zum Baustein
 
 iKOs bei Bedarf per CSV-Import anlegen: Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren.
+
+[← zur Übersicht](../README.md)

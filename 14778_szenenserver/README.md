@@ -1,10 +1,20 @@
 # 14778 Szenen-Server – Version 4.2
 
-**ID 14778 · Version 4.2 · HSL3 · Kategorie Visualisierung**
+**ID 14778 · Version 4.2 · HSL3**
 
 Szenensteuerung über eigene Webseite.
 
-Der HomeServer leitet `https://<HS>/szenen/` an den Baustein (Port 8093) weiter.
+Der HomeServer leitet `https://<HS>/szenen/` an den Baustein (Port 8093) weiter – gleiche Adresse und gleiches Zertifikat wie der HS.
+
+## Baustein
+
+![Baustein](bilder/baustein.png)
+
+## Beispiel
+
+**Ergebnis: Szenen-Seite mit Beispiel-Szenen (ohne Verbindung zum HS aufgenommen)**
+
+![Ergebnis: Szenen-Seite mit Beispiel-Szenen (ohne Verbindung zum HS aufgenommen)](bilder/beispiel_szenen.png)
 
 ## Eingänge
 
@@ -47,8 +57,10 @@ Der HomeServer leitet `https://<HS>/szenen/` an den Baustein (Port 8093) weiter.
 
 ## Dateien
 
-- `14778_szenenserver.hslz` – zum Import im Experten (Logikbausteine → Importieren)
+- `14778_szenenserver.hslz` – Import im Experten: Logikbausteine → Importieren
 - `Quellen/DE-log14778.html` – ausführliche Hilfe (im Experten über die Bausteinhilfe)
 - `Quellen/src/…py`, `Quellen/config.json` – Quellcode; die `.hsl` erzeugt der Gira-Generator (HSL3 SDK, nicht enthalten)
 
 iKOs bei Bedarf per CSV-Import anlegen: Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren.
+
+[← zur Übersicht](../README.md)

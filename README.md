@@ -1,45 +1,74 @@
-# HS-Logikbausteine – eigene Logikbausteine für den Gira HomeServer
+# HS-Logikbausteine
 
-Freie Logikbausteine (HSL3 und HSL 1.0) für den Gira HomeServer / FacilityServer – mit Quellcode, Hilfe und Einbauanleitung. Jeder Ordner enthält die importierbare `.hslz` bzw. `.hsl` und eine README.
+Freie Logikbausteine (HSL3 und HSL 1.0) für den Gira HomeServer / FacilityServer – mit Quellcode, Hilfe, Bild und Beispiel.
+Jeder Ordner enthält die importierbare `.hslz` bzw. `.hsl` und eine README.
 
 Passend dazu: [QC-Client](https://github.com/BadSmiley0815/QC-Client) – der QuadClient im Browser.
 
-## Übersicht – Stand 10.11.2026
-
-Eigener ID-Bereich: **14770–14789** · nächste freie ID: **14784**
+Stand 10.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14784**
 
 ## Bausteine
 
-| ID | Name | Version | Art | Port | Basis-Pfad | ex | Einsatz | Status |
-|---|---|---|---|---|---|---|---|---|
-| 14770 | Visu-Server | 1.10 | HSL3 | 8092 | visu-daten | 19107 | homeserver-webapp, Diagramme | in Betrieb |
-| 14771 | Verlaufsspeicher für Diagramme | 2.7 | HSL3 |  | (über 14770) | 19105 | zusammen mit 14770 | in Betrieb |
-| 14772 | KNX-Tunnel Senden | ? | HSL3 |  |  | 19101 | KNXnet/IP-Tunnel, Port 3671 an der fremden Linie | Ablage im Ordner Logikbausteine fehlt · ID auch von LOGIQ-Testbaustein genutzt (ignorieren) |
-| 14773 | KNX-Tunnel Empfangen | ? | HSL3 |  |  | 19102 | KNXnet/IP-Tunnel | Ablage im Ordner Logikbausteine fehlt |
-| 14774 | KNX-Tunnel Gateway-Server | ? | HSL3 | ? | ? | 19109 | Webseite GA → DPT → iKO | Ablage fehlt · Port unbekannt, beim nächsten Bearbeiten nachtragen |
-| 14775 | RLT Luftqualitätsregelung | 1.5 | HSL3 |  |  |  | Lüftungsanlage (RLT) mit Luftqualitätsregelung | in Betrieb |
-| 14776 | WRG-Pumpenregelung | 1.0 | HSL 1.0 (Formel) |  |  |  | WRG-Pumpe an einem Druckluft-Kompressor | in Betrieb |
-| 14777 | Kompressor-Klappensteuerung | 1.2 | HSL 1.0 (Formel) |  |  |  | Klappen eines Kompressorraums (Sommer/Winter) | in Betrieb |
-| 14778 | Szenen-Server | 4.2 | HSL3 | 8093 | szenen | 19108 | Szenensteuerung über eigene Webseite | in Betrieb |
-| 14779 | Zeitschaltuhr + Aufzeichnung | – | HSL3 | 8094 (reserviert) |  |  | Zeitschaltuhren und Werteaufzeichnung je KO | geplant |
-| 14780 | (verworfene Parallelfassung KNX-Tunnel) | – |  |  |  |  |  | nicht verwenden |
-| 14781 | (verworfene Parallelfassung KNX-Tunnel) | – |  |  |  |  |  | nicht verwenden |
-| 14782 | (verworfene Parallelfassung KNX-Tunnel) | – |  |  |  |  |  | nicht verwenden |
-| 14783 | Kamera-Proxy | 0.1 (Prüffassung) | HSL3 | 8095 | kamera |  | Axis-Kameras per Digest für den QC-Client | in Arbeit |
+| ID | Baustein | Version | Port / Pfad |
+|---|---|---|---|
+| 14770 | [Visu-Server](14770_visuserver/) | 1.10 | 8092 `/visu-daten/` |
+| 14771 | [Verlaufsspeicher für Diagramme](14771_verlauf/) | 2.7 |  |
+| 14772 | KNX-Tunnel Senden – noch nicht veröffentlicht | ? |  |
+| 14773 | KNX-Tunnel Empfangen – noch nicht veröffentlicht | ? |  |
+| 14774 | KNX-Tunnel Gateway-Server – noch nicht veröffentlicht | ? |  |
+| 14775 | [RLT Luftqualitätsregelung](14775_RLT_Luftqualitaet/) | 1.6 |  |
+| 14776 | [WRG-Pumpenregelung](14776_WRG_Pumpenregelung/) | 1.0 |  |
+| 14777 | [Kompressor-Klappensteuerung](14777_Kompressor_Klappensteuerung/) | 1.2 |  |
+| 14778 | [Szenen-Server](14778_szenenserver/) | 4.2 | 8093 `/szenen/` |
+| 14779 | Zeitschaltuhr + Aufzeichnung – geplant | – | 8094 (reserviert) |
+| 14780 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
+| 14781 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
+| 14782 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
+| 14783 | [Kamera-Proxy](14783_kameraproxy/) | 0.1 (Prüffassung) | 8095 `/kamera/` |
 
-## Ports
+## Auf einen Blick
 
-| Port | Baustein | Adresse |
-|---|---|---|
-| 8092 | 14770 Visu-Server | https://<HS>/visu-daten/ |
-| 8093 | 14778 Szenen-Server | https://<HS>/szenen/ |
-| 8094 (reserviert) | 14779 Zeitschaltuhr + Aufzeichnung |  |
-| 8095 | 14783 Kamera-Proxy | https://<HS>/kamera/ |
-| ? | 14774 KNX-Tunnel Gateway-Server |  |
+### [14770 Visu-Server](14770_visuserver/)
 
-## Freie IDs
+homeserver-webapp, Diagramme.
 
-14784, 14785, 14786, 14787, 14788, 14789
+<img src="14770_visuserver/bilder/beispiel_diagramm.jpg" width="640" alt="Visu-Server">
+
+### [14771 Verlaufsspeicher für Diagramme](14771_verlauf/)
+
+zusammen mit 14770.
+
+<img src="14771_verlauf/bilder/beispiel_diagramm.jpg" width="640" alt="Verlaufsspeicher für Diagramme">
+
+### [14775 RLT Luftqualitätsregelung](14775_RLT_Luftqualitaet/)
+
+Lüftungsanlage (RLT) mit Luftqualitätsregelung.
+
+<img src="14775_RLT_Luftqualitaet/bilder/beispiel_funktionsprinzip.png" width="640" alt="RLT Luftqualitätsregelung">
+
+### [14776 WRG-Pumpenregelung](14776_WRG_Pumpenregelung/)
+
+WRG-Pumpe an einem Druckluft-Kompressor.
+
+<img src="14776_WRG_Pumpenregelung/bilder/beispiel_simulation.png" width="640" alt="WRG-Pumpenregelung">
+
+### [14777 Kompressor-Klappensteuerung](14777_Kompressor_Klappensteuerung/)
+
+Klappen eines Kompressorraums (Sommer/Winter).
+
+<img src="14777_Kompressor_Klappensteuerung/bilder/beispiel_klappen.png" width="640" alt="Kompressor-Klappensteuerung">
+
+### [14778 Szenen-Server](14778_szenenserver/)
+
+Szenensteuerung über eigene Webseite.
+
+<img src="14778_szenenserver/bilder/beispiel_szenen.png" width="640" alt="Szenen-Server">
+
+### [14783 Kamera-Proxy](14783_kameraproxy/)
+
+Axis-Kameras per Digest für den QC-Client.
+
+<img src="14783_kameraproxy/bilder/beispiel_pruefseite.png" width="640" alt="Kamera-Proxy">
 
 ## Regeln
 
@@ -51,3 +80,5 @@ Eigener ID-Bereich: **14770–14789** · nächste freie ID: **14784**
 ## Lizenz
 
 GPL-3.0, siehe [LICENSE](LICENSE). Entwickelt mit Claude (Anthropic). Gira, HomeServer und QuadClient sind Marken der Gira Giersiepen GmbH & Co. KG; dieses Projekt ist kein Produkt von Gira. Der Gira-Generator (HSL3 SDK) ist nicht enthalten.
+
+Bilder neu erzeugen: `python3 tools/blockbild.py <Ordner>` (Baustein), `python3 tools/prinzipbilder.py` (14776/14777), danach `python3 tools/readmes.py`.
