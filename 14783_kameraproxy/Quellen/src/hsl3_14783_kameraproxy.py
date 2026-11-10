@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14783 – Kamera-Proxy (v0.2, Prüffassung)
+HSL3 14783 – Kamera-Proxy (v0.3, Prüffassung)
 
 Holt Bilder und MJPEG-Ströme von Netzwerkkameras (z. B. Axis) mit Anmeldung (Digest oder Basic)
 und gibt sie über die Weiterleitung des HomeServers aus – gleiche Adresse und gleiches Zertifikat
@@ -18,6 +18,10 @@ Zugangsdaten stehen nur im Baustein. Sie werden nie ausgegeben, geloggt oder an 
 geschickt. Der Schlüssel E3 schützt alle Adressen außer der leeren Prüfseite.
 """
 import base64
+import hashlib
+import http.client
+import io
+import os
 import hmac
 import json
 import re
@@ -30,7 +34,7 @@ import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "0.2"
+VERSION = "0.3"
 CAMS = 3
 JPG_PATH = "/axis-cgi/jpg/image.cgi"
 MJPG_PATH = "/axis-cgi/mjpg/video.cgi"
@@ -66,6 +70,167 @@ async function go(){K=document.getElementById("k").value;const t=document.getEle
    im.src=q(c.name,"jpg","");});
  }catch(e){t.textContent="Fehler: "+e;}}
 </script></body></html>"""
+
+
+class CamClient:
+    """HTTP(S)-Zugriff auf eine Kamera mit offen gehaltenen Verbindungen und zwischengespeicherter
+    Anmeldung (Digest MD5/SHA-256 oder Basic): nach der ersten Anfrage geht jede weitere ohne
+    zusätzliche 401-Runde und ohne neuen Verbindungsaufbau an die Kamera."""
+    POOL = 4
+
+    def __init__(self, addr, user, pwd):
+        u = urllib.parse.urlsplit(addr)
+        self.https = u.scheme == "https"
+        self.host = u.hostname or ""
+        self.port = u.port or (443 if self.https else 80)
+        self.user, self.pwd = user, pwd
+        self.key = (addr, user, pwd)
+        self.lock = threading.Lock()
+        self.idle = []
+        self.auth = None            # {"scheme": "digest"/"basic", realm, nonce, qop, opaque, algorithm}
+        self.nc = 0
+
+    def _new_conn(self):
+        if self.https:
+            return http.client.HTTPSConnection(self.host, self.port, timeout=TIMEOUT, context=_SSL)
+        return http.client.HTTPConnection(self.host, self.port, timeout=TIMEOUT)
+
+    @staticmethod
+    def _parse(headers):
+        best = None
+        for raw in headers.get_all("WWW-Authenticate") or []:
+            scheme, _, rest = raw.strip().partition(" ")
+            p = {k.lower(): (v1 if v1 or q else v2) for k, q, v1, v2 in
+                 re.findall(r'([\w-]+)\s*=\s*(?:(")([^"]*)"|([^,\s]*))', rest)}
+            p["scheme"] = scheme.lower()
+            if p["scheme"] == "digest" and (best is None or best["scheme"] != "digest" or "sha-256" in p.get("algorithm", "").lower()):
+                best = p
+            elif p["scheme"] == "basic" and best is None:
+                best = p
+        return best
+
+    def _header(self, uri):
+        a = self.auth
+        if not a:
+            return None
+        if a["scheme"] == "basic":
+            return "Basic " + base64.b64encode(("%s:%s" % (self.user, self.pwd)).encode("utf-8")).decode("ascii")
+        alg = (a.get("algorithm") or "MD5").upper()
+        hf = (lambda x: hashlib.sha256(x.encode("utf-8")).hexdigest()) if alg.startswith("SHA-256") else \
+             (lambda x: hashlib.md5(x.encode("utf-8")).hexdigest())
+        with self.lock:
+            self.nc += 1
+            nc = "%08x" % self.nc
+        cnonce = os.urandom(8).hex()
+        ha1 = hf("%s:%s:%s" % (self.user, a.get("realm", ""), self.pwd))
+        if alg.endswith("-SESS"):
+            ha1 = hf("%s:%s:%s" % (ha1, a.get("nonce", ""), cnonce))
+        ha2 = hf("GET:" + uri)
+        qops = [q.strip() for q in a.get("qop", "").split(",") if q.strip()]
+        if "auth" in qops:
+            resp = hf("%s:%s:%s:%s:auth:%s" % (ha1, a["nonce"], nc, cnonce, ha2))
+            extra = ', qop=auth, nc=%s, cnonce="%s"' % (nc, cnonce)
+        else:
+            resp = hf("%s:%s:%s" % (ha1, a.get("nonce", ""), ha2))
+            extra = ""
+        h = 'Digest username="%s", realm="%s", nonce="%s", uri="%s", algorithm=%s, response="%s"%s' % (
+            self.user, a.get("realm", ""), a.get("nonce", ""), uri, a.get("algorithm") or "MD5", resp, extra)
+        if a.get("opaque"):
+            h += ', opaque="%s"' % a["opaque"]
+        return h
+
+    def _send(self, uri, conn):
+        hd = {"User-Agent": "HS-14783/" + VERSION, "Connection": "keep-alive"}
+        ah = self._header(uri)
+        if ah:
+            hd["Authorization"] = ah
+        conn.request("GET", uri, headers=hd)
+        return conn.getresponse()
+
+    def get(self, uri, stream=False):
+        """Liefert (Antwort, Verbindung). Bei stream=False ist der Inhalt schon gelesen (Antwort.body)."""
+        for attempt in range(3):
+            conn = None
+            if not stream:
+                with self.lock:
+                    conn = self.idle.pop() if self.idle else None
+            reused = conn is not None
+            conn = conn or self._new_conn()
+            try:
+                r = self._send(uri, conn)
+            except (http.client.HTTPException, OSError):
+                conn.close()
+                if reused:
+                    continue                    # Kamera hat die offene Verbindung inzwischen geschlossen
+                raise
+            if r.status == 401 and attempt < 2:
+                ch = self._parse(r.headers)
+                r.read()
+                if r.will_close:
+                    conn.close()
+                else:
+                    with self.lock:
+                        if len(self.idle) < self.POOL:
+                            self.idle.append(conn)
+                        else:
+                            conn.close()
+                if ch and (self.auth is None or ch.get("nonce") != self.auth.get("nonce") or ch["scheme"] != self.auth["scheme"]):
+                    with self.lock:
+                        self.auth, self.nc = ch, 0
+                    continue
+                if ch and ch.get("stale", "").lower() == "true":
+                    continue
+                raise urllib.error.HTTPError(uri, 401, "Unauthorized", r.headers, io.BytesIO(b""))
+            if stream and r.status == 200:
+                return r, conn
+            body = r.read()
+            if r.will_close:
+                conn.close()
+            else:
+                with self.lock:
+                    if len(self.idle) < self.POOL:
+                        self.idle.append(conn)
+                    else:
+                        conn.close()
+            if r.status != 200:
+                raise urllib.error.HTTPError(uri, r.status, r.reason, r.headers, io.BytesIO(body))
+            r.body = body
+            return r, None
+        raise urllib.error.HTTPError(uri, 401, "Unauthorized", http.client.HTTPMessage(), io.BytesIO(b""))
+
+    def close(self):
+        with self.lock:
+            for c in self.idle:
+                try:
+                    c.close()
+                except Exception:
+                    pass
+            self.idle = []
+
+
+class Resp:
+    """Einheitliche Antwort für Standbild (Inhalt gelesen) und Strom (offene Verbindung)."""
+    def __init__(self, r, conn):
+        self.r, self.conn, self.status, self.headers = r, conn, r.status, r.headers
+        self._buf = getattr(r, "body", None)
+
+    def read(self, n=-1):
+        if self._buf is not None:
+            b, self._buf = self._buf, b""
+            return b
+        return self.r.read(n)
+
+    def read1(self, n):
+        if self._buf is not None:
+            return self.read()
+        return self.r.read1(n) if hasattr(self.r, "read1") else self.r.read(n)
+
+    def close(self):
+        try:
+            self.r.close()
+        finally:
+            if self.conn is not None:
+                self.conn.close()
 
 
 class LogicModule:
@@ -118,10 +283,14 @@ class LogicModule:
             u = urllib.parse.urlsplit(addr)            # Schema://Host[:Port]; Pfad wird ignoriert,
             addr = "%s://%s" % (u.scheme or "http", u.netloc or u.path.split("/")[0])
             params = {k: v for k, v in urllib.parse.parse_qsl(u.query) if k in PASS_PARAMS}   # ?resolution=…&camera=… gilt als Vorgabe
-            cams[name] = {"addr": addr, "params": params,
-                          "user": self._text(inputs.value("cam%d_user" % i)),
-                          "pwd": self._text(inputs.value("cam%d_pwd" % i))}
+            user, pwd = self._text(inputs.value("cam%d_user" % i)), self._text(inputs.value("cam%d_pwd" % i))
+            old = self.cams.get(name)
+            client = old["client"] if old and old["client"].key == (addr, user, pwd) else CamClient(addr, user, pwd)
+            cams[name] = {"addr": addr, "params": params, "client": client}
         with self._lock:
+            for n, c in self.cams.items():
+                if n not in cams or cams[n]["client"] is not c["client"]:
+                    c["client"].close()
             self.cams = cams
         self.debug.set("Kameras", ", ".join(sorted(cams)) or "keine")
         self.debug.set("Schutz", "Schlüssel gesetzt" if self.key else "OHNE Schlüssel")
@@ -198,6 +367,10 @@ class LogicModule:
                 return self._send(h, 401, "text/plain; charset=utf-8", "Schluessel fehlt oder falsch".encode())
             if route == "test":
                 return self._json(h, 200, self._test_all())
+            if route == "list":                        # Namen der Kameras (für den QC-Client), ohne Kamera-Abruf
+                with self._lock:
+                    names = sorted(self.cams)
+                return self._json(h, 200, {"version": VERSION, "cams": names})
             name, _, ext = route.rpartition(".")
             name = urllib.parse.unquote(name).lower()
             with self._lock:
@@ -224,25 +397,16 @@ class LogicModule:
         return hmac.compare_digest((params.get("k") or params.get("key") or "").encode("utf-8"), self.key.encode("utf-8"))
 
     # ------------------------------------------------------------ Kamera
-    @staticmethod
-    def _opener(cam):
-        pm = urllib.request.HTTPPasswordMgrWithDefaultRealm()
-        pm.add_password(None, cam["addr"], cam["user"], cam["pwd"])
-        return urllib.request.build_opener(
-            urllib.request.HTTPSHandler(context=_SSL),
-            urllib.request.HTTPDigestAuthHandler(pm),
-            urllib.request.HTTPBasicAuthHandler(pm))
-
-    def _open(self, cam, path, extra, _try=0):
+    def _open(self, cam, path, extra, _try=0, stream=False):
         q = dict(cam.get("params") or {}) if _try < 2 else {}
         if _try == 0:
             q.update(extra)                            # Anfrage aus dem Browser überschreibt die Vorgabe aus der Adresse
-        url = cam["addr"] + path + ("?" + urllib.parse.urlencode(q) if q else "")
+        uri = path + ("?" + urllib.parse.urlencode(q) if q else "")
         try:
-            return self._opener(cam).open(urllib.request.Request(url, headers={"User-Agent": "HS-14783/" + VERSION}), timeout=TIMEOUT)
+            return Resp(*cam["client"].get(uri, stream=stream))
         except urllib.error.HTTPError as e:
             if e.code == 400 and q and _try < 2:      # Kamera kennt einen Parameter nicht -> nur Vorgabe, dann ganz ohne
-                return self._open(cam, path, extra, _try + 1 if (_try or extra) else 2)
+                return self._open(cam, path, extra, _try + 1 if (_try or extra) else 2, stream)
             raise
 
     @staticmethod
@@ -278,7 +442,7 @@ class LogicModule:
         self.fw.run_in_context(self._publish_streams, ())
         try:
             try:
-                r = self._open(cam, MJPG_PATH, extra)
+                r = self._open(cam, MJPG_PATH, extra, stream=True)
             except urllib.error.HTTPError as e:
                 return self._send(h, 502, "text/plain; charset=utf-8", ("Kamera: HTTP %d" % e.code).encode())
             except Exception as e:
@@ -311,6 +475,10 @@ class LogicModule:
         with self._lock:
             cams = dict(self.cams)
         for name, cam in sorted(cams.items()):
+            try:                                       # einmal vorab, damit „ms“ die Zeit mit gespeicherter Anmeldung zeigt
+                self._open(cam, JPG_PATH, {}).read()
+            except Exception:
+                pass
             t0 = time.time()
             res = {"name": name, "ok": False}
             try:

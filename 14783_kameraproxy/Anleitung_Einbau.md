@@ -1,4 +1,4 @@
-# 14783 Kamera-Proxy V0.2 (Prüffassung) – Einbau
+# 14783 Kamera-Proxy V0.3 (Prüffassung) – Einbau
 
 Stand 10.11.2026. Baustein: `14783_kameraproxy.hslz` (HSL3), Kategorie „Visualisierung“, Kontext `hsl3.kameraproxy`.
 
@@ -23,7 +23,7 @@ Stand 10.11.2026. Baustein: `14783_kameraproxy.hslz` (HSL3), Kategorie „Visual
 
 3. Übertragen.
 
-## Prüfen (Prüffassung 0.2)
+## Prüfen (Prüffassung 0.3)
 1. A1 Status zeigt „Bereit: /kamera/ (Port 8095), 3 Kamera(s)“.
 2. Im Browser `https://<HS>/kamera/` öffnen, Schlüssel eingeben, „Prüfen“.
    - Oben steht das Prüfergebnis je Kamera (OK / HTTP 401 = Anmeldung falsch / Fehler).
@@ -40,15 +40,18 @@ Die Prüfseite zeigt je Kamera `http` (Antwort der Kamera), `detail` (Fehlertext
 - Fehler ohne `http` – Kamera nicht erreichbar (IP, http/https)
 
 ## Änderungen
+- 0.3: Verbindung zur Kamera bleibt offen, Anmeldung wird gespeichert (Standbilder etwa doppelt so schnell) · `…/list` für den QC-Client
 - 0.2: Datentyp in jedem Ein-/Ausgang · keine feste Auflösung mehr · bei HTTP 400 automatisch ohne Zusatz-Parameter · ganze Kamera-URL als Adresse möglich (resolution/compression/camera als Vorgabe) · Fehlertext der Kamera auf der Prüfseite
 - 0.1: erste Prüffassung
 
-## Danach im Kamera-Plugin (QC)
-- Bild-Adresse: `https://<HS>/kamera/einfahrt.jpg?k=<Schlüssel>`
-- MJPEG-Adresse: `https://<HS>/kamera/einfahrt.mjpg?k=<Schlüssel>`, Codec MJPEG
-- Anmeldung „keine“, Benutzer/Passwort im Plugin leer lassen.
+## Im QC-Client (ab v0.9.3)
+Im Experten bleibt das Kamera-Plugin unverändert. Im QC-Client links unter **Kamera-Proxy** einmal Adresse
+(`https://<HS>/kamera/`) und Schlüssel eintragen. Kameras, deren Name im Plugin zum Namen im Baustein passt
+(„Einfahrt“ → `einfahrt`), laufen dann über den Proxy: Übersicht mit Standbildern, Einzelansicht mit Live-Strom.
 
-Der QC-Client (ab v0.9.2) zeigt dann in der Einzelansicht den Live-Strom.
+Direkte Adressen, z. B. für einen Browser oder ein anderes Programm:
+- Standbild: `https://<HS>/kamera/einfahrt.jpg?k=<Schlüssel>`
+- Live (MJPEG): `https://<HS>/kamera/einfahrt.mjpg?k=<Schlüssel>`
 
 ## Sicherheit
 Der Schlüssel steht in der Bild-Adresse und ist für jeden QC-Benutzer sichtbar. An der Kamera einen eigenen Benutzer nur mit Zuschauer-Recht anlegen.
