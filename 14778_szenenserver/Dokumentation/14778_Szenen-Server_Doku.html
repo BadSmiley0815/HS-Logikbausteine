@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>14778 Szenen-Server (v4.2.1)</title>
+<title>14778 Szenen-Server (v4.2.2)</title>
 <style>
 :root{--bg:#f6f7f9;--p:#fff;--l:#e3e5e8;--t:#1d2127;--m:#6b7280;--a:#6fa52a}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111418;--p:#191d23;--l:#2c323b;--t:#e7eaee;--m:#98a1ad}}
@@ -14,7 +14,7 @@ td,th{border-bottom:1px solid var(--l);padding:6px 9px;text-align:left;vertical-
 .box{background:var(--p);border:1px solid var(--l);border-left:4px solid var(--a);border-radius:8px;padding:10px 14px;margin:12px 0}
 </style></head><body><main>
 <h1>14778 Szenen-Server</h1>
-<div class="mu">Baustein-ID <b>14778</b> · Version <b>4.2.1</b> · HSL3 · Kontext <code>hsl3.szenenserver_14778</code></div>
+<div class="mu">Baustein-ID <b>14778</b> · Version <b>4.2.2</b> · HSL3 · Kontext <code>hsl3.szenenserver_14778</code></div>
 
 <p>Szenensteuerung für den Gira HomeServer mit eigener Webseite. Ersetzt die Gitter aus Matrix-8x1-Bausteinen, die bisher pro Funktion angelegt werden mussten. Funktionen werden auf der Webseite aus der KO-Struktur übernommen, die Seite baut sich daraus selbst auf. Beim Szenenaufruf sendet der Baustein die Werte über das KO-Gateway, eine Verdrahtung pro Funktion ist nicht mehr nötig.</p>
 
@@ -26,6 +26,7 @@ td,th{border-bottom:1px solid var(--l);padding:6px 9px;text-align:left;vertical-
 <tr><td>Wert einer <b>inaktiven</b> Szene wird geändert</td><td>Wert wird nur gespeichert und beim nächsten Aufruf gesendet.</td></tr>
 <tr><td>Spalte <b>Aktuell</b></td><td>Zeigt den Istzustand (Status-KO) und schaltet/dimmt sofort. Optional je Gruppe: Änderung zusätzlich in die aktive Szene übernehmen.</td></tr>
 <tr><td>Bedingung <b>Dämmerung</b></td><td>Wird nur gesendet, wenn es dunkel ist (Dämmerungs-KO bzw. E4).</td></tr>
+<tr><td><b>Status-Ausgänge</b> (v4.2.2)</td><td>A2–A10 (aktive Szene, Szene 1–8 aktiv) und die übrigen Ausgänge senden nur noch bei Änderung bzw. bei jedem Szenenaufruf. Bedienen auf der Seite (Wert ändern, Funktion schalten) sendet sie nicht mehr erneut – vorher gingen bei jeder Bedienung alle Status-Telegramme auf den Bus. Beim Start und über E14 werden alle einmal gesendet.</td></tr>
 <tr><td><b>Weiterleitung</b> (Fix v4.2.1)</td><td>E1/E2 sind wieder als Eingangstyp „Basis-Pfad“/„Ziel-Port“ deklariert. In v4.1/v4.2 waren sie als Text/Zahl angelegt – dadurch fehlte in der Baustein-Datei die Kennung der Pfad-/Port-Eingänge, der HomeServer richtete keine Weiterleitung ein und <code>https://&lt;HS&gt;/szenen/</code> lieferte 404, obwohl der Baustein „Bereit“ meldete (direkt über <code>http://&lt;HS&gt;:8093/szenen/</code> erreichbar).</td></tr>
 <tr><td>Bedingung <b>Außentemperatur</b> (ab v4.2)</td><td>Je Funktion ein Grenzwert in °C (z. B. Dachluke 22,5 °C). Öffnen/Einschalten aus einer Szene wird nur gesendet, wenn die Außentemperatur (Temperatur-KO unter Sensoren bzw. E16) den Grenzwert erreicht. Darunter wird der Wert zurückgestellt und mit „Nachholen“ gesendet, sobald es wärmer ist. Schließen/Aus geht immer. Ist die Temperatur unbekannt, wird nicht geöffnet. Im Gitter: Thermometer mit Grenzwert, Klick zum Ändern; im Funktionsdialog unter Bedingungen.</td></tr>
 <tr><td><b>Position invertiert</b> (ab v4.2)</td><td>Für Aktoren, bei denen 0 % = offen und 100 % = zu bedeutet (z. B. Dachluken über Rollladenkanal). Die Seite zeigt und speichert wie gewohnt (Dachfenster 0 % = zu, 100 % = auf), der Baustein sendet 100 − Wert und rechnet die Rückmeldung zurück. Dadurch wirken Regen, Außentemperatur und Dämmerung richtig herum. Einstellbar im Funktionsdialog (Rollo/Dachfenster).</td></tr>

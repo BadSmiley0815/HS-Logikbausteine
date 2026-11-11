@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14778 – Szenen-Server (v4.2.1)
+HSL3 14778 – Szenen-Server (v4.2.2)
 
 Szenensteuerung mit eigener Webseite. Ersetzt die händischen Gitter aus
 Matrix-Bausteinen (Select/Signal) pro Funktion.
@@ -82,7 +82,7 @@ import urllib.parse
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "4.2.1"
+VERSION = "4.2.2"
 BLOCK_ID = 14778
 CFG_STORES = 10
 CHUNK = 9900
@@ -865,7 +865,7 @@ class LogicModule:
         self._rebuild_pending()
         if not self.config["rainKey"]:
             self._check_rain()                   # Regen über E13: sofort auswerten (auch Ende während Neustart)
-        self._publish_outputs()
+        self._publish_outputs(force=True)
         self._start_server()
         self._start_gw()
         if self._sw_thread is None:
@@ -1055,7 +1055,7 @@ class LogicModule:
         restart = False
         if inputs.changed("restart"):
             restart = self._num(inputs.value("restart"), 0) == 1
-            self._publish_outputs()
+            self._publish_outputs(force=True)
         if restart or (self.base_path, self.port) != old_srv:
             self._start_server()
         if restart:
@@ -1163,7 +1163,7 @@ class LogicModule:
         self._bump()
 
     def _gw_status_ctx(self):
-        self.fw.set_output("gw_ok", 1.0 if self.gw.connected else 0.0)
+        self._out("gw_ok", 1.0 if self.gw.connected else 0.0)
         self.debug.set("KO-Gateway", self.gw.msg)
         if self.gw.connected:
             self._status("Bereit: /%s/ (Port %d), Gateway verbunden%s" %
@@ -1530,7 +1530,7 @@ class LogicModule:
         if learn:
             self._save_async()
         else:
-            self._save_active_async()
+            self._save_active_async(force=True)   # Szenenaufruf: Status wie bisher immer senden
         self._bump()
         self.debug.set("Letztes Ereignis", self.last_event)
         return {"ok": True, "sent": sent, "rev": self.rev}
@@ -1783,8 +1783,8 @@ class LogicModule:
     def _save_async(self):
         self.fw.run_in_context(self._save_ctx, ())
 
-    def _save_active_async(self):
-        self.fw.run_in_context(self._save_active_ctx, ())
+    def _save_active_async(self, force=False):
+        self.fw.run_in_context(self._save_active_ctx, (force,))
 
     def _save_ctx(self, new_config=None):
         with self._lock:
@@ -1803,7 +1803,7 @@ class LogicModule:
         if new_config is not None:
             self._update_season()
             self._rebuild_pending()
-        self.fw.set_output("config_rev", float(rev) / 1000.0)
+        self._out("config_rev", float(rev) / 1000.0)
         self.debug.set("Einrichtung", "%s, %d Zeichen" % (time.strftime("%d.%m. %H:%M:%S"), sum(len(c) for c in chunks)))
         self._publish_outputs()
         self._bump()
@@ -1820,24 +1820,33 @@ class LogicModule:
             self._start_gw()
         return {"ok": True}
 
-    def _save_active_ctx(self):
+    def _save_active_ctx(self, force=False):
         with self._lock:
             data = json.dumps({"a": self.active, "r": self._raining,
                                "h": [[k[0], k[1]] + list(v if isinstance(v, (tuple, list)) else (v, "pos"))
                                      for k, v in self.rain_hold.items()]}, separators=(",", ":"))
         self.fw.set_store("act", data.encode("ascii"))
-        self._publish_outputs()
+        self._publish_outputs(force)
 
-    def _publish_outputs(self):
+    def _out(self, name, value, force=False):
+        """v4.2.2: Ausgang nur bei Änderung senden (force = beim Start / über E14 alle neu senden)."""
+        last = getattr(self, "_last_out", None)
+        if last is None:
+            last = self._last_out = {}
+        if force or last.get(name) != value:
+            last[name] = value
+            self.fw.set_output(name, value)
+
+    def _publish_outputs(self, force=False):
         with self._lock:
             g = self.io_group()
             n = self.active.get(g["id"], 0) if g else 0
         if n:
-            self.fw.set_output("active", float((n - 1) & 0x3F))     # A2 DPT 17.001 (0 = Szene 1)
+            self._out("active", float((n - 1) & 0x3F), force)        # A2 DPT 17.001 (0 = Szene 1)
         for i in range(1, N_BITS + 1):                              # A3–A10 Szene 1–8 aktiv
-            self.fw.set_output("a%d" % i, 1.0 if n == i else 0.0)
-        self.fw.set_output("config_rev", float(self.rev) / 1000.0)
-        self.fw.set_output("gw_ok", 1.0 if self.gw.connected else 0.0)
+            self._out("a%d" % i, 1.0 if n == i else 0.0, force)
+        self._out("config_rev", float(self.rev) / 1000.0, force)
+        self._out("gw_ok", 1.0 if self.gw.connected else 0.0, force)
 
     def _bump(self):
         with self._cond:

@@ -10,7 +10,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 | [14775](#14775-rlt-luftqualitätsregelung) | RLT Luftqualitätsregelung | 1.6 |
 | [14776](#14776-wrg-pumpenregelung) | WRG-Pumpenregelung | 1.0 |
 | [14777](#14777-kompressor-klappensteuerung) | Kompressor-Klappensteuerung | 1.2 |
-| [14778](#14778-szenen-server) | Szenen-Server | 4.2.1 |
+| [14778](#14778-szenen-server) | Szenen-Server | 4.2.2 |
 | [14783](#14783-kamera-proxy) | Kamera-Proxy | 0.4 |
 | [14784](#14784-meldungsspeicher) | Meldungsspeicher | 1.0 |
 
@@ -53,6 +53,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 - **1.0** – erste Version (Formelbaustein HSL 1.0).
 
 ## 14778 Szenen-Server
+- **4.2.2** (2026-11-11) – Status-Ausgänge (aktive Szene, Szene 1–8 aktiv, Gateway, Einrichtung) senden nur noch bei Änderung bzw. bei jedem Szenenaufruf. Vorher gingen bei jeder Bedienung auf der Seite alle Status-Telegramme erneut auf den Bus und lösten daran hängende Logiken aus. Beim Start und über E14 werden alle einmal gesendet.
 - **4.2.1** (2026-11-11) – Fehler behoben: E1/E2 sind wieder als Eingangstyp „Basis-Pfad“/„Ziel-Port“ deklariert. In 4.1/4.2 fehlte dadurch die Kennung in der `.hsl` (5000-Zeile endete auf `|0|0`), der HomeServer legte keine Weiterleitung an und `https://<HS>/szenen/` lieferte 404, obwohl der Baustein „Bereit“ meldete.
 - **4.2** – Bedingung Außentemperatur je Funktion (Grenzwert in °C; Öffnen/Einschalten aus einer Szene nur oberhalb, bei unbekannter Temperatur nicht). Position invertiert für Aktoren mit 0 % = offen (z. B. Dachluken über Rollladenkanal); die Seite zeigt weiter 0 % = zu.
 - **4.1** – Einzelheiten nicht dokumentiert.
