@@ -73,6 +73,7 @@ o = ["# HS-Logikbausteine", "",
      "Freie Logikbausteine (HSL3 und HSL 1.0) für den Gira HomeServer / FacilityServer – mit Quellcode, Hilfe, Bild und Beispiel.",
      "Jeder Ordner enthält die importierbare `.hslz` bzw. `.hsl` und eine README.", "",
      "Passend dazu: [QC-Client](https://github.com/BadSmiley0815/QC-Client) – der QuadClient im Browser.", "",
+     "Alle Versionen aller Bausteine: [CHANGELOG.md](CHANGELOG.md)", "",
      f"Stand {D['stand']} · ID-Bereich {D['bereich']} · nächste freie ID **{frei[0] if frei else '–'}**", "",
      "## Bausteine", "", "| ID | Baustein | Version | Port / Pfad |", "|---|---|---|---|"]
 for b in B:

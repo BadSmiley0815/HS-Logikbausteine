@@ -5,6 +5,8 @@ Jeder Ordner enthält die importierbare `.hslz` bzw. `.hsl` und eine README.
 
 Passend dazu: [QC-Client](https://github.com/BadSmiley0815/QC-Client) – der QuadClient im Browser.
 
+Alle Versionen aller Bausteine: [CHANGELOG.md](CHANGELOG.md)
+
 Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14784**
 
 ## Bausteine
@@ -77,6 +79,7 @@ Axis-Kameras per Digest für den QC-Client.
 - HTTP-Bausteine: der HS leitet https://<HS>/<Basis-Pfad>/ an den Port weiter – gleiche Adresse und gleiches Zertifikat wie der HS. Port nie 0 (sonst 503) und nie doppelt.
 - iKOs per Experte-CSV-Import anlegen (Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren).
 - HTTP-Bausteine: E1/E2 in config.json mit Typ "base_path" bzw. "destination_port" deklarieren (nicht string/number) – sonst fehlt die Kennung in der .hsl (5000-Zeile endet auf |0|0) und der HS legt keine Weiterleitung an (404, obwohl der Baustein „Bereit“ meldet).
+- Jede Änderung an einem Baustein (neu, Version, Port, Pfad) in CHANGELOG.md eintragen.
 
 ## Lizenz
 
