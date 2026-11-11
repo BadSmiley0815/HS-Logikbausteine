@@ -143,97 +143,97 @@
         "type": "string",
         "identifier": "t1",
         "init_value": "",
-        "label": "I23 Text signal 1: ON|OFF|level [text]"
+        "label": "I23 Text signal 1: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t2",
         "init_value": "",
-        "label": "I24 Text signal 2: ON|OFF|level [text]"
+        "label": "I24 Text signal 2: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t3",
         "init_value": "",
-        "label": "I25 Text signal 3: ON|OFF|level [text]"
+        "label": "I25 Text signal 3: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t4",
         "init_value": "",
-        "label": "I26 Text signal 4: ON|OFF|level [text]"
+        "label": "I26 Text signal 4: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t5",
         "init_value": "",
-        "label": "I27 Text signal 5: ON|OFF|level [text]"
+        "label": "I27 Text signal 5: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t6",
         "init_value": "",
-        "label": "I28 Text signal 6: ON|OFF|level [text]"
+        "label": "I28 Text signal 6: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t7",
         "init_value": "",
-        "label": "I29 Text signal 7: ON|OFF|level [text]"
+        "label": "I29 Text signal 7: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t8",
         "init_value": "",
-        "label": "I30 Text signal 8: ON|OFF|level [text]"
+        "label": "I30 Text signal 8: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t9",
         "init_value": "",
-        "label": "I31 Text signal 9: ON|OFF|level [text]"
+        "label": "I31 Text signal 9: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t10",
         "init_value": "",
-        "label": "I32 Text signal 10: ON|OFF|level [text]"
+        "label": "I32 Text signal 10: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t11",
         "init_value": "",
-        "label": "I33 Text signal 11: ON|OFF|level [text]"
+        "label": "I33 Text signal 11: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t12",
         "init_value": "",
-        "label": "I34 Text signal 12: ON|OFF|level [text]"
+        "label": "I34 Text signal 12: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t13",
         "init_value": "",
-        "label": "I35 Text signal 13: ON|OFF|level [text]"
+        "label": "I35 Text signal 13: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t14",
         "init_value": "",
-        "label": "I36 Text signal 14: ON|OFF|level [text]"
+        "label": "I36 Text signal 14: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t15",
         "init_value": "",
-        "label": "I37 Text signal 15: ON|OFF|level [text]"
+        "label": "I37 Text signal 15: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "string",
         "identifier": "t16",
         "init_value": "",
-        "label": "I38 Text signal 16: ON|OFF|level [text]"
+        "label": "I38 Text signal 16: ON|OFF|level ON|level OFF [text]"
       },
       {
         "type": "number",
@@ -471,52 +471,52 @@
             "label": "E22 Melder 16 [1 Bit]"
           },
           {
-            "label": "E23 Text Melder 1: EIN|AUS|Stufe [Text]"
+            "label": "E23 Text Melder 1: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E24 Text Melder 2: EIN|AUS|Stufe [Text]"
+            "label": "E24 Text Melder 2: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E25 Text Melder 3: EIN|AUS|Stufe [Text]"
+            "label": "E25 Text Melder 3: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E26 Text Melder 4: EIN|AUS|Stufe [Text]"
+            "label": "E26 Text Melder 4: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E27 Text Melder 5: EIN|AUS|Stufe [Text]"
+            "label": "E27 Text Melder 5: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E28 Text Melder 6: EIN|AUS|Stufe [Text]"
+            "label": "E28 Text Melder 6: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E29 Text Melder 7: EIN|AUS|Stufe [Text]"
+            "label": "E29 Text Melder 7: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E30 Text Melder 8: EIN|AUS|Stufe [Text]"
+            "label": "E30 Text Melder 8: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E31 Text Melder 9: EIN|AUS|Stufe [Text]"
+            "label": "E31 Text Melder 9: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E32 Text Melder 10: EIN|AUS|Stufe [Text]"
+            "label": "E32 Text Melder 10: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E33 Text Melder 11: EIN|AUS|Stufe [Text]"
+            "label": "E33 Text Melder 11: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E34 Text Melder 12: EIN|AUS|Stufe [Text]"
+            "label": "E34 Text Melder 12: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E35 Text Melder 13: EIN|AUS|Stufe [Text]"
+            "label": "E35 Text Melder 13: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E36 Text Melder 14: EIN|AUS|Stufe [Text]"
+            "label": "E36 Text Melder 14: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E37 Text Melder 15: EIN|AUS|Stufe [Text]"
+            "label": "E37 Text Melder 15: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
-            "label": "E38 Text Melder 16: EIN|AUS|Stufe [Text]"
+            "label": "E38 Text Melder 16: EIN|AUS|Stufe EIN|Stufe AUS [Text]"
           },
           {
             "label": "E39 Max. Einträge (50-10000) [Zahl]"

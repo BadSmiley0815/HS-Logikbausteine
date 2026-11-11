@@ -6,11 +6,12 @@ Eigenes Meldungsarchiv im HomeServer – unabhängig von den Meldungsarchiven de
 Eine Instanz = ein Archiv (z. B. „Wetterstation“, „Alarmanlage“).
 
 Melder 1–16 (E7–E22, 1 Bit/Zahl) mit Text je Melder (E23–E38):
-    "Text EIN|Text AUS|Stufe"
+    "Text EIN|Text AUS|Stufe EIN|Stufe AUS"
       - nur "Windalarm"            → „Windalarm – ein“ / „Windalarm – aus“, Stufe 1
       - "Alarm Tor 1|"             → nur EIN wird gemeldet (AUS leer = keine Meldung)
       - "|Netz ok"                 → nur AUS wird gemeldet
-      - "Scharf|Unscharf|0"        → Stufe 0 = Info, 1 = Warnung, 2 = Alarm
+      - "Scharf|Unscharf|0"        → Stufe 0 = Info, 1 = Warnung, 2 = Alarm (Standard EIN 1, AUS 0)
+      - "Spannung ok|Spannung ausgefallen|0|2" → AUS wird als Alarm gemeldet
     Gemeldet wird nur bei Wertwechsel (E5 = 1: jedes Telegramm). Werte ≠ 0 zählen als EIN.
 E6 Freitext (14-Byte-Text oder Text): jeder neue Text wird mit Stufe aus E4 gespeichert.
 
@@ -50,22 +51,22 @@ def unpack(chunks):
 
 
 def parse_text(spec, default_level=1):
-    """'Text EIN|Text AUS|Stufe' → (text_ein, text_aus, stufe). None = keine Meldung."""
+    """'Text EIN|Text AUS|Stufe EIN|Stufe AUS' → (text_ein, text_aus, stufe_ein, stufe_aus). None = keine Meldung."""
     spec = (spec or "").strip()
     if not spec:
-        return None, None, default_level
+        return None, None, default_level, 0
     parts = spec.split("|")
     if len(parts) == 1:
-        return spec + " – ein", spec + " – aus", default_level
+        return spec + " – ein", spec + " – aus", default_level, 0
     on = parts[0].strip() or None
     off = parts[1].strip() or None
-    lvl = default_level
-    if len(parts) > 2:
+
+    def lv(i, d):
         try:
-            lvl = max(0, min(2, int(parts[2].strip())))
+            return max(0, min(2, int(parts[i].strip()))) if len(parts) > i and parts[i].strip() else d
         except ValueError:
-            pass
-    return on, off, lvl
+            return d
+    return on, off, lv(2, default_level), lv(3, 0)
 
 
 class LogicModule:
@@ -82,7 +83,7 @@ class LogicModule:
         self.maxn = 2000
         self.every = 0
         self.free_level = 1
-        self.texts = [(None, None, 1)] * N_MELDER
+        self.texts = [(None, None, 1, 0)] * N_MELDER
         self._dirty = False
         self._pending_ack = False
         self._pending_import = None
@@ -141,10 +142,10 @@ class LogicModule:
             self.state["last"][k] = v
             if prev == v and not self.every:
                 continue
-            on, off, lvl = self.texts[i - 1]
+            on, off, lvl_on, lvl_off = self.texts[i - 1]
             text = on if v else off
             if text:
-                self._add(text, lvl if v else 0, i, v)
+                self._add(text, lvl_on if v else lvl_off, i, v)
             else:
                 self._dirty = True
 
