@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14770 – Visu-Server (v1.10)
+HSL3 14770 – Visu-Server (v1.11)
 
 Datenzentrale für die HTML5-Visu (homeserver-webapp). Der HomeServer leitet
 https://<HS>/<Basis-Pfad>/… an diesen Baustein weiter (HSL3-Eingänge base_path /
@@ -9,6 +9,10 @@ destination_port) – gleiche Adresse und gleiches Zertifikat wie die Visu selbs
 Aufgaben:
   * Einrichtung der Visu speichern (Kacheln, Räume, Favoriten …) – für alle Geräte gleich
   * Verläufe der Bausteine 14771 (ab v2.0) für Diagramme ausliefern
+  * Meldungen der Meldungsspeicher 14784 ausliefern und quittieren (ab v1.11):
+      GET  api/messages               alle Archive (Name, Anzahl, offene Meldungen/Alarme)
+      GET  api/messages?id=wetter&n=200&since=<seq>   Einträge, neueste zuerst
+      POST api/messages/ack  {"id": "wetter"}        alle Einträge des Archivs quittieren
   * Sichern/Wiederherstellen aller Daten als JSON
 
 Speicherung: komprimiert, verteilt auf remanente Speichervariablen mit je < 10.000 Zeichen
@@ -72,7 +76,7 @@ import urllib.parse
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.10"
+VERSION = "1.11"
 CFG_STORES = 10          # 10 × 9.900 Zeichen ≈ 99 KB komprimiert
 CHUNK = 9900
 MAX_BODY = 4 * 1024 * 1024
@@ -322,7 +326,7 @@ window.addEventListener('resize',draw);document.addEventListener('mouseup',funct
 </script></body></html>
 """
 
-READ_ROUTES = ("api/ping", "api/histories", "api/history", "chart.svg", "chart.png")
+READ_ROUTES = ("api/ping", "api/histories", "api/history", "chart.svg", "chart.png", "api/messages")
 
 
 # ---------------------------------------------------------------- SVG-Diagramm (v1.9)
@@ -865,6 +869,7 @@ class LogicModule:
         self.debug = self.fw.create_debug_section()
         self._lock = threading.RLock()
         self._histories = {}            # id(obj) -> Verlaufs-Baustein
+        self._messages = {}             # id(obj) -> Meldungsspeicher 14784
         self._png_lock = threading.Lock()
         self._png_cache = {}
         self.base_path = "visu-daten"
@@ -933,6 +938,30 @@ class LogicModule:
             self._histories.pop(id(hist), None)
         self.fw.run_in_context(self._publish_counts, ())
 
+    # Aufruf durch 14784 im gemeinsamen Kontext (ab v1.11)
+    def register_messages(self, arch):
+        with self._lock:
+            self._messages[id(arch)] = arch
+        self.fw.run_in_context(self._publish_counts, ())
+        return True
+
+    def unregister_messages(self, arch):
+        with self._lock:
+            self._messages.pop(id(arch), None)
+        self.fw.run_in_context(self._publish_counts, ())
+
+    def _msg_catalog(self):
+        """{Kennung: Baustein}; bei doppelter Kennung gewinnt die kleinste Instanz-ID."""
+        with self._lock:
+            ms = list(self._messages.values())
+        out = {}
+        for m in sorted(ms, key=lambda x: x.instance_id()):
+            try:
+                out.setdefault(m.archive_id(), m)
+            except Exception:
+                continue
+        return out
+
     def _catalog(self):
         """{hid: Baustein}; bei doppelter ID gewinnt die kleinste Instanz-ID."""
         with self._lock:
@@ -950,6 +979,7 @@ class LogicModule:
         n = len(self._catalog())
         self.fw.set_output("history_count", float(n))
         self.debug.set("Verläufe", str(n))
+        self.debug.set("Meldungsspeicher", str(len(self._msg_catalog())))
 
     # ------------------------------------------------------------ Server
     def _start(self):
@@ -1128,6 +1158,7 @@ class LogicModule:
         """(Status, JSON-Objekt) – ohne Netzwerk testbar."""
         if route == "api/ping":
             return 200, {"ok": True, "version": VERSION, "histories": len(self._catalog()),
+                         "message_archives": len(self._msg_catalog()),
                          "config_rev": self.config_rev, "time": int(time.time() * 1000)}
         if route == "api/config/rev":
             return 200, {"rev": self.config_rev}
@@ -1152,11 +1183,35 @@ class LogicModule:
             except ValueError:
                 n = None
             return 200, h.series(u, n)
+        if route == "api/messages" and method == "GET":
+            cat = self._msg_catalog()
+            if not params.get("id"):
+                return 200, {"archives": [m.info() for m in cat.values()]}
+            m = cat.get(params.get("id"))
+            if m is None:
+                return 404, {"error": "Meldungsspeicher nicht gefunden", "id": params.get("id")}
+            try:
+                n = int(params.get("n", "0")) or None
+                since = int(params.get("since", "0")) or None
+            except ValueError:
+                n, since = None, None
+            return 200, m.entries(n, since)
+        if route == "api/messages/ack" and method == "POST":
+            data = json.loads(body.decode("utf-8"))
+            ids = data.get("ids") or ([data.get("id")] if data.get("id") else list(self._msg_catalog()))
+            cat = self._msg_catalog()
+            done = []
+            for i in ids:
+                if i in cat:
+                    cat[i].queue_ack()
+                    done.append(i)
+            return 200, {"ok": True, "queued": done}
         if route == "api/export":
             return 200, {"format": "visu-server-export", "version": 1,
                          "exported_at": time.strftime("%Y-%m-%d %H:%M:%S"),
                          "config": {"rev": self.config_rev, "config": self.config},
-                         "histories": [{"id": hid, "state": h.export_state()} for hid, h in self._catalog().items()]}
+                         "histories": [{"id": hid, "state": h.export_state()} for hid, h in self._catalog().items()],
+                         "messages": [{"id": mid, "state": m.export_state()} for mid, m in self._msg_catalog().items()]}
         if route == "api/import" and method == "POST":
             data = json.loads(body.decode("utf-8"))
             if not isinstance(data, dict) or data.get("format") != "visu-server-export":
@@ -1180,6 +1235,15 @@ class LogicModule:
                 else:
                     h.queue_import(item.get("state"), merge)
                     result["histories_queued"].append(item.get("id"))
+            mcat = self._msg_catalog()
+            result["messages_queued"], result["messages_unknown"] = [], []
+            for item in data.get("messages") or []:
+                m = mcat.get(item.get("id"))
+                if m is None:
+                    result["messages_unknown"].append(item.get("id"))
+                else:
+                    m.queue_import(item.get("state"), merge)
+                    result["messages_queued"].append(item.get("id"))
             return 200, result
         return 404, {"error": "unbekannt: " + route}
 

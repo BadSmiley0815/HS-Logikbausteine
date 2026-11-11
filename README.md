@@ -7,13 +7,13 @@ Passend dazu: [QC-Client](https://github.com/BadSmiley0815/QC-Client) – der Qu
 
 Alle Versionen aller Bausteine: [CHANGELOG.md](CHANGELOG.md)
 
-Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14784**
+Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14785**
 
 ## Bausteine
 
 | ID | Baustein | Version | Port / Pfad |
 |---|---|---|---|
-| 14770 | [Visu-Server](14770_visuserver/) | 1.10 | 8092 `/visu-daten/` |
+| 14770 | [Visu-Server](14770_visuserver/) | 1.11 | 8092 `/visu-daten/` |
 | 14771 | [Verlaufsspeicher für Diagramme](14771_verlauf/) | 2.7 |  |
 | 14772 | KNX-Tunnel Senden – noch nicht veröffentlicht | ? |  |
 | 14773 | KNX-Tunnel Empfangen – noch nicht veröffentlicht | ? |  |
@@ -27,6 +27,7 @@ Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14784**
 | 14781 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14782 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14783 | [Kamera-Proxy](14783_kameraproxy/) | 0.4 (Prüffassung) | 8095 `/kamera/` |
+| 14784 | [Meldungsspeicher](14784_meldungsspeicher/) | 1.0 |  |
 
 ## Auf einen Blick
 
@@ -71,6 +72,10 @@ Szenensteuerung über eigene Webseite.
 Axis-Kameras per Digest für den QC-Client.
 
 <img src="14783_kameraproxy/bilder/beispiel_pruefseite.png" width="640" alt="Kamera-Proxy">
+
+### [14784 Meldungsspeicher](14784_meldungsspeicher/)
+
+Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Texten, Freitext, Quittieren; Abruf über den Visu-Server 14770.
 
 ## Regeln
 

@@ -5,7 +5,7 @@
   {
    "id": 14770,
    "name": "Visu-Server",
-   "version": "1.10",
+   "version": "1.11",
    "art": "HSL3",
    "kategorie": "Visualisierung",
    "port": 8092,
@@ -183,6 +183,19 @@
    "datei": "14783_kameraproxy/14783_kameraproxy.hslz",
    "einsatz": "Axis-Kameras per Digest für den QC-Client",
    "status": "in Arbeit"
+  },
+  {
+   "id": 14784,
+   "name": "Meldungsspeicher",
+   "version": "1.0",
+   "art": "HSL3",
+   "kategorie": "Visualisierung",
+   "port": null,
+   "pfad": "",
+   "ex": "",
+   "datei": "14784_meldungsspeicher/14784_meldungsspeicher.hslz",
+   "einsatz": "Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Texten, Freitext, Quittieren; Abruf über den Visu-Server 14770",
+   "status": "neu, am HS noch nicht getestet"
   }
  ],
  "regeln": [

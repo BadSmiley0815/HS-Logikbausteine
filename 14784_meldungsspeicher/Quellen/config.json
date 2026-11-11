@@ -1,0 +1,551 @@
+{
+  "module": {
+    "category": "Visualisation",
+    "context": "hsl3.visuserver",
+    "id": "14784",
+    "name": "14784 Message store",
+    "hsl_filename": "14784_meldungsspeicher.hsl",
+    "version": "1.0",
+    "inputs": [
+      {
+        "type": "number",
+        "identifier": "server",
+        "init_value": 0,
+        "label": "I1 Visu server instance ID (O1 of 14770) [number]"
+      },
+      {
+        "type": "string",
+        "identifier": "arch_id",
+        "init_value": "",
+        "label": "I2 ID (e.g. wetter) [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "name",
+        "init_value": "",
+        "label": "I3 Name [text]"
+      },
+      {
+        "type": "number",
+        "identifier": "level",
+        "init_value": 1,
+        "label": "I4 Level for free text 0=info 1=warning 2=alarm [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "every",
+        "init_value": 0,
+        "label": "I5 Log every telegram (1) / only changes (0) [1 bit]"
+      },
+      {
+        "type": "string",
+        "identifier": "free",
+        "init_value": "",
+        "label": "I6 Free text [14-byte text]"
+      },
+      {
+        "type": "number",
+        "identifier": "m1",
+        "init_value": 0,
+        "label": "I7 Signal 1 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m2",
+        "init_value": 0,
+        "label": "I8 Signal 2 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m3",
+        "init_value": 0,
+        "label": "I9 Signal 3 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m4",
+        "init_value": 0,
+        "label": "I10 Signal 4 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m5",
+        "init_value": 0,
+        "label": "I11 Signal 5 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m6",
+        "init_value": 0,
+        "label": "I12 Signal 6 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m7",
+        "init_value": 0,
+        "label": "I13 Signal 7 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m8",
+        "init_value": 0,
+        "label": "I14 Signal 8 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m9",
+        "init_value": 0,
+        "label": "I15 Signal 9 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m10",
+        "init_value": 0,
+        "label": "I16 Signal 10 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m11",
+        "init_value": 0,
+        "label": "I17 Signal 11 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m12",
+        "init_value": 0,
+        "label": "I18 Signal 12 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m13",
+        "init_value": 0,
+        "label": "I19 Signal 13 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m14",
+        "init_value": 0,
+        "label": "I20 Signal 14 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m15",
+        "init_value": 0,
+        "label": "I21 Signal 15 [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "m16",
+        "init_value": 0,
+        "label": "I22 Signal 16 [1 bit]"
+      },
+      {
+        "type": "string",
+        "identifier": "t1",
+        "init_value": "",
+        "label": "I23 Text signal 1: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t2",
+        "init_value": "",
+        "label": "I24 Text signal 2: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t3",
+        "init_value": "",
+        "label": "I25 Text signal 3: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t4",
+        "init_value": "",
+        "label": "I26 Text signal 4: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t5",
+        "init_value": "",
+        "label": "I27 Text signal 5: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t6",
+        "init_value": "",
+        "label": "I28 Text signal 6: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t7",
+        "init_value": "",
+        "label": "I29 Text signal 7: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t8",
+        "init_value": "",
+        "label": "I30 Text signal 8: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t9",
+        "init_value": "",
+        "label": "I31 Text signal 9: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t10",
+        "init_value": "",
+        "label": "I32 Text signal 10: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t11",
+        "init_value": "",
+        "label": "I33 Text signal 11: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t12",
+        "init_value": "",
+        "label": "I34 Text signal 12: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t13",
+        "init_value": "",
+        "label": "I35 Text signal 13: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t14",
+        "init_value": "",
+        "label": "I36 Text signal 14: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t15",
+        "init_value": "",
+        "label": "I37 Text signal 15: ON|OFF|level [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "t16",
+        "init_value": "",
+        "label": "I38 Text signal 16: ON|OFF|level [text]"
+      },
+      {
+        "type": "number",
+        "identifier": "max",
+        "init_value": 2000,
+        "label": "I39 Max. entries (50-10000) [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "ack",
+        "init_value": 0,
+        "label": "I40 Acknowledge all (1) [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "clear",
+        "init_value": 0,
+        "label": "I41 Delete all (1) [1 bit]"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "identifier": "last",
+        "init_value": "",
+        "label": "O1 Last message [text]"
+      },
+      {
+        "type": "number",
+        "identifier": "count",
+        "init_value": 0,
+        "label": "O2 Number of entries [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "open",
+        "init_value": 0,
+        "label": "O3 Open messages (not acknowledged) [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "alarm",
+        "init_value": 0,
+        "label": "O4 Open alarm [1 bit]"
+      },
+      {
+        "type": "string",
+        "identifier": "status",
+        "init_value": "",
+        "label": "O5 Status [text]"
+      }
+    ],
+    "stores": [
+      {
+        "type": "string",
+        "identifier": "m01",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m02",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m03",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m04",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m05",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m06",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m07",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m08",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m09",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m10",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m11",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m12",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m13",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m14",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m15",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m16",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m17",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m18",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m19",
+        "init_value": ""
+      },
+      {
+        "type": "string",
+        "identifier": "m20",
+        "init_value": ""
+      }
+    ],
+    "timers": [
+      {
+        "identifier": "tick"
+      }
+    ],
+    "scripts": [
+      {
+        "filename": "hsl3_14784_meldungsspeicher.py"
+      }
+    ],
+    "translations": [
+      {
+        "language": "de",
+        "name": "14784 Meldungsspeicher",
+        "category": "Visualisierung",
+        "translation_inputs": [
+          {
+            "label": "E1 Visu-Server Instanz-ID (A1 von 14770) [Zahl]"
+          },
+          {
+            "label": "E2 Kennung (z. B. wetter) [Text]"
+          },
+          {
+            "label": "E3 Name [Text]"
+          },
+          {
+            "label": "E4 Stufe Freitext 0=Info 1=Warnung 2=Alarm [Zahl]"
+          },
+          {
+            "label": "E5 Jedes Telegramm melden (1) / nur Wechsel (0) [1 Bit]"
+          },
+          {
+            "label": "E6 Freitext [14 Byte Text]"
+          },
+          {
+            "label": "E7 Melder 1 [1 Bit]"
+          },
+          {
+            "label": "E8 Melder 2 [1 Bit]"
+          },
+          {
+            "label": "E9 Melder 3 [1 Bit]"
+          },
+          {
+            "label": "E10 Melder 4 [1 Bit]"
+          },
+          {
+            "label": "E11 Melder 5 [1 Bit]"
+          },
+          {
+            "label": "E12 Melder 6 [1 Bit]"
+          },
+          {
+            "label": "E13 Melder 7 [1 Bit]"
+          },
+          {
+            "label": "E14 Melder 8 [1 Bit]"
+          },
+          {
+            "label": "E15 Melder 9 [1 Bit]"
+          },
+          {
+            "label": "E16 Melder 10 [1 Bit]"
+          },
+          {
+            "label": "E17 Melder 11 [1 Bit]"
+          },
+          {
+            "label": "E18 Melder 12 [1 Bit]"
+          },
+          {
+            "label": "E19 Melder 13 [1 Bit]"
+          },
+          {
+            "label": "E20 Melder 14 [1 Bit]"
+          },
+          {
+            "label": "E21 Melder 15 [1 Bit]"
+          },
+          {
+            "label": "E22 Melder 16 [1 Bit]"
+          },
+          {
+            "label": "E23 Text Melder 1: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E24 Text Melder 2: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E25 Text Melder 3: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E26 Text Melder 4: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E27 Text Melder 5: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E28 Text Melder 6: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E29 Text Melder 7: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E30 Text Melder 8: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E31 Text Melder 9: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E32 Text Melder 10: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E33 Text Melder 11: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E34 Text Melder 12: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E35 Text Melder 13: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E36 Text Melder 14: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E37 Text Melder 15: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E38 Text Melder 16: EIN|AUS|Stufe [Text]"
+          },
+          {
+            "label": "E39 Max. Einträge (50-10000) [Zahl]"
+          },
+          {
+            "label": "E40 Alle quittieren (1) [1 Bit]"
+          },
+          {
+            "label": "E41 Alle löschen (1) [1 Bit]"
+          }
+        ],
+        "translation_outputs": [
+          {
+            "label": "A1 Letzte Meldung [Text]"
+          },
+          {
+            "label": "A2 Anzahl Einträge [Zahl]"
+          },
+          {
+            "label": "A3 Offene Meldungen (unquittiert) [Zahl]"
+          },
+          {
+            "label": "A4 Offener Alarm [1 Bit]"
+          },
+          {
+            "label": "A5 Status [Text]"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -5,17 +5,19 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 
 | ID | Baustein | aktuell |
 |---|---|---|
-| [14770](#14770-visu-server) | Visu-Server | 1.10 |
+| [14770](#14770-visu-server) | Visu-Server | 1.11 |
 | [14771](#14771-verlaufsspeicher-für-diagramme) | Verlaufsspeicher für Diagramme | 2.7 |
 | [14775](#14775-rlt-luftqualitätsregelung) | RLT Luftqualitätsregelung | 1.6 |
 | [14776](#14776-wrg-pumpenregelung) | WRG-Pumpenregelung | 1.0 |
 | [14777](#14777-kompressor-klappensteuerung) | Kompressor-Klappensteuerung | 1.2 |
 | [14778](#14778-szenen-server) | Szenen-Server | 4.2.1 |
 | [14783](#14783-kamera-proxy) | Kamera-Proxy | 0.4 |
+| [14784](#14784-meldungsspeicher) | Meldungsspeicher | 1.0 |
 
 ---
 
 ## 14770 Visu-Server
+- **1.11** (2026-11-11) – Meldungen: nimmt Meldungsspeicher 14784 an und liefert sie unter `api/messages` (Liste bzw. `?id=&n=&since=`), Quittieren über `POST api/messages/ack`; Sicherung/Einspielen enthält die Meldungen. Diagramme unverändert.
 - **1.10** (veröffentlicht 2026-11-10) – Diagrammseite: Legende klickbar (ein/aus), zweite Achse, Kennzahlen, Zeiträume 1 h bis 3 Jahre mit Schieberegler, Zoom per Aufziehen, Zeitachse immer über den ganzen Zeitraum. Einbau in die Gira-Visu über `@iframe=` und `extras=1`. `chart.svg` mit zweiter Achse und `hide=`; neu `chart.png`.
 - **1.9** – Diagramm als SVG-Bild (für die Experten-Visu).
 - **1.8** – Diagrammseite `chart` zum Einbetten, E5 Lese-Schlüssel.
@@ -61,3 +63,6 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 - **0.3** (2026-11-10) – Verbindungen bleiben offen, Anmeldung wird gemerkt, `/list` für den QC-Client.
 - **0.2** (2026-11-10) – Datentyp an jedem Ein-/Ausgang; ganze Kamera-URL als Adresse, `resolution`/`compression`/`camera` als Vorgabe; HTTP 400 wird ohne Zusatz-Parameter wiederholt; Fehlertext der Kamera wird angezeigt.
 - **0.1** (2026-11-10) – Prüffassung: bis zu 3 Axis-Kameras per Digest, Weiterleitung `https://<HS>/kamera/` auf Port 8095.
+
+## 14784 Meldungsspeicher
+- **1.0** (2026-11-11) – erste Version: eigenes Meldungsarchiv je Instanz, 16 Melder mit Text `EIN|AUS|Stufe`, Freitext-Eingang, Quittieren, Löschen, remanent; Abruf über Visu-Server 14770 ab v1.11.
