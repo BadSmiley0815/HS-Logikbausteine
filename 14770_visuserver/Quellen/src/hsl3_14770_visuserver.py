@@ -42,6 +42,7 @@ Ausgänge:
 
 Diagrammseite (v1.8):
   GET  chart?id=a,b&u=h&n=168&key=<Lese-Schlüssel>&title=…&refresh=60&nav=1&ymin=&ymax=&color=
+       (v1.12: ymin2/ymax2 für die rechte Achse, span = Mindest-Spanne; Temperatur standardmäßig 4 K)
        schlanke Seite nur mit dem Diagramm (Mausover mit Werten), zum Einbetten per iFrame
 
 Diagramm als Bild (v1.9):
@@ -212,6 +213,8 @@ var key=P.get('key')||'';if(!key){try{key=localStorage.getItem('hs-visu-key')||'
 var U=P.get('u')||'h', N=parseInt(P.get('n')||'0',10)||0;
 var REF=Math.max(10,parseInt(P.get('refresh')||'60',10)||60);
 var YMIN=P.has('ymin')?parseFloat(P.get('ymin')):null, YMAX=P.has('ymax')?parseFloat(P.get('ymax')):null;
+var YMIN2=P.has('ymin2')?parseFloat(P.get('ymin2')):null, YMAX2=P.has('ymax2')?parseFloat(P.get('ymax2')):null;
+var SPAN=P.has('span')?parseFloat(P.get('span')):null;  /* Mindest-Spanne der Achse (v1.12): Standard 4 bei Temperatur, sonst keine */
 var COL=['#2b6cb0','#d9480f','#2f9e44','#9c36b5','#c2255c','#0c8599','#e67700','#5c5f66'];
 if(P.get('color'))COL=P.get('color').split(',').map(function(c){return '#'+c.replace('#','');}).concat(COL);
 var NAV=[['i',60,'1 h'],['i',720,'12 h'],['i',1440,'24 h'],['h',48,'48 h'],['h',168,'7 Tage'],['h',720,'30 Tage'],['d',365,'1 Jahr',92],['d',730,'2 Jahre',92],['d',1095,'3 Jahre',92]];
@@ -288,7 +291,10 @@ function draw(){var W=C.clientWidth,H=C.clientHeight;if(!W||!H)return;
  if(!isFinite(lo[0])){SV.innerHTML='';G=null;msg(S.length&&!V.length?'Alle Werte ausgeblendet – Legende anklicken':'Noch keine Werte');return;}
  msg('');var two=units.length>1,ny=Math.max(2,Math.floor(H/40));
  function scale(k){var a=lo[k],b=hi[k];if(units[k]==='%'&&a>=0&&b<=100){var t=[];for(var v=0;v<=100;v+=ny>=5?20:25)t.push(v);return {a:0,b:100,t:t,st:20};}
-  if(k===0){if(YMIN!==null)a=YMIN;if(YMAX!==null)b=YMAX;}if(a===b){a-=1;b+=1;}return nice(a,b,ny);}
+  var fa=k===0?YMIN:YMIN2, fb=k===0?YMAX:YMAX2;
+  var sp=SPAN!==null?SPAN:(/°C|^C$|K$/.test(units[k]||'')?4:0);
+  if(sp>0&&fa===null&&fb===null&&b-a<sp){var m=(a+b)/2;a=m-sp/2;b=m+sp/2;}
+  if(fa!==null&&!isNaN(fa))a=fa;if(fb!==null&&!isNaN(fb))b=fb;if(a===b){a-=1;b+=1;}if(a>b){var q=a;a=b;b=q;}return nice(a,b,ny);}
  var ax=[scale(0)];if(two)ax.push(scale(1));
  var labs=ax.map(function(yt){var dec=Math.max(0,-Math.floor(Math.log10(yt.st)+1e-9));return yt.t.map(function(v){return fmt(v,dec);});});
  var wl=function(l){return 8+6.5*Math.max.apply(null,l.map(function(x){return x.length;}));};
@@ -393,9 +399,14 @@ load();setInterval(load,15000);
 
 DIAGPAGE = """<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Verläufe</title><style>""" + STYLE + r"""
+.sc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+#sIn{gap:6px;align-items:center}.sc input{width:70px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit}
 html,body{height:100%}.wrap{display:flex;flex-direction:column;height:100%;max-width:none}
 #fr{flex:1;min-height:360px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%}
-</style></head><body><div class="wrap"><h1>Verläufe</h1><div class="bar" id="grp"></div><iframe id="fr" src="about:blank"></iframe></div>""" + KEYBOX + r"""
+</style></head><body><div class="wrap"><h1>Verläufe</h1><div class="bar" id="grp"></div>
+<div class="bar sc">Skala links: <span class="chip" id="sAuto">Automatisch</span><span class="chip" id="sFix">Fest</span>
+<span id="sIn">von <input id="sLo" type="number" step="any"> bis <input id="sHi" type="number" step="any"> <button class="chip" id="sOk">Übernehmen</button></span>
+<span style="margin-left:6px">rechts (%): 0–100</span></div><iframe id="fr" src="about:blank"></iframe></div>""" + KEYBOX + r"""
 <script>""" + KEYJS + r"""
 var P=new URLSearchParams(location.search),G={},ORDER=[],CUR=P.get('g')||'';
 function grp(n){var m=n.match(/^(.*?)\s+(Ist|Soll|Stellwert)$/);return m?m[1]:n;}
@@ -403,9 +414,16 @@ api('api/histories').then(function(d){(d.histories||[]).forEach(function(h){var 
  if(!CUR||!G[CUR])CUR=ORDER[0]||'';
  document.getElementById('grp').innerHTML=ORDER.map(function(g){return '<span class="chip'+(g===CUR?' on':'')+'" data-g="'+esc(g)+'">'+esc(g)+'</span>';}).join('')||'Keine Verläufe 14771 angemeldet.';
  document.querySelectorAll('[data-g]').forEach(function(e){e.onclick=function(){CUR=e.dataset.g;show();};});show();}).catch(function(){});
-function show(){document.querySelectorAll('[data-g]').forEach(function(e){e.classList.toggle('on',e.dataset.g===CUR);});if(!CUR)return;
- var ids=G[CUR].map(function(h){return h.id;}).join(',');var k=getKey();
- document.getElementById('fr').src=BASE+'chart?id='+encodeURIComponent(ids)+'&u=i&n=1440&nav=1&title='+encodeURIComponent(CUR)+(k?'&key='+encodeURIComponent(k):'');}
+function sc(){try{return JSON.parse(localStorage.getItem('hs-verl-scale-'+CUR)||'null');}catch(e){return null;}}
+function setSc(v){try{if(v)localStorage.setItem('hs-verl-scale-'+CUR,JSON.stringify(v));else localStorage.removeItem('hs-verl-scale-'+CUR);}catch(e){}}
+function scUi(){var v=sc();document.getElementById('sAuto').classList.toggle('on',!v);document.getElementById('sFix').classList.toggle('on',!!v);
+ document.getElementById('sIn').style.display=v?'inline-flex':'none';if(v){document.getElementById('sLo').value=v.lo;document.getElementById('sHi').value=v.hi;}}
+document.getElementById('sAuto').onclick=function(){setSc(null);show();};
+document.getElementById('sFix').onclick=function(){var v=sc()||{lo:15,hi:25};setSc(v);show();};
+document.getElementById('sOk').onclick=function(){var lo=parseFloat(document.getElementById('sLo').value),hi=parseFloat(document.getElementById('sHi').value);if(!isNaN(lo)&&!isNaN(hi)&&lo!==hi){setSc({lo:Math.min(lo,hi),hi:Math.max(lo,hi)});show();}};
+function show(){document.querySelectorAll('[data-g]').forEach(function(e){e.classList.toggle('on',e.dataset.g===CUR);});if(!CUR)return;scUi();
+ var ids=G[CUR].map(function(h){return h.id;}).join(',');var k=getKey(),v=sc();
+ document.getElementById('fr').src=BASE+'chart?id='+encodeURIComponent(ids)+'&u=i&n=1440&nav=1&title='+encodeURIComponent(CUR)+(v?'&ymin='+v.lo+'&ymax='+v.hi:'')+(k?'&key='+encodeURIComponent(k):'');}
 </script></body></html>"""
 
 READ_ROUTES = ("api/ping", "api/histories", "api/history", "chart.svg", "chart.png", "api/messages")
