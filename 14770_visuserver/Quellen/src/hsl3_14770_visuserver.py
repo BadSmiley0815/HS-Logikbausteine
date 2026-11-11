@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14770 – Visu-Server (v1.11)
+HSL3 14770 – Visu-Server (v1.12)
 
 Datenzentrale für die HTML5-Visu (homeserver-webapp). Der HomeServer leitet
 https://<HS>/<Basis-Pfad>/… an diesen Baustein weiter (HSL3-Eingänge base_path /
@@ -13,6 +13,9 @@ Aufgaben:
       GET  api/messages               alle Archive (Name, Anzahl, offene Meldungen/Alarme)
       GET  api/messages?id=wetter&n=200&since=<seq>   Einträge, neueste zuerst
       POST api/messages/ack  {"id": "wetter"}        alle Einträge des Archivs quittieren
+  * Seiten (v1.12): meldungen (Meldungsliste mit Filter, Suche, Quittieren) und verlaeufe
+    (alle Verläufe nach Raum gruppiert, z. B. „Werkstatt Ist/Soll/Stellwert“ in einem Diagramm).
+    Schlüssel: ?key=…, sonst aus dem Browser (hs-visu-key bzw. Schlüssel der Szenen-Seite), sonst Abfrage.
   * Sichern/Wiederherstellen aller Daten als JSON
 
 Speicherung: komprimiert, verteilt auf remanente Speichervariablen mit je < 10.000 Zeichen
@@ -76,7 +79,7 @@ import urllib.parse
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.11"
+VERSION = "1.12"
 CFG_STORES = 10          # 10 × 9.900 Zeichen ≈ 99 KB komprimiert
 CHUNK = 9900
 MAX_BODY = 4 * 1024 * 1024
@@ -205,7 +208,7 @@ svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 var P=new URLSearchParams(location.search);
 var base=location.pathname.replace(/\/chart(\.html)?\/?$/,'/');
 var ids=(P.get('id')||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
-var key=P.get('key')||'';
+var key=P.get('key')||'';if(!key){try{key=localStorage.getItem('hs-visu-key')||'';if(!key){var _s=localStorage.getItem('hs-szenen-key')||'';try{_s=JSON.parse(_s);}catch(e){}key=_s||'';}}catch(e){}}
 var U=P.get('u')||'h', N=parseInt(P.get('n')||'0',10)||0;
 var REF=Math.max(10,parseInt(P.get('refresh')||'60',10)||60);
 var YMIN=P.has('ymin')?parseFloat(P.get('ymin')):null, YMAX=P.has('ymax')?parseFloat(P.get('ymax')):null;
@@ -325,6 +328,85 @@ window.addEventListener('resize',draw);document.addEventListener('mouseup',funct
 })();
 </script></body></html>
 """
+
+
+# ---------------------------------------------------------------- Seiten ab v1.12
+KEYJS = r"""
+function getKey(){var k=new URLSearchParams(location.search).get('key')||'';if(k)return k;
+ try{k=localStorage.getItem('hs-visu-key')||'';if(!k){var s=localStorage.getItem('hs-szenen-key')||'';try{s=JSON.parse(s);}catch(e){}k=s||'';}}catch(e){}return k;}
+function setKey(k){try{localStorage.setItem('hs-visu-key',k);}catch(e){}}
+var BASE=location.pathname.replace(/\/[^\/]*\/?$/,'/');
+function api(p,o){o=o||{};o.headers=Object.assign({'X-Visu-Key':getKey()},o.headers||{});o.cache='no-store';
+ return fetch(BASE+p,o).then(function(r){if(r.status===401){askKey();throw new Error('Schlüssel');}return r.json();});}
+function askKey(){var d=document.getElementById('kd');if(d)d.style.display='flex';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+"""
+STYLE = r"""
+:root{color-scheme:light;--bg:#f3f4f2;--panel:#fff;--ink:#1d2320;--muted:#66706b;--line:#e2e5e1;--acc:#2b6cb0;--warn:#b7791f;--warn-soft:#fbf1dc;--err:#c92a2a;--err-soft:#fde8e8;--ok:#2f8a4f}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#121514;--panel:#1c201e;--ink:#e9ece9;--muted:#9aa29d;--line:#2b302d;--acc:#6aa5df;--warn:#e3b158;--warn-soft:#3a3020;--err:#ff8787;--err-soft:#3a1d1d;--ok:#5cc07c}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:14px 16px 40px}
+h1{font-size:20px;margin:0 0 10px}.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:20px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chip.on{border-color:var(--acc);color:var(--acc);font-weight:600}
+input[type=search]{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 10px;font:inherit;min-width:180px;flex:1;max-width:320px}
+.badge{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:var(--err);color:#fff;font-size:11px;text-align:center;margin-left:4px}
+#kd{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:9}
+#kd div{background:var(--panel);padding:18px;border-radius:12px;display:flex;flex-direction:column;gap:10px;min-width:280px}
+#kd input{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--bg);color:var(--ink)}
+"""
+KEYBOX = r"""<div id="kd"><div><b>Schlüssel für den Visu-Server</b><input id="kin" type="password" autocomplete="off" placeholder="Schlüssel (E3 bzw. E5 von 14770)"><button class="chip on" onclick="setKey(document.getElementById('kin').value);location.reload()">Speichern</button></div></div>"""
+
+MSGPAGE = """<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meldungen</title><style>""" + STYLE + r"""
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+td,th{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{font-size:12px;color:var(--muted);font-weight:600}
+tr.l2 td{background:var(--err-soft)}tr.l1 td{background:var(--warn-soft)}tr.ack td{opacity:.6}
+.lv{font-size:11px;font-weight:600;padding:1px 7px;border-radius:9px;white-space:nowrap}
+.lv0{color:var(--muted);border:1px solid var(--line)}.lv1{color:var(--warn);border:1px solid var(--warn)}.lv2{color:#fff;background:var(--err)}
+.t{white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}.empty{padding:30px;text-align:center;color:var(--muted)}
+</style></head><body><div class="wrap"><h1>Meldungen</h1>
+<div class="bar" id="tabs"></div>
+<div class="bar"><input type="search" id="q" placeholder="Suchen …"><span class="chip" data-f="all">Alle</span><span class="chip" data-f="open">Offen</span><span class="chip" data-f="alarm">Nur Alarme</span>
+<button class="chip" id="ack" style="margin-left:auto">Alle quittieren</button></div>
+<div id="list"></div></div>""" + KEYBOX + r"""
+<script>""" + KEYJS + r"""
+var P=new URLSearchParams(location.search),CUR=P.get('id')||'',F='all',ARCH=[],ENT=[];
+var LV=['Info','Warnung','Alarm'];
+function fmt(t){var d=new Date(t),p=function(n){return (n<10?'0':'')+n;};return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
+function tabs(){var h=ARCH.map(function(a){return '<span class="chip'+(a.id===CUR?' on':'')+'" data-a="'+esc(a.id)+'">'+esc(a.name)+(a.open?'<span class="badge">'+a.open+'</span>':'')+'</span>';}).join('');
+ document.getElementById('tabs').innerHTML=h||'<span class="empty">Kein Meldungsspeicher 14784 angemeldet.</span>';
+ document.querySelectorAll('[data-a]').forEach(function(e){e.onclick=function(){CUR=e.dataset.a;load();};});}
+function draw(){var q=document.getElementById('q').value.toLowerCase();
+ var rows=ENT.filter(function(e){return (F==='all'||(F==='open'&&e.level>0&&!e.ack)||(F==='alarm'&&e.level===2))&&(!q||e.text.toLowerCase().indexOf(q)>=0);});
+ document.querySelectorAll('[data-f]').forEach(function(e){e.classList.toggle('on',e.dataset.f===F);});
+ document.getElementById('list').innerHTML=rows.length?'<table><tr><th>Zeit</th><th>Stufe</th><th>Meldung</th></tr>'+rows.map(function(e){
+  return '<tr class="l'+e.level+(e.ack?' ack':'')+'"><td class="t">'+fmt(e.t)+'</td><td><span class="lv lv'+e.level+'">'+LV[e.level]+'</span></td><td>'+esc(e.text)+(e.ack||!e.level?'':' <small style="color:var(--muted)">(offen)</small>')+'</td></tr>';}).join('')+'</table>'
+  :'<div class="empty">Keine Meldungen.</div>';}
+function load(){api('api/messages').then(function(d){ARCH=d.archives||[];if(!CUR&&ARCH.length)CUR=ARCH[0].id;tabs();
+ if(!CUR){ENT=[];draw();return;}return api('api/messages?id='+encodeURIComponent(CUR)+'&n=1000').then(function(r){ENT=r.entries||[];draw();});}).catch(function(e){});}
+document.querySelectorAll('[data-f]').forEach(function(e){e.onclick=function(){F=e.dataset.f;draw();};});
+document.getElementById('q').oninput=draw;
+document.getElementById('ack').onclick=function(){if(!CUR)return;api('api/messages/ack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:CUR})}).then(function(){setTimeout(load,2500);});};
+load();setInterval(load,15000);
+</script></body></html>"""
+
+DIAGPAGE = """<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verläufe</title><style>""" + STYLE + r"""
+html,body{height:100%}.wrap{display:flex;flex-direction:column;height:100%;max-width:none}
+#fr{flex:1;min-height:360px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%}
+</style></head><body><div class="wrap"><h1>Verläufe</h1><div class="bar" id="grp"></div><iframe id="fr" src="about:blank"></iframe></div>""" + KEYBOX + r"""
+<script>""" + KEYJS + r"""
+var P=new URLSearchParams(location.search),G={},ORDER=[],CUR=P.get('g')||'';
+function grp(n){var m=n.match(/^(.*?)\s+(Ist|Soll|Stellwert)$/);return m?m[1]:n;}
+api('api/histories').then(function(d){(d.histories||[]).forEach(function(h){var g=grp(h.name);if(!G[g]){G[g]=[];ORDER.push(g);}G[g].push(h);});
+ if(!CUR||!G[CUR])CUR=ORDER[0]||'';
+ document.getElementById('grp').innerHTML=ORDER.map(function(g){return '<span class="chip'+(g===CUR?' on':'')+'" data-g="'+esc(g)+'">'+esc(g)+'</span>';}).join('')||'Keine Verläufe 14771 angemeldet.';
+ document.querySelectorAll('[data-g]').forEach(function(e){e.onclick=function(){CUR=e.dataset.g;show();};});show();}).catch(function(){});
+function show(){document.querySelectorAll('[data-g]').forEach(function(e){e.classList.toggle('on',e.dataset.g===CUR);});if(!CUR)return;
+ var ids=G[CUR].map(function(h){return h.id;}).join(',');var k=getKey();
+ document.getElementById('fr').src=BASE+'chart?id='+encodeURIComponent(ids)+'&u=i&n=1440&nav=1&title='+encodeURIComponent(CUR)+(k?'&key='+encodeURIComponent(k):'');}
+</script></body></html>"""
 
 READ_ROUTES = ("api/ping", "api/histories", "api/history", "chart.svg", "chart.png", "api/messages")
 
@@ -1053,6 +1135,10 @@ class LogicModule:
                 return self._send(h, 200, "text/html; charset=utf-8", PAGE.encode("utf-8"))
             if route in ("chart", "chart.html"):
                 return self._send(h, 200, "text/html; charset=utf-8", CHART.encode("utf-8"))
+            if route in ("meldungen", "meldungen.html"):
+                return self._send(h, 200, "text/html; charset=utf-8", MSGPAGE.encode("utf-8"))
+            if route in ("verlaeufe", "verlaeufe.html"):
+                return self._send(h, 200, "text/html; charset=utf-8", DIAGPAGE.encode("utf-8"))
             if not self._authorized(h, params, read_only=(method == "GET" and route in READ_ROUTES)):
                 return self._json(h, 401, {"error": "Schlüssel fehlt oder falsch"})
             body = None

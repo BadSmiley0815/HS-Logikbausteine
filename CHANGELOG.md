@@ -5,7 +5,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 
 | ID | Baustein | aktuell |
 |---|---|---|
-| [14770](#14770-visu-server) | Visu-Server | 1.11 |
+| [14770](#14770-visu-server) | Visu-Server | 1.12 |
 | [14771](#14771-verlaufsspeicher-für-diagramme) | Verlaufsspeicher für Diagramme | 2.7 |
 | [14775](#14775-rlt-luftqualitätsregelung) | RLT Luftqualitätsregelung | 1.6 |
 | [14776](#14776-wrg-pumpenregelung) | WRG-Pumpenregelung | 1.0 |
@@ -17,6 +17,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 ---
 
 ## 14770 Visu-Server
+- **1.12** (2026-11-11) – neue Seiten `meldungen` (Meldungsliste der 14784 mit Filter, Suche, Quittieren) und `verlaeufe` (alle Verläufe nach Raum gruppiert in einem Diagramm). Schlüssel per `?key=` oder aus dem Browser, sonst Abfrage; `chart` nimmt den Schlüssel ebenfalls aus dem Browser.
 - **1.11** (2026-11-11) – Meldungen: nimmt Meldungsspeicher 14784 an und liefert sie unter `api/messages` (Liste bzw. `?id=&n=&since=`), Quittieren über `POST api/messages/ack`; Sicherung/Einspielen enthält die Meldungen. Diagramme unverändert.
 - **1.10** (veröffentlicht 2026-11-10) – Diagrammseite: Legende klickbar (ein/aus), zweite Achse, Kennzahlen, Zeiträume 1 h bis 3 Jahre mit Schieberegler, Zoom per Aufziehen, Zeitachse immer über den ganzen Zeitraum. Einbau in die Gira-Visu über `@iframe=` und `extras=1`. `chart.svg` mit zweiter Achse und `hide=`; neu `chart.png`.
 - **1.9** – Diagramm als SVG-Bild (für die Experten-Visu).

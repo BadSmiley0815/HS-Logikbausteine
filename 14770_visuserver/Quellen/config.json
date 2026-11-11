@@ -5,7 +5,7 @@
     "id": "14770",
     "name": "14770 Visu server",
     "hsl_filename": "14770_visuserver.hsl",
-    "version": "1.11",
+    "version": "1.12",
     "inputs": [
       {
         "type": "base_path",
