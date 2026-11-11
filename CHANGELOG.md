@@ -65,4 +65,4 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 - **0.1** (2026-11-10) – Prüffassung: bis zu 3 Axis-Kameras per Digest, Weiterleitung `https://<HS>/kamera/` auf Port 8095.
 
 ## 14784 Meldungsspeicher
-- **1.0** (2026-11-11) – erste Version: eigenes Meldungsarchiv je Instanz, 16 Melder mit Text `EIN|AUS|Stufe`, Freitext-Eingang, Quittieren, Löschen, remanent; Abruf über Visu-Server 14770 ab v1.11.
+- **1.0** (2026-11-11) – erste Version: eigenes Meldungsarchiv je Instanz, 16 Melder mit Text `EIN;AUS;Stufe EIN;Stufe AUS`, Freitext-Eingang, Quittieren, Löschen, remanent; Abruf über Visu-Server 14770 ab v1.11.

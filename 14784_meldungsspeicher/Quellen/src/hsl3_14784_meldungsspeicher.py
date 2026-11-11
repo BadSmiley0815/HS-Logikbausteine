@@ -6,12 +6,13 @@ Eigenes Meldungsarchiv im HomeServer – unabhängig von den Meldungsarchiven de
 Eine Instanz = ein Archiv (z. B. „Wetterstation“, „Alarmanlage“).
 
 Melder 1–16 (E7–E22, 1 Bit/Zahl) mit Text je Melder (E23–E38):
-    "Text EIN|Text AUS|Stufe EIN|Stufe AUS"
+    "Text EIN;Text AUS;Stufe EIN;Stufe AUS"   (Trennzeichen ";" – "|" geht auch, ist aber im
+                                              Experten als Festwert ungünstig)
       - nur "Windalarm"            → „Windalarm – ein“ / „Windalarm – aus“, Stufe 1
-      - "Alarm Tor 1|"             → nur EIN wird gemeldet (AUS leer = keine Meldung)
-      - "|Netz ok"                 → nur AUS wird gemeldet
-      - "Scharf|Unscharf|0"        → Stufe 0 = Info, 1 = Warnung, 2 = Alarm (Standard EIN 1, AUS 0)
-      - "Spannung ok|Spannung ausgefallen|0|2" → AUS wird als Alarm gemeldet
+      - "Alarm Tor 1;"             → nur EIN wird gemeldet (AUS leer = keine Meldung)
+      - ";Netz ok"                 → nur AUS wird gemeldet
+      - "Scharf;Unscharf;0"        → Stufe 0 = Info, 1 = Warnung, 2 = Alarm (Standard EIN 1, AUS 0)
+      - "Spannung ok;Spannung ausgefallen;0;2" → AUS wird als Alarm gemeldet
     Gemeldet wird nur bei Wertwechsel (E5 = 1: jedes Telegramm). Werte ≠ 0 zählen als EIN.
 E6 Freitext (14-Byte-Text oder Text): jeder neue Text wird mit Stufe aus E4 gespeichert.
 
@@ -55,7 +56,7 @@ def parse_text(spec, default_level=1):
     spec = (spec or "").strip()
     if not spec:
         return None, None, default_level, 0
-    parts = spec.split("|")
+    parts = spec.split(";") if ";" in spec else spec.split("|")   # ";" (empfohlen) oder "|"
     if len(parts) == 1:
         return spec + " – ein", spec + " – aus", default_level, 0
     on = parts[0].strip() or None

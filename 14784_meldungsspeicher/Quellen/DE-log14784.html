@@ -3,13 +3,13 @@
 <p><span class="b">Baustein-ID 14784</span><span class="b">Version 1.0</span><span class="b">HSL 3.0</span><span class="b">Kontext hsl3.visuserver</span></p>
 <p>Eigenes Meldungsarchiv im HomeServer – unabhängig von den Meldungsarchiven des Experten. Eine Instanz = ein Archiv (z. B. „Wetterstation“, „Alarmanlage“). Die Einträge bleiben nach Neustart und Projektübertragung erhalten (20 remanente Speichervariablen, komprimiert).</p>
 <h3>Melder</h3>
-<p>Bis zu 16 Melder (E7–E22). Zu jedem Melder ein Text (E23–E38) im Format <code>Text EIN|Text AUS|Stufe EIN|Stufe AUS</code>:</p>
+<p>Bis zu 16 Melder (E7–E22). Zu jedem Melder ein Text (E23–E38) im Format (Trennzeichen <b>;</b>, „|“ geht auch) <code>Text EIN;Text AUS;Stufe EIN;Stufe AUS</code>:</p>
 <table><tr><th>Text</th><th>Ergebnis</th></tr>
 <tr><td><code>Windalarm</code></td><td>„Windalarm – ein“ (Warnung) / „Windalarm – aus“ (Info)</td></tr>
-<tr><td><code>Frostalarm||2</code></td><td>nur EIN wird gemeldet, als Alarm</td></tr>
-<tr><td><code>|Spannung wieder da</code></td><td>nur AUS wird gemeldet</td></tr>
-<tr><td><code>Scharf|Unscharf|0</code></td><td>beides als Info</td></tr>
-<tr><td><code>Spannung ok|Spannung ausgefallen|0|2</code></td><td>EIN als Info, AUS als Alarm (für Melder, bei denen 0 = Fehler)</td></tr></table>
+<tr><td><code>Frostalarm;;2</code></td><td>nur EIN wird gemeldet, als Alarm</td></tr>
+<tr><td><code>;Spannung wieder da</code></td><td>nur AUS wird gemeldet</td></tr>
+<tr><td><code>Scharf;Unscharf;0</code></td><td>beides als Info</td></tr>
+<tr><td><code>Spannung ok;Spannung ausgefallen;0;2</code></td><td>EIN als Info, AUS als Alarm (für Melder, bei denen 0 = Fehler)</td></tr></table>
 <p>Stufe: 0 = Info, 1 = Warnung (Standard), 2 = Alarm. Ohne Angabe: EIN = Warnung, AUS = Info. Gemeldet wird nur bei Wertwechsel (E5 = 1: jedes Telegramm). Jeder Wert ≠ 0 gilt als EIN. Werte beim Start werden gemerkt, aber nicht gemeldet.</p>
 <p>E6 Freitext: jeder neue Text (z. B. 14-Byte-Text aus einer Logik) wird mit der Stufe aus E4 gespeichert.</p>
 <h3>Anzeige</h3>
