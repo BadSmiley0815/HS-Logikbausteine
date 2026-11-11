@@ -5,7 +5,7 @@ Jeder Ordner enthält die importierbare `.hslz` bzw. `.hsl` und eine README.
 
 Passend dazu: [QC-Client](https://github.com/BadSmiley0815/QC-Client) – der QuadClient im Browser.
 
-Stand 10.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14784**
+Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14784**
 
 ## Bausteine
 
@@ -19,7 +19,7 @@ Stand 10.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14784**
 | 14775 | [RLT Luftqualitätsregelung](14775_RLT_Luftqualitaet/) | 1.6 |  |
 | 14776 | [WRG-Pumpenregelung](14776_WRG_Pumpenregelung/) | 1.0 |  |
 | 14777 | [Kompressor-Klappensteuerung](14777_Kompressor_Klappensteuerung/) | 1.2 |  |
-| 14778 | [Szenen-Server](14778_szenenserver/) | 4.2 | 8093 `/szenen/` |
+| 14778 | [Szenen-Server](14778_szenenserver/) | 4.2.1 | 8093 `/szenen/` |
 | 14779 | Zeitschaltuhr + Aufzeichnung – geplant | – | 8094 (reserviert) |
 | 14780 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14781 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
@@ -76,6 +76,7 @@ Axis-Kameras per Digest für den QC-Client.
 - Neue Bausteine bekommen die nächste freie ID aus 14770–14789.
 - HTTP-Bausteine: der HS leitet https://<HS>/<Basis-Pfad>/ an den Port weiter – gleiche Adresse und gleiches Zertifikat wie der HS. Port nie 0 (sonst 503) und nie doppelt.
 - iKOs per Experte-CSV-Import anlegen (Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren).
+- HTTP-Bausteine: E1/E2 in config.json mit Typ "base_path" bzw. "destination_port" deklarieren (nicht string/number) – sonst fehlt die Kennung in der .hsl (5000-Zeile endet auf |0|0) und der HS legt keine Weiterleitung an (404, obwohl der Baustein „Bereit“ meldet).
 
 ## Lizenz
 

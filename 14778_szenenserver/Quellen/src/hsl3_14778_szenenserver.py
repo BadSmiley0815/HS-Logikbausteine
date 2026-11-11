@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14778 – Szenen-Server (v4.2)
+HSL3 14778 – Szenen-Server (v4.2.1)
 
 Szenensteuerung mit eigener Webseite. Ersetzt die händischen Gitter aus
 Matrix-Bausteinen (Select/Signal) pro Funktion.
@@ -82,7 +82,7 @@ import urllib.parse
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "4.2"
+VERSION = "4.2.1"
 BLOCK_ID = 14778
 CFG_STORES = 10
 CHUNK = 9900

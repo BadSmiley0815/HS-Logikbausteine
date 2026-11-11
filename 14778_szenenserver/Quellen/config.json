@@ -5,16 +5,16 @@
     "id": "14778",
     "name": "14778 Scene server",
     "hsl_filename": "14778_szenenserver.hsl",
-    "version": "4.2",
+    "version": "4.2.1",
     "inputs": [
       {
-        "type": "string",
+        "type": "base_path",
         "identifier": "base_path",
         "init_value": "szenen",
         "label": "I1 Base path"
       },
       {
-        "type": "number",
+        "type": "destination_port",
         "identifier": "destination_port",
         "init_value": 8093,
         "label": "I2 Port"

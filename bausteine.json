@@ -1,5 +1,5 @@
 {
- "stand": "10.11.2026",
+ "stand": "11.11.2026",
  "bereich": "14770–14789",
  "bausteine": [
   {
@@ -109,7 +109,7 @@
   {
    "id": 14778,
    "name": "Szenen-Server",
-   "version": "4.2",
+   "version": "4.2.1",
    "art": "HSL3",
    "kategorie": "Visualisierung",
    "port": 8093,
@@ -189,6 +189,7 @@
   "ID steht im Namen (alle Sprachen), ID und Version stehen in der Hilfe.",
   "Neue Bausteine bekommen die nächste freie ID aus 14770–14789.",
   "HTTP-Bausteine: der HS leitet https://<HS>/<Basis-Pfad>/ an den Port weiter – gleiche Adresse und gleiches Zertifikat wie der HS. Port nie 0 (sonst 503) und nie doppelt.",
-  "iKOs per Experte-CSV-Import anlegen (Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren)."
+  "iKOs per Experte-CSV-Import anlegen (Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren).",
+  "HTTP-Bausteine: E1/E2 in config.json mit Typ \"base_path\" bzw. \"destination_port\" deklarieren (nicht string/number) – sonst fehlt die Kennung in der .hsl (5000-Zeile endet auf |0|0) und der HS legt keine Weiterleitung an (404, obwohl der Baustein „Bereit“ meldet)."
  ]
 }
