@@ -28,7 +28,7 @@ Stand 12.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14786**
 | 14782 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14783 | [Kamera-Proxy](14783_kameraproxy/) | 0.4 (Prüffassung) | 8095 `/kamera/` |
 | 14784 | [Meldungsspeicher](14784_meldungsspeicher/) | 1.1 |  |
-| 14785 | [Bewässerung 5 Kreise (kaskadierbar)](14785_Bewaesserung/) | 1.0 |  |
+| 14785 | [Bewässerung 5 Kreise (kaskadierbar)](14785_Bewaesserung/) | 1.1 |  |
 
 ## Auf einen Blick
 
@@ -80,7 +80,7 @@ Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Text
 
 ### [14785 Bewässerung 5 Kreise (kaskadierbar)](14785_Bewaesserung/)
 
-Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge); Endzeit statt Startzeit, Lauf 1/2 (12 h), Regen-/Frostsperre, Parallel/Überlappung, Netzteil 24 V, Pumpe, Nachspeisung, Trockenlauf.
+Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge); Endzeit statt Startzeit, Lauf 1/2 (12 h), Regen-/Frostsperre, Parallel/Überlappung, Netzteil 24 V, Pumpe, Nachspeisung, Trockenlauf, Zeit ab Ventil-Rückmeldung (auch bei Fremdschaltung).
 
 <img src="14785_Bewaesserung/bilder/beispiel_ablauf.png" width="640" alt="Bewässerung 5 Kreise (kaskadierbar)">
 

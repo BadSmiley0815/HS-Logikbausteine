@@ -13,7 +13,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 | [14778](#14778-szenen-server) | Szenen-Server | 4.3 |
 | [14783](#14783-kamera-proxy) | Kamera-Proxy | 0.4 |
 | [14784](#14784-meldungsspeicher) | Meldungsspeicher | 1.1 |
-| [14785](#14785-bewässerung-5-kreise-kaskadierbar) | Bewässerung 5 Kreise (kaskadierbar) | 1.0 |
+| [14785](#14785-bewässerung-5-kreise-kaskadierbar) | Bewässerung 5 Kreise (kaskadierbar) | 1.1 |
 
 ---
 
@@ -74,4 +74,5 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 - **1.0** (2026-11-11) – erste Version: eigenes Meldungsarchiv je Instanz, 16 Melder mit Text `EIN;AUS;Stufe EIN;Stufe AUS`, Freitext-Eingang, Quittieren, Löschen, remanent; Abruf über Visu-Server 14770 ab v1.11.
 
 ## 14785 Bewässerung 5 Kreise (kaskadierbar)
+- **1.1** (2026-11-12) – Ventil-Rückmeldung je Kreis (E37, E43, E49, E55, E61): Laufzeit zählt ab Rückmeldung, egal von wo der Kanal eingeschaltet wird; extern eingeschaltet ohne Programm → nur dieser Kreis läuft seine Zeit (mit Netzteil/Pumpe); extern ausgeschaltet → Kreis beendet, ein laufendes Programm geht zum nächsten Kreis; fehlt die Rückmeldung 10 s → Zeit läuft trotzdem + Störung. Kreis-Eingänge neu nummeriert (E32–E61).
 - **1.0** (2026-11-12) – erste Version: 5 Kreise je Baustein, Kaskade Master/Folge über Text-iKOs, Endzeit statt Startzeit (Lauf 1, Lauf 2 = +12 h für Kreise mit Zyklus 2), Laufzeit 0 = überspringen, Wetterfaktor, Parallel je Kreis + max. gleichzeitig, Pause/Überlappung, Regensperre je Kreis mit Einschaltverzögerung/Nachwirkzeit, Frostsperre, Watchdog, Netzteil 24 V (3 Modi), Pumpe mit Verzögerung/Druckentlastung, Nachspeisung mit Schwimmer min/max, Trockenlaufschutz.

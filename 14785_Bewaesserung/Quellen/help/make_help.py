@@ -35,6 +35,7 @@ INFO_DE = {
     "refill_run": "1 = nachspeisen nur während eines Laufs.",
     "refill_max": "Watchdog Nachspeisung. Mit Max-Schwimmer → Störung bei Überschreitung.",
     "dry": "Zisterne länger leer → Pumpe aus, Ventile zu, Lauf pausiert; Restzeiten bleiben erhalten.",
+    "fb": "Status-KO des Aktorkanals. Angeschlossen: die Laufzeit zählt ab Rückmeldung 1 – auch wenn der Kanal am Taster/Aktor eingeschaltet wurde. Rückmeldung 0 beendet den Kreis. Kommt 10 s nach dem Einschalten keine Rückmeldung, läuft die Zeit trotzdem und es gibt eine Störung. Nicht angeschlossen: Zeit ab Schaltbefehl.",
     "ack": "1 löscht gespeicherte Störungen (Watchdog, Nachspeisung).",
 }
 INFO_OUT_DE = {
@@ -70,6 +71,10 @@ T = {
                 "= 1: läuft neben anderen Parallel-Kreisen, bis E16 erreicht ist (Tropfschläuche). Parallel nur innerhalb eines Bausteins – Tropfer-Kreise in denselben Baustein legen.",
                 "<b>Handstart</b> (Kreis-Eingang „Hand“ = 1): läuft kein Programm, startet ein Hand-Lauf (A5 = 3) mit Netzteil und Pumpe. "
                 "Läuft gerade ein Programm, wird der Kreis hinten angehängt bzw. nach dem Programm gestartet. „Hand“ = 0 bricht ab.",
+                "<b>Ventil-Rückmeldung (ab 1.1):</b> Die Zeit eines Kreises startet mit der Rückmeldung des Aktors, egal von wo der Kanal eingeschaltet wird. "
+                "<b>Extern eingeschaltet ohne Programm:</b> nur dieser Kreis läuft seine Laufzeit (mit Netzteil und Pumpe), danach aus – kein weiterer Kreis. "
+                "<b>Extern ausgeschaltet:</b> Kreis beendet; läuft ein Programm, geht es mit dem nächsten Kreis weiter. "
+                "<b>Während eines Programms extern eingeschaltet:</b> läuft einzeln mit seiner Zeit daneben, das Programm läuft unverändert weiter (der Kreis entfällt im Programm).",
                 "<b>Regensperre</b> je Kreis wählbar. Erst nach E11 Sekunden Dauerregen aktiv, danach noch E12 Minuten. "
                 "Ein laufender Kreis mit Regensperre wird abgebrochen, wartende werden übersprungen, Kreise ohne Regensperre laufen weiter. Nicht nachgeholt.",
                 "<b>Frostsperre</b> für alle Kreise (Hysterese 1 K). Automatikstart entfällt; Handstart je nach E15.",
@@ -105,7 +110,8 @@ T = {
              "verwenden und A11/A13 (Text) anzeigen. Lange Texte (A18–A20) über Text-iKOs.",
         th_in=("Nr.", "Eingang", "Start", "Hinweis"), th_out=("Nr.", "Ausgang", "Hinweis"),
         h_in="Eingänge", h_out="Ausgänge", h_ver="Versionen",
-        versions=[("1.0", "erste Version: 5 Kreise, Kaskade, Lauf 1/2 mit Endzeit, Regen/Frost, Netzteil/Pumpe/Nachspeisung, Trockenlauf")],
+        versions=[("1.1", "Ventil-Rückmeldung je Kreis (E37, E43, E49, E55, E61): Zeit ab Rückmeldung, extern geschaltete Kreise laufen ihre Zeit und werden abgeschaltet, Störung bei fehlender Rückmeldung. Die Kreis-Eingänge sind dadurch neu nummeriert (E32–E61)."),
+                  ("1.0", "erste Version: 5 Kreise, Kaskade, Lauf 1/2 mit Endzeit, Regen/Frost, Netzteil/Pumpe/Nachspeisung, Trockenlauf")],
     ),
     "en": dict(
         title="Irrigation 5 circuits (cascadable)",
@@ -121,6 +127,7 @@ T = {
                 "Parallel only within one block.",
                 "<b>Manual start</b> (circuit input = 1): without a running program a manual run (O5 = 3) starts incl. PSU and pump; during a program the circuit is appended or started afterwards. 0 stops it.",
                 "<b>Rain lock</b> per circuit, active after I11 s of continuous rain, held for I12 min. Running circuits with rain lock are stopped, waiting ones skipped.",
+                "<b>Valve feedback (from 1.1):</b> a circuit's time starts with the actuator feedback, no matter where the channel was switched on. Switched on externally without a program: only this circuit runs its time, then off. Switched off externally: circuit finished; a running program continues with the next circuit.",
                 "<b>Frost lock</b> for all circuits (1 K hysteresis). <b>Watchdog</b> I19. After a HS restart all valves are closed.",
             ]),
             ("Supply (master only)", [
@@ -142,7 +149,7 @@ T = {
         warn="To be verified on the HS: time object (DPT 10) at I8/O10/O12 – otherwise use a 14 byte text \"06:00\" at I8 and O11/O13.",
         th_in=("No.", "Input", "Init", "Note"), th_out=("No.", "Output", "Note"),
         h_in="Inputs", h_out="Outputs", h_ver="Versions",
-        versions=[("1.0", "first version")],
+        versions=[("1.1", "valve feedback per circuit; circuit inputs renumbered (I32–I61)"), ("1.0", "first version")],
     ),
 }
 

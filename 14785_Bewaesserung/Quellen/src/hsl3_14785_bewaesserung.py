@@ -21,7 +21,8 @@ import math
 import time
 
 BLOCK_ID = 14785
-BLOCK_VERSION = "1.0"
+BLOCK_VERSION = "1.1"
+FB_TIMEOUT = 10            # s ohne Rueckmeldung -> Zeit startet trotzdem + Stoerung
 N = 5                       # Kreise je Baustein
 DAY = 86400
 HALF = 43200
@@ -70,6 +71,7 @@ CIRCUIT_INPUTS = [   # je Kreis n
     ("rain", 1, "Regensperre beachten [1 Bit]", "observe rain lock [1 bit]"),
     ("par", 0, "Parallel erlaubt [1 Bit]", "parallel allowed [1 bit]"),
     ("hand", 0, "Hand Start/Stopp [1 Bit]", "manual start/stop [1 bit]"),
+    ("fb", 0, "Ventil Rueckmeldung [1 Bit]", "valve feedback [1 bit]"),
 ]
 
 GENERAL_OUTPUTS = [
@@ -247,6 +249,7 @@ class Engine(object):
         self.running = {}        # k -> {"end","start","par","rain","hand"}
         self.last_close = None
         self.hand_pending = []   # Kreisindizes 0..N-1
+        self.fb_used = [False] * N   # Rueckmeldung angeschlossen (Telegramm empfangen)
         self.phase = "idle"      # idle | prep | own | down
         self.lauf = 0
         self.run_id = 0
@@ -364,9 +367,55 @@ class Engine(object):
         return own
 
     # ------------------------------------------------------- Ablauf
-    def _open(self, it, now):
-        self.running[it["k"]] = {"end": now + it["d"], "start": now, "par": it["par"],
-                                 "rain": it["rain"], "hand": it["hand"]}
+    def _open(self, it, now, ext=False):
+        self.running[it["k"]] = {"end": now + it["d"], "start": now, "d": it["d"], "par": it["par"],
+                                 "rain": it["rain"], "hand": it["hand"], "ext": ext,
+                                 "conf": ext or not self.fb_used[it["k"]], "cmd": now}
+
+    def _confirm(self, k, now):
+        r = self.running[k]
+        r["conf"], r["start"], r["end"] = True, now, now + r["d"]
+
+    def close_due(self, now, P):
+        """Zeiten fuehren: Start erst mit Rueckmeldung, Ablauf, Watchdog."""
+        wd = P["wd"] * 60.0
+        for k in list(self.running):
+            r = self.running[k]
+            if not r["conf"]:
+                if self.fb_used[k] and now - r["cmd"] < FB_TIMEOUT:
+                    r["start"], r["end"] = now, now + r["d"]     # Zeit laeuft noch nicht
+                    continue
+                self._confirm(k, now)
+                if self.fb_used[k]:
+                    self._fault(now, "%s keine Rueckmeldung" % self.cn(k))
+                continue
+            if now >= r["end"] - 1e-9:
+                self._close(k, now)
+            elif wd > 0 and now - r["start"] > wd + 1:
+                self._close(k, now)
+                self._fault(now, "Watchdog %s" % self.cn(k))
+
+    def fb_event(self, k, on, now, P):
+        self.fb_used[k] = True
+        r = self.running.get(k)
+        if on:
+            if r is not None:
+                if not r["conf"]:
+                    r["cmd"] = now - FB_TIMEOUT        # naechster Takt bestaetigt
+                    self._confirm(k, now)
+                return
+            it = self._item(k, True, P)
+            if it["d"] <= 0:
+                self._note(now, "%s extern ein, keine Laufzeit" % self.cn(k))
+                return
+            self.queue = [q for q in self.queue if q["k"] != k]
+            if k in self.hand_pending:
+                self.hand_pending.remove(k)
+            self._open(it, now, ext=True)
+            self._note(now, "%s extern eingeschaltet" % self.cn(k))
+        elif r is not None and r["conf"]:
+            self._close(k, now)
+            self._note(now, "%s extern ausgeschaltet" % self.cn(k))
 
     def _close(self, k, now):
         if k in self.running:
@@ -438,15 +487,8 @@ class Engine(object):
 
     def schedule(self, now, P):
         """Ventile schliessen/oeffnen. Rueckgabe True, wenn eigener Teil fertig."""
-        wd = P["wd"] * 60.0
-        for k in list(self.running):
-            r = self.running[k]
-            if now >= r["end"] - 1e-9:
-                self._close(k, now)
-            elif wd > 0 and now - r["start"] > wd + 1:
-                self._close(k, now)
-                self._fault(now, "Watchdog %s" % self.cn(k))
-        run = [(r["end"], r["par"]) for r in self.running.values()]
+        self.close_due(now, P)
+        run = [(r["end"], r["par"]) for r in self.running.values() if not r["ext"]]
         while self.queue and can_start(self.queue[0]["par"], run, now, self.last_close, P):
             it = self.queue.pop(0)
             if it["d"] <= 0:
@@ -517,6 +559,10 @@ class Engine(object):
                 k = int(key[1:key.index("_")]) - 1
                 if 0 <= k < N:
                     self.hand_event(k, _bit(val), now, rain, frost, P)
+            elif key.startswith("k") and key.endswith("_fb"):
+                k = int(key[1:key.index("_")]) - 1
+                if 0 <= k < N:
+                    self.fb_event(k, _bit(val), now, P)
         return stop
 
     # ................................................................ Master
@@ -603,7 +649,7 @@ class Engine(object):
             else:
                 self._start_session(1, now, rain, frost, P)
         # Handanforderung ohne laufendes Programm -> Hand-Lauf
-        if self.phase == "idle" and (self.hand_pending or self.fb.get("req")):
+        if self.phase == "idle" and (self.hand_pending or self.fb.get("req") or self.running):
             self._start_session(3, now, rain, frost, P)
 
         # Trockenlauf (nur wenn Schwimmer min belegt)
@@ -631,6 +677,8 @@ class Engine(object):
         ready = self._psu(now, session or self.refill, mode, pre)
 
         # Ablauf
+        if not self.hold:
+            self.close_due(now, P)          # auch extern geschaltete Kreise ohne Programm
         if self.phase != "idle":
             if not self.hold:
                 self.apply_locks(now, rain, frost, P)
@@ -641,7 +689,7 @@ class Engine(object):
                     if self.has_down():
                         self.phase = "down"
                         self.tok_sent = self.run_id
-                    else:
+                    elif not self.running:
                         self._end_session(now)
             elif self.phase == "own" and self.hold:
                 pass
@@ -806,6 +854,8 @@ class Engine(object):
         elif not tok:
             self.last_tok = 0
         hold = bool(c.get("hold"))
+        if not hold:
+            self.close_due(now, P)
         if self.phase != "idle":
             if hold:
                 if self.running:
@@ -836,7 +886,8 @@ class Engine(object):
             rems.append(float(self.fb.get("rem", 0)))
         d["rem"] = round(max(rems + [0.0]), 1)
         d["done"] = self.done_id
-        d["req"] = 1 if (self.hand_pending or self.fb.get("req")) else 0
+        d["req"] = 1 if (self.hand_pending or self.fb.get("req") or
+                         (self.running and self.phase in ("idle", "fin"))) else 0
         d["act"] = [self.first() + k for k in sorted(self.running)] + list(self.fb.get("act", []))
         active = self.phase in ("own", "down", "done")
         rest = self.remaining(now, P) if active else 0.0

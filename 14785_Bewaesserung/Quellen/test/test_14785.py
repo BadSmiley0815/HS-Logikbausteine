@@ -292,6 +292,93 @@ s.set(0, k5_t=2, k5_hand=1)
 s.run(hm(5, 40, 1), hm(6, 5), ("k5_valve",))
 check("Hand waehrend Programm: hinten angehaengt (nach K4, 06:00)", s.times(0, "k5_valve", 1) == [hm(6)], s.times(0, "k5_valve", 1))
 
+# ------------------------------------------------------------ 12c Rueckmeldung (v1.1)
+
+
+class SimFB(Sim):
+    """Wie Sim, dazu ein Aktor: Rueckmeldung folgt dem Ventil nach `delay` s;
+    dead = Kreise, deren Aktor nicht reagiert."""
+
+    def __init__(self, n_follow=0, delay=2, dead=(), **kw):
+        Sim.__init__(self, n_follow, **kw)
+        self.delay, self.dead, self.pend, self.cur = delay, set(dead), [], {}
+
+    def step(self, now):
+        for item in [p for p in self.pend if p[0] <= now]:
+            self.pend.remove(item)
+            _t, i, key, val = item
+            self.blocks[i].set_inputs({key: val}, [key])
+        outs = Sim.step(self, now)
+        for i, o in enumerate(outs):
+            for k in range(1, 6):
+                v = o["k%d_valve" % k]
+                if self.cur.get((i, k)) != v:
+                    self.cur[(i, k)] = v
+                    if (i, k) not in self.dead:
+                        self.pend.append((now + self.delay, i, "k%d_fb" % k, v))
+        return outs
+
+    def extern(self, i, k, v):
+        self.cur[(i, k)] = v
+        self.set(i, **{"k%d_fb" % k: v})
+
+
+fbbase = dict(base, k1_fb=0, k2_fb=0, k4_fb=0)
+s = SimFB(**fbbase)
+for k in (1, 2, 4):                       # Rueckmeldung angeschlossen (Telegramm 0 beim Start)
+    s.set(0, **{"k%d_fb" % k: 0})
+s.run(hm(5, 30), hm(6, 2), ("k1_valve", "k2_valve", "k4_valve", "running"))
+on1, off1 = s.times(0, "k1_valve", 1)[0], s.times(0, "k1_valve", 0)[-1]
+check("RM: K1 laeuft 10 min ab Rueckmeldung (2 s spaeter)", off1 - on1 == 602, off1 - on1)
+check("RM: Lauf endet ~6 s spaeter (3 Kreise x 2 s)", s.times(0, "k4_valve", 0)[-1] == hm(6, 0, 6))
+
+s = SimFB(**fbbase)
+s.run(hm(12), hm(12, 0, 2))
+s.extern(0, 2, 1)                          # K2 am Taster ein, kein Programm
+o = s.run(hm(12, 0, 3), hm(12, 0, 10))
+check("Extern ein: Netzteil an, Ventil-Ausgang 1, Hand-Lauf", o[0]["psu"] == 1 and o[0]["k2_valve"] == 1 and o[0]["run_no"] == 3)
+s.run(hm(12, 0, 11), hm(12, 6), ("k2_valve", "k1_valve", "k4_valve", "running"))
+check("Extern ein: nach 5 min aus", s.times(0, "k2_valve", 0)[-1] == hm(12, 5, 3), time.strftime("%H:%M:%S", time.gmtime(s.times(0, "k2_valve", 0)[-1])))
+check("Extern ein: kein weiterer Kreis", not s.times(0, "k1_valve", 1) and not s.times(0, "k4_valve", 1))
+check("Extern ein: Lauf beendet", s.blocks[0].out["running"] == 0)
+
+s.extern(0, 4, 1)
+s.run(hm(13), hm(13, 1))
+s.extern(0, 4, 0)                          # extern wieder aus
+o = s.run(hm(13, 1, 1), hm(13, 1, 3))
+check("Extern aus: Kreis beendet, sonst nichts", o[0]["k4_valve"] == 0 and o[0]["running"] == 0 and o[0]["k1_valve"] == 0)
+
+s = SimFB(**fbbase)
+for k in (1, 2, 4):
+    s.set(0, **{"k%d_fb" % k: 0})
+s.run(hm(5, 36), hm(5, 40), ("k1_valve", "k2_valve"))
+s.extern(0, 1, 0)                          # Programm laeuft, K1 extern aus
+s.run(hm(5, 40, 1), hm(5, 40, 5), ("k1_valve", "k2_valve"))
+check("Programm: K1 extern aus -> K2 startet", s.times(0, "k2_valve", 1) and s.times(0, "k2_valve", 1)[0] <= hm(5, 40, 2))
+s.extern(0, 4, 1)                          # anderer Kreis extern ein, waehrend K2 laeuft
+s.run(hm(5, 40, 6), hm(5, 41))
+o = s.blocks[0].out
+check("Programm + extern: K2 und K4 gleichzeitig (Variante a)", o["k2_valve"] == 1 and o["k4_valve"] == 1)
+s.run(hm(5, 41, 1), hm(6, 0), ("k4_valve", "k2_valve"))
+k4_off = s.times(0, "k4_valve", 0)
+check("K4 einmal 8 min, nicht nochmal im Programm", k4_off == [hm(5, 48, 6)] and o["k4_valve"] == 1,
+      [time.strftime("%H:%M:%S", time.gmtime(t)) for t in k4_off])
+
+s = SimFB(dead=[(0, 1)], **fbbase)
+s.set(0, k1_fb=0)
+s.run(hm(5, 36), hm(5, 37, 20))
+check("Keine Rueckmeldung: Stoerung nach 10 s", s.blocks[0].out["fault"] == 1 and "keine Rueckmeldung" in s.blocks[0].out["status_l"])
+check("Keine Rueckmeldung: Zeit laeuft trotzdem", s.blocks[0].out["k1_valve"] == 1 and s.blocks[0].out["k1_rest"] == 10)
+
+s = SimFB(1, **base)
+s.set(1, k1_t=4, k3_t=3)
+s.run(hm(12), hm(12, 0, 3))
+s.extern(1, 3, 1)                          # Folge K8 extern ein
+s.run(hm(12, 0, 4), hm(12, 0, 15))
+check("Folge extern ein: Master schaltet Netzteil + Pumpe", s.blocks[0].out["psu"] == 1 and s.blocks[0].out["pump"] == 1)
+s.run(hm(12, 0, 16), hm(12, 4))
+check("Folge extern ein: nach 3 min aus, kein K6", s.blocks[1].out["k3_valve"] == 0 and not s.times(1, "k1_valve", 1))
+
 # ------------------------------------------------------------ 13 LogicModule mit Fake-Framework
 
 

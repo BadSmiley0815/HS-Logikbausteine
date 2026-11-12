@@ -5,7 +5,7 @@
     "id": "14785",
     "name": "14785 Irrigation 5 circuits (cascadable)",
     "hsl_filename": "14785_Bewaesserung.hsl",
-    "version": "1.0",
+    "version": "1.1",
     "inputs": [
       {
         "type": "number",
@@ -225,123 +225,153 @@
       },
       {
         "type": "number",
+        "identifier": "k1_fb",
+        "init_value": 0,
+        "label": "I37 Circuit 1 valve feedback [1 bit]"
+      },
+      {
+        "type": "number",
         "identifier": "k2_t",
         "init_value": 0,
-        "label": "I37 Circuit 2 run time, 0=skip [min number]"
+        "label": "I38 Circuit 2 run time, 0=skip [min number]"
       },
       {
         "type": "number",
         "identifier": "k2_cyc",
         "init_value": 1,
-        "label": "I38 Circuit 2 cycle 1=1x 2=2x daily [number]"
+        "label": "I39 Circuit 2 cycle 1=1x 2=2x daily [number]"
       },
       {
         "type": "number",
         "identifier": "k2_rain",
         "init_value": 1,
-        "label": "I39 Circuit 2 observe rain lock [1 bit]"
+        "label": "I40 Circuit 2 observe rain lock [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k2_par",
         "init_value": 0,
-        "label": "I40 Circuit 2 parallel allowed [1 bit]"
+        "label": "I41 Circuit 2 parallel allowed [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k2_hand",
         "init_value": 0,
-        "label": "I41 Circuit 2 manual start/stop [1 bit]"
+        "label": "I42 Circuit 2 manual start/stop [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k2_fb",
+        "init_value": 0,
+        "label": "I43 Circuit 2 valve feedback [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k3_t",
         "init_value": 0,
-        "label": "I42 Circuit 3 run time, 0=skip [min number]"
+        "label": "I44 Circuit 3 run time, 0=skip [min number]"
       },
       {
         "type": "number",
         "identifier": "k3_cyc",
         "init_value": 1,
-        "label": "I43 Circuit 3 cycle 1=1x 2=2x daily [number]"
+        "label": "I45 Circuit 3 cycle 1=1x 2=2x daily [number]"
       },
       {
         "type": "number",
         "identifier": "k3_rain",
         "init_value": 1,
-        "label": "I44 Circuit 3 observe rain lock [1 bit]"
+        "label": "I46 Circuit 3 observe rain lock [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k3_par",
         "init_value": 0,
-        "label": "I45 Circuit 3 parallel allowed [1 bit]"
+        "label": "I47 Circuit 3 parallel allowed [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k3_hand",
         "init_value": 0,
-        "label": "I46 Circuit 3 manual start/stop [1 bit]"
+        "label": "I48 Circuit 3 manual start/stop [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k3_fb",
+        "init_value": 0,
+        "label": "I49 Circuit 3 valve feedback [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k4_t",
         "init_value": 0,
-        "label": "I47 Circuit 4 run time, 0=skip [min number]"
+        "label": "I50 Circuit 4 run time, 0=skip [min number]"
       },
       {
         "type": "number",
         "identifier": "k4_cyc",
         "init_value": 1,
-        "label": "I48 Circuit 4 cycle 1=1x 2=2x daily [number]"
+        "label": "I51 Circuit 4 cycle 1=1x 2=2x daily [number]"
       },
       {
         "type": "number",
         "identifier": "k4_rain",
         "init_value": 1,
-        "label": "I49 Circuit 4 observe rain lock [1 bit]"
+        "label": "I52 Circuit 4 observe rain lock [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k4_par",
         "init_value": 0,
-        "label": "I50 Circuit 4 parallel allowed [1 bit]"
+        "label": "I53 Circuit 4 parallel allowed [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k4_hand",
         "init_value": 0,
-        "label": "I51 Circuit 4 manual start/stop [1 bit]"
+        "label": "I54 Circuit 4 manual start/stop [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k4_fb",
+        "init_value": 0,
+        "label": "I55 Circuit 4 valve feedback [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k5_t",
         "init_value": 0,
-        "label": "I52 Circuit 5 run time, 0=skip [min number]"
+        "label": "I56 Circuit 5 run time, 0=skip [min number]"
       },
       {
         "type": "number",
         "identifier": "k5_cyc",
         "init_value": 1,
-        "label": "I53 Circuit 5 cycle 1=1x 2=2x daily [number]"
+        "label": "I57 Circuit 5 cycle 1=1x 2=2x daily [number]"
       },
       {
         "type": "number",
         "identifier": "k5_rain",
         "init_value": 1,
-        "label": "I54 Circuit 5 observe rain lock [1 bit]"
+        "label": "I58 Circuit 5 observe rain lock [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k5_par",
         "init_value": 0,
-        "label": "I55 Circuit 5 parallel allowed [1 bit]"
+        "label": "I59 Circuit 5 parallel allowed [1 bit]"
       },
       {
         "type": "number",
         "identifier": "k5_hand",
         "init_value": 0,
-        "label": "I56 Circuit 5 manual start/stop [1 bit]"
+        "label": "I60 Circuit 5 manual start/stop [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k5_fb",
+        "init_value": 0,
+        "label": "I61 Circuit 5 valve feedback [1 bit]"
       }
     ],
     "outputs": [
@@ -652,64 +682,79 @@
             "label": "E36 Kreis 1 Hand Start/Stopp [1 Bit]"
           },
           {
-            "label": "E37 Kreis 2 Laufzeit, 0=überspringen [min Zahl]"
+            "label": "E37 Kreis 1 Ventil Rückmeldung [1 Bit]"
           },
           {
-            "label": "E38 Kreis 2 Zyklus 1=1x 2=2x täglich [Zahl]"
+            "label": "E38 Kreis 2 Laufzeit, 0=überspringen [min Zahl]"
           },
           {
-            "label": "E39 Kreis 2 Regensperre beachten [1 Bit]"
+            "label": "E39 Kreis 2 Zyklus 1=1x 2=2x täglich [Zahl]"
           },
           {
-            "label": "E40 Kreis 2 Parallel erlaubt [1 Bit]"
+            "label": "E40 Kreis 2 Regensperre beachten [1 Bit]"
           },
           {
-            "label": "E41 Kreis 2 Hand Start/Stopp [1 Bit]"
+            "label": "E41 Kreis 2 Parallel erlaubt [1 Bit]"
           },
           {
-            "label": "E42 Kreis 3 Laufzeit, 0=überspringen [min Zahl]"
+            "label": "E42 Kreis 2 Hand Start/Stopp [1 Bit]"
           },
           {
-            "label": "E43 Kreis 3 Zyklus 1=1x 2=2x täglich [Zahl]"
+            "label": "E43 Kreis 2 Ventil Rückmeldung [1 Bit]"
           },
           {
-            "label": "E44 Kreis 3 Regensperre beachten [1 Bit]"
+            "label": "E44 Kreis 3 Laufzeit, 0=überspringen [min Zahl]"
           },
           {
-            "label": "E45 Kreis 3 Parallel erlaubt [1 Bit]"
+            "label": "E45 Kreis 3 Zyklus 1=1x 2=2x täglich [Zahl]"
           },
           {
-            "label": "E46 Kreis 3 Hand Start/Stopp [1 Bit]"
+            "label": "E46 Kreis 3 Regensperre beachten [1 Bit]"
           },
           {
-            "label": "E47 Kreis 4 Laufzeit, 0=überspringen [min Zahl]"
+            "label": "E47 Kreis 3 Parallel erlaubt [1 Bit]"
           },
           {
-            "label": "E48 Kreis 4 Zyklus 1=1x 2=2x täglich [Zahl]"
+            "label": "E48 Kreis 3 Hand Start/Stopp [1 Bit]"
           },
           {
-            "label": "E49 Kreis 4 Regensperre beachten [1 Bit]"
+            "label": "E49 Kreis 3 Ventil Rückmeldung [1 Bit]"
           },
           {
-            "label": "E50 Kreis 4 Parallel erlaubt [1 Bit]"
+            "label": "E50 Kreis 4 Laufzeit, 0=überspringen [min Zahl]"
           },
           {
-            "label": "E51 Kreis 4 Hand Start/Stopp [1 Bit]"
+            "label": "E51 Kreis 4 Zyklus 1=1x 2=2x täglich [Zahl]"
           },
           {
-            "label": "E52 Kreis 5 Laufzeit, 0=überspringen [min Zahl]"
+            "label": "E52 Kreis 4 Regensperre beachten [1 Bit]"
           },
           {
-            "label": "E53 Kreis 5 Zyklus 1=1x 2=2x täglich [Zahl]"
+            "label": "E53 Kreis 4 Parallel erlaubt [1 Bit]"
           },
           {
-            "label": "E54 Kreis 5 Regensperre beachten [1 Bit]"
+            "label": "E54 Kreis 4 Hand Start/Stopp [1 Bit]"
           },
           {
-            "label": "E55 Kreis 5 Parallel erlaubt [1 Bit]"
+            "label": "E55 Kreis 4 Ventil Rückmeldung [1 Bit]"
           },
           {
-            "label": "E56 Kreis 5 Hand Start/Stopp [1 Bit]"
+            "label": "E56 Kreis 5 Laufzeit, 0=überspringen [min Zahl]"
+          },
+          {
+            "label": "E57 Kreis 5 Zyklus 1=1x 2=2x täglich [Zahl]"
+          },
+          {
+            "label": "E58 Kreis 5 Regensperre beachten [1 Bit]"
+          },
+          {
+            "label": "E59 Kreis 5 Parallel erlaubt [1 Bit]"
+          },
+          {
+            "label": "E60 Kreis 5 Hand Start/Stopp [1 Bit]"
+          },
+          {
+            "label": "E61 Kreis 5 Ventil Rückmeldung [1 Bit]"
           }
         ],
         "translation_outputs": [
@@ -919,64 +964,79 @@
             "label": "I36 Circuit 1 manual start/stop [1 bit]"
           },
           {
-            "label": "I37 Circuit 2 run time, 0=skip [min number]"
+            "label": "I37 Circuit 1 valve feedback [1 bit]"
           },
           {
-            "label": "I38 Circuit 2 cycle 1=1x 2=2x daily [number]"
+            "label": "I38 Circuit 2 run time, 0=skip [min number]"
           },
           {
-            "label": "I39 Circuit 2 observe rain lock [1 bit]"
+            "label": "I39 Circuit 2 cycle 1=1x 2=2x daily [number]"
           },
           {
-            "label": "I40 Circuit 2 parallel allowed [1 bit]"
+            "label": "I40 Circuit 2 observe rain lock [1 bit]"
           },
           {
-            "label": "I41 Circuit 2 manual start/stop [1 bit]"
+            "label": "I41 Circuit 2 parallel allowed [1 bit]"
           },
           {
-            "label": "I42 Circuit 3 run time, 0=skip [min number]"
+            "label": "I42 Circuit 2 manual start/stop [1 bit]"
           },
           {
-            "label": "I43 Circuit 3 cycle 1=1x 2=2x daily [number]"
+            "label": "I43 Circuit 2 valve feedback [1 bit]"
           },
           {
-            "label": "I44 Circuit 3 observe rain lock [1 bit]"
+            "label": "I44 Circuit 3 run time, 0=skip [min number]"
           },
           {
-            "label": "I45 Circuit 3 parallel allowed [1 bit]"
+            "label": "I45 Circuit 3 cycle 1=1x 2=2x daily [number]"
           },
           {
-            "label": "I46 Circuit 3 manual start/stop [1 bit]"
+            "label": "I46 Circuit 3 observe rain lock [1 bit]"
           },
           {
-            "label": "I47 Circuit 4 run time, 0=skip [min number]"
+            "label": "I47 Circuit 3 parallel allowed [1 bit]"
           },
           {
-            "label": "I48 Circuit 4 cycle 1=1x 2=2x daily [number]"
+            "label": "I48 Circuit 3 manual start/stop [1 bit]"
           },
           {
-            "label": "I49 Circuit 4 observe rain lock [1 bit]"
+            "label": "I49 Circuit 3 valve feedback [1 bit]"
           },
           {
-            "label": "I50 Circuit 4 parallel allowed [1 bit]"
+            "label": "I50 Circuit 4 run time, 0=skip [min number]"
           },
           {
-            "label": "I51 Circuit 4 manual start/stop [1 bit]"
+            "label": "I51 Circuit 4 cycle 1=1x 2=2x daily [number]"
           },
           {
-            "label": "I52 Circuit 5 run time, 0=skip [min number]"
+            "label": "I52 Circuit 4 observe rain lock [1 bit]"
           },
           {
-            "label": "I53 Circuit 5 cycle 1=1x 2=2x daily [number]"
+            "label": "I53 Circuit 4 parallel allowed [1 bit]"
           },
           {
-            "label": "I54 Circuit 5 observe rain lock [1 bit]"
+            "label": "I54 Circuit 4 manual start/stop [1 bit]"
           },
           {
-            "label": "I55 Circuit 5 parallel allowed [1 bit]"
+            "label": "I55 Circuit 4 valve feedback [1 bit]"
           },
           {
-            "label": "I56 Circuit 5 manual start/stop [1 bit]"
+            "label": "I56 Circuit 5 run time, 0=skip [min number]"
+          },
+          {
+            "label": "I57 Circuit 5 cycle 1=1x 2=2x daily [number]"
+          },
+          {
+            "label": "I58 Circuit 5 observe rain lock [1 bit]"
+          },
+          {
+            "label": "I59 Circuit 5 parallel allowed [1 bit]"
+          },
+          {
+            "label": "I60 Circuit 5 manual start/stop [1 bit]"
+          },
+          {
+            "label": "I61 Circuit 5 valve feedback [1 bit]"
           }
         ],
         "translation_outputs": [

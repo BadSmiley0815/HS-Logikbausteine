@@ -200,14 +200,14 @@
   {
    "id": 14785,
    "name": "Bewässerung 5 Kreise (kaskadierbar)",
-   "version": "1.0",
+   "version": "1.1",
    "art": "HSL3",
    "kategorie": "Garten",
    "port": null,
    "pfad": "",
    "ex": "",
    "datei": "14785_Bewaesserung/14785_Bewaesserung.hslz",
-   "einsatz": "Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge); Endzeit statt Startzeit, Lauf 1/2 (12 h), Regen-/Frostsperre, Parallel/Überlappung, Netzteil 24 V, Pumpe, Nachspeisung, Trockenlauf",
+   "einsatz": "Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge); Endzeit statt Startzeit, Lauf 1/2 (12 h), Regen-/Frostsperre, Parallel/Überlappung, Netzteil 24 V, Pumpe, Nachspeisung, Trockenlauf, Zeit ab Ventil-Rückmeldung (auch bei Fremdschaltung)",
    "status": "neu, am HS noch nicht getestet"
   }
  ],

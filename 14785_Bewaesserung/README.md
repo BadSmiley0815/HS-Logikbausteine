@@ -1,8 +1,8 @@
-# 14785 Bewässerung 5 Kreise (kaskadierbar) – Version 1.0
+# 14785 Bewässerung 5 Kreise (kaskadierbar) – Version 1.1
 
-**ID 14785 · Version 1.0 · HSL3**
+**ID 14785 · Version 1.1 · HSL3**
 
-Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge); Endzeit statt Startzeit, Lauf 1/2 (12 h), Regen-/Frostsperre, Parallel/Überlappung, Netzteil 24 V, Pumpe, Nachspeisung, Trockenlauf.
+Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge); Endzeit statt Startzeit, Lauf 1/2 (12 h), Regen-/Frostsperre, Parallel/Überlappung, Netzteil 24 V, Pumpe, Nachspeisung, Trockenlauf, Zeit ab Ventil-Rückmeldung (auch bei Fremdschaltung).
 
 ## Baustein
 
@@ -52,26 +52,31 @@ Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge)
 - E34 Kreis 1 Regensperre beachten [1 Bit]
 - E35 Kreis 1 Parallel erlaubt [1 Bit]
 - E36 Kreis 1 Hand Start/Stopp [1 Bit]
-- E37 Kreis 2 Laufzeit, 0=überspringen [min Zahl]
-- E38 Kreis 2 Zyklus 1=1x 2=2x täglich [Zahl]
-- E39 Kreis 2 Regensperre beachten [1 Bit]
-- E40 Kreis 2 Parallel erlaubt [1 Bit]
-- E41 Kreis 2 Hand Start/Stopp [1 Bit]
-- E42 Kreis 3 Laufzeit, 0=überspringen [min Zahl]
-- E43 Kreis 3 Zyklus 1=1x 2=2x täglich [Zahl]
-- E44 Kreis 3 Regensperre beachten [1 Bit]
-- E45 Kreis 3 Parallel erlaubt [1 Bit]
-- E46 Kreis 3 Hand Start/Stopp [1 Bit]
-- E47 Kreis 4 Laufzeit, 0=überspringen [min Zahl]
-- E48 Kreis 4 Zyklus 1=1x 2=2x täglich [Zahl]
-- E49 Kreis 4 Regensperre beachten [1 Bit]
-- E50 Kreis 4 Parallel erlaubt [1 Bit]
-- E51 Kreis 4 Hand Start/Stopp [1 Bit]
-- E52 Kreis 5 Laufzeit, 0=überspringen [min Zahl]
-- E53 Kreis 5 Zyklus 1=1x 2=2x täglich [Zahl]
-- E54 Kreis 5 Regensperre beachten [1 Bit]
-- E55 Kreis 5 Parallel erlaubt [1 Bit]
-- E56 Kreis 5 Hand Start/Stopp [1 Bit]
+- E37 Kreis 1 Ventil Rückmeldung [1 Bit]
+- E38 Kreis 2 Laufzeit, 0=überspringen [min Zahl]
+- E39 Kreis 2 Zyklus 1=1x 2=2x täglich [Zahl]
+- E40 Kreis 2 Regensperre beachten [1 Bit]
+- E41 Kreis 2 Parallel erlaubt [1 Bit]
+- E42 Kreis 2 Hand Start/Stopp [1 Bit]
+- E43 Kreis 2 Ventil Rückmeldung [1 Bit]
+- E44 Kreis 3 Laufzeit, 0=überspringen [min Zahl]
+- E45 Kreis 3 Zyklus 1=1x 2=2x täglich [Zahl]
+- E46 Kreis 3 Regensperre beachten [1 Bit]
+- E47 Kreis 3 Parallel erlaubt [1 Bit]
+- E48 Kreis 3 Hand Start/Stopp [1 Bit]
+- E49 Kreis 3 Ventil Rückmeldung [1 Bit]
+- E50 Kreis 4 Laufzeit, 0=überspringen [min Zahl]
+- E51 Kreis 4 Zyklus 1=1x 2=2x täglich [Zahl]
+- E52 Kreis 4 Regensperre beachten [1 Bit]
+- E53 Kreis 4 Parallel erlaubt [1 Bit]
+- E54 Kreis 4 Hand Start/Stopp [1 Bit]
+- E55 Kreis 4 Ventil Rückmeldung [1 Bit]
+- E56 Kreis 5 Laufzeit, 0=überspringen [min Zahl]
+- E57 Kreis 5 Zyklus 1=1x 2=2x täglich [Zahl]
+- E58 Kreis 5 Regensperre beachten [1 Bit]
+- E59 Kreis 5 Parallel erlaubt [1 Bit]
+- E60 Kreis 5 Hand Start/Stopp [1 Bit]
+- E61 Kreis 5 Ventil Rückmeldung [1 Bit]
 
 ## Ausgänge
 
