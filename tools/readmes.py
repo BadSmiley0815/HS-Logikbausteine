@@ -18,6 +18,7 @@ CAPTION = {
     "beispiel_klappen": "Beispiel: Klappenstellungen",
     "beispiel_simulation": "Beispiel: Verlauf beim Einschalten des Verdichters (vereinfachte Simulation)",
     "beispiel_szenen": "Ergebnis: Szenen-Seite mit Beispiel-Szenen (ohne Verbindung zum HS aufgenommen)",
+    "beispiel_ablauf": "Beispiel: Lauf 1 mit Master und einer Folge – Startzeit aus der gewünschten Endzeit (Simulation mit dem Baustein-Code)",
     "beispiel_pruefseite": "Ergebnis: Prüfseite mit zwei Testkameras – Standbild schnell nachgeladen und MJPEG-Strom",
 }
 

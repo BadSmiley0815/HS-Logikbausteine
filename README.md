@@ -82,6 +82,8 @@ Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Text
 
 Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge); Endzeit statt Startzeit, Lauf 1/2 (12 h), Regen-/Frostsperre, Parallel/Überlappung, Netzteil 24 V, Pumpe, Nachspeisung, Trockenlauf.
 
+<img src="14785_Bewaesserung/bilder/beispiel_ablauf.png" width="640" alt="Bewässerung 5 Kreise (kaskadierbar)">
+
 ## Regeln
 
 - ID steht im Namen (alle Sprachen), ID und Version stehen in der Hilfe.

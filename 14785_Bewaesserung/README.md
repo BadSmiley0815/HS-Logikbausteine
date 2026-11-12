@@ -8,6 +8,12 @@ Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge)
 
 ![Baustein](bilder/baustein.png)
 
+## Beispiel
+
+**Beispiel: Lauf 1 mit Master und einer Folge – Startzeit aus der gewünschten Endzeit (Simulation mit dem Baustein-Code)**
+
+![Beispiel: Lauf 1 mit Master und einer Folge – Startzeit aus der gewünschten Endzeit (Simulation mit dem Baustein-Code)](bilder/beispiel_ablauf.png)
+
 ## Eingänge
 
 - E1 Modus (0=Master 1=Folge) [Zahl]
