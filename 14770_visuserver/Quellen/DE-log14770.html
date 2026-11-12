@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>14770 Visu-Server (v1.12)</title><style>
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>14770 Visu-Server (v1.13)</title><style>
 body{font-family:"Segoe UI",Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#1f2933;background:#f4f6f9;margin:0;padding:0}
 .wrap{max-width:900px;margin:0 auto;padding:0 16px 30px}
 .hero{background:#1d3f6e;background:linear-gradient(135deg,#1d3f6e,#2b6cb0);color:#fff;padding:22px 24px 18px;border-radius:0 0 12px 12px;margin-bottom:18px}
@@ -21,7 +21,7 @@ ol.steps>li:before{content:counter(s);position:absolute;left:0;top:6px;width:28p
 .foot{font-size:12px;color:#5b6775;text-align:center;margin-top:18px}
 </style></head><body>
 <div class="hero"><div class="wrap" style="padding-bottom:0"><h1>14770 – Visu-Server</h1>
-<p><span class="badge">Baustein-ID 14770</span><span class="badge">Version 1.12</span><span class="badge">HSL 3.0</span><span class="badge">bis v1.6: 19107</span></p>
+<p><span class="badge">Baustein-ID 14770</span><span class="badge">Version 1.13</span><span class="badge">HSL 3.0</span><span class="badge">bis v1.6: 19107</span></p>
 <p>Webserver auf dem Gira HomeServer für Diagramme und die HTML5-Visu – zusammen mit dem Verlaufsspeicher 14771.</p></div></div>
 <div class="wrap">
 
@@ -107,10 +107,11 @@ Design = Kürzel des Visu-Designs aus dem Experten (z. B. <code>V1024x768</code>
 </div>
 
 <div class="card"><h2>Änderungen</h2>
+<p><b>v1.13</b> – Meldungsseite: Meldungsspeicher 14784 mit gleichem Namen (E3) erscheinen als ein Reiter, die Einträge zeitlich gemischt (z. B. zwei Instanzen „Alarmverfolgung“ mit zusammen 32 Meldern). „Alle quittieren“ gilt für alle Archive des Reiters.</p>
 <p><b>v1.12</b> – neue Seiten <code>meldungen</code> (Meldungsliste der 14784 mit Filter, Suche, Quittieren) und <code>verlaeufe</code> (alle Verläufe nach Raum gruppiert in einem Diagramm, z. B. Ist/Soll/Stellwert). Schlüssel per <code>?key=</code> oder aus dem Browser (wie Szenen-Seite), sonst Abfrage. Diagrammseite <code>chart</code> nimmt den Schlüssel ebenfalls aus dem Browser. Skala links wahlweise automatisch oder fest (von/bis, je Raum im Browser gemerkt); Parameter <code>ymin2/ymax2</code> für die rechte Achse, <code>span</code> = Mindest-Spanne (Temperatur standardmäßig 4 K, damit kleine Schwankungen nicht übertrieben wirken).</p>
 <p><b>v1.11</b> – Meldungen: nimmt Meldungsspeicher 14784 an (E1 von 14784 = A1 von 14770) und liefert sie unter <code>api/messages</code> (Liste aller Archive bzw. <code>?id=…&amp;n=…&amp;since=…</code>), Quittieren über <code>POST api/messages/ack</code>; Sicherung/Einspielen enthält die Meldungen. Diagramme unverändert.</p>
 <p><b>v1.10</b> – Diagrammseite: Legende klickbar (ein/aus), zweite Achse, Kennzahlen, Zeiträume 1 h bis 3 Jahre mit Schieberegler, Zoom per Aufziehen, Zeitachse immer über den ganzen Zeitraum; Einbau in die Gira-Visu über <code>@iframe=</code> und <code>extras=1</code>. chart.svg mit zweiter Achse und <code>hide=</code>; chart.png. · <b>v1.9</b> – Diagramm als SVG-Bild. · <b>v1.8</b> – Diagrammseite <code>chart</code> zum Einbetten, E5 Lese-Schlüssel. · <b>v1.7</b> – offizielle ID 14770 (bisher 19107). · <b>v1.6</b> – Aufruf aus dem Diagramm mit „Zurück“. · <b>v1.5</b> – Zeilennummern, Einspielen ergänzen/überschreiben. · <b>v1.4</b> – UTF-8-Texteingänge. · <b>v1.3</b> – Übersichtsseite mit Tabelle, CSV, Sicherung. · <b>v1.2</b> – Port-Rückfall 8092. · <b>v1.1</b> – E4. · <b>v1.0</b> – erste Version.</p>
 </div>
 
-<div class="foot">14770 Visu-Server v1.12 · Entwicklung: Claude (Anthropic), dirigiert von BadSmiley0815</div>
+<div class="foot">14770 Visu-Server v1.13 · Entwicklung: Claude (Anthropic), dirigiert von BadSmiley0815</div>
 </div></body></html>

@@ -5,7 +5,7 @@
   {
    "id": 14770,
    "name": "Visu-Server",
-   "version": "1.12",
+   "version": "1.13",
    "art": "HSL3",
    "kategorie": "Visualisierung",
    "port": 8092,
@@ -187,14 +187,14 @@
   {
    "id": 14784,
    "name": "Meldungsspeicher",
-   "version": "1.0",
+   "version": "1.1",
    "art": "HSL3",
    "kategorie": "Visualisierung",
    "port": null,
    "pfad": "",
    "ex": "",
    "datei": "14784_meldungsspeicher/14784_meldungsspeicher.hslz",
-   "einsatz": "Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Texten, Freitext, Quittieren; Abruf über den Visu-Server 14770",
+   "einsatz": "Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Texten, Freitext, Quittieren; Abruf über den Visu-Server 14770; ab 1.1 Freigabe (Alarmverfolgung) und Quellen (z. B. Schlüsselschalter) an der Meldung",
    "status": "neu, am HS noch nicht getestet"
   }
  ],

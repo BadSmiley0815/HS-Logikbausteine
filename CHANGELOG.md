@@ -5,18 +5,19 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 
 | ID | Baustein | aktuell |
 |---|---|---|
-| [14770](#14770-visu-server) | Visu-Server | 1.12 |
+| [14770](#14770-visu-server) | Visu-Server | 1.13 |
 | [14771](#14771-verlaufsspeicher-für-diagramme) | Verlaufsspeicher für Diagramme | 2.7 |
 | [14775](#14775-rlt-luftqualitätsregelung) | RLT Luftqualitätsregelung | 1.6 |
 | [14776](#14776-wrg-pumpenregelung) | WRG-Pumpenregelung | 1.0 |
 | [14777](#14777-kompressor-klappensteuerung) | Kompressor-Klappensteuerung | 1.2 |
 | [14778](#14778-szenen-server) | Szenen-Server | 4.3 |
 | [14783](#14783-kamera-proxy) | Kamera-Proxy | 0.4 |
-| [14784](#14784-meldungsspeicher) | Meldungsspeicher | 1.0 |
+| [14784](#14784-meldungsspeicher) | Meldungsspeicher | 1.1 |
 
 ---
 
 ## 14770 Visu-Server
+- **1.13** (2026-11-12) – Meldungsseite: Meldungsspeicher mit gleichem Namen erscheinen als ein Reiter, Einträge zeitlich gemischt (z. B. zwei Instanzen „Alarmverfolgung“); „Alle quittieren“ gilt für alle Archive des Reiters.
 - **1.12** (2026-11-11) – neue Seiten `meldungen` (Meldungsliste der 14784 mit Filter, Suche, Quittieren) und `verlaeufe` (alle Verläufe nach Raum gruppiert in einem Diagramm). Schlüssel per `?key=` oder aus dem Browser, sonst Abfrage; `chart` nimmt den Schlüssel ebenfalls aus dem Browser. Skala links automatisch oder fest (von/bis, je Raum gemerkt), `ymin2/ymax2` für die rechte Achse, `span` = Mindest-Spanne (Temperatur standardmäßig 4 K).
 - **1.11** (2026-11-11) – Meldungen: nimmt Meldungsspeicher 14784 an und liefert sie unter `api/messages` (Liste bzw. `?id=&n=&since=`), Quittieren über `POST api/messages/ack`; Sicherung/Einspielen enthält die Meldungen. Diagramme unverändert.
 - **1.10** (veröffentlicht 2026-11-10) – Diagrammseite: Legende klickbar (ein/aus), zweite Achse, Kennzahlen, Zeiträume 1 h bis 3 Jahre mit Schieberegler, Zoom per Aufziehen, Zeitachse immer über den ganzen Zeitraum. Einbau in die Gira-Visu über `@iframe=` und `extras=1`. `chart.svg` mit zweiter Achse und `hide=`; neu `chart.png`.
@@ -68,4 +69,5 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 - **0.1** (2026-11-10) – Prüffassung: bis zu 3 Axis-Kameras per Digest, Weiterleitung `https://<HS>/kamera/` auf Port 8095.
 
 ## 14784 Meldungsspeicher
+- **1.1** (2026-11-12) – Freigabe (E42–E45): Melder nur aufzeichnen, solange z. B. die Alarmanlage scharf ist, plus Nachlauf – für eine Alarmverfolgung mit Bewegungsmeldern und Türkontakten. Quellen (E46–E72): bis zu 12 Quellen mit Namen; ändert sich ein Melder kurz danach, wird die Quelle an die Meldung gehängt („Alarmanlage extern scharf – Schlüsselschalter Eingang“), sonst ein einstellbarer Text (z. B. „Visu/QC/Zeitschaltuhr“).
 - **1.0** (2026-11-11) – erste Version: eigenes Meldungsarchiv je Instanz, 16 Melder mit Text `EIN;AUS;Stufe EIN;Stufe AUS`, Freitext-Eingang, Quittieren, Löschen, remanent; Abruf über Visu-Server 14770 ab v1.11.

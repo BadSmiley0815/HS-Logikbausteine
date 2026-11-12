@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14784 – Meldungsspeicher (v1.0)
+HSL3 14784 – Meldungsspeicher (v1.1)
 
 Eigenes Meldungsarchiv im HomeServer – unabhängig von den Meldungsarchiven des Experten.
 Eine Instanz = ein Archiv (z. B. „Wetterstation“, „Alarmanlage“).
@@ -16,6 +16,14 @@ Melder 1–16 (E7–E22, 1 Bit/Zahl) mit Text je Melder (E23–E38):
     Gemeldet wird nur bei Wertwechsel (E5 = 1: jedes Telegramm). Werte ≠ 0 zählen als EIN.
 E6 Freitext (14-Byte-Text oder Text): jeder neue Text wird mit Stufe aus E4 gespeichert.
 
+ab v1.1:
+Freigabe (E42–E45): E42 = 1 → Melder und Freitext werden nur aufgezeichnet, solange E43 oder E44 = 1 ist
+    (z. B. Alarmanlage scharf) und E45 Sekunden danach. Für eine Alarmverfolgung mit Bewegungsmeldern.
+Quellen (E46–E72): bis zu 12 Quellen (E49–E60, jedes Telegramm ≠ 0 bzw. jeder Text) mit Namen (E61–E72).
+    Ändert sich ein Melder (nur die in E47, leer = alle) und kam innerhalb von E46 Sekunden vorher eine
+    Quelle, wird „ – <Name>“ an den Text gehängt (z. B. „Alarmanlage scharf – Schlüsselschalter Eingang“).
+    Ohne Quelle wird E48 angehängt (leer = nichts).
+
 Abruf über den Visu-Server 14770 (ab v1.11), E1 = dessen Instanz-ID:
     GET  https://<HS>/visu-daten/api/messages            alle Archive (Name, Anzahl, offene Alarme)
     GET  https://<HS>/visu-daten/api/messages?id=wetter  Einträge (n=, since=)
@@ -30,8 +38,9 @@ import threading
 import time
 import zlib
 
-VERSION = "1.0"
+VERSION = "1.1"
 N_MELDER = 16
+N_QUELLEN = 12
 STATE_VERSION = 1
 STORES = 20
 CHUNK = 9900
@@ -88,6 +97,15 @@ class LogicModule:
         self._dirty = False
         self._pending_ack = False
         self._pending_import = None
+        self.gate_on = 0
+        self.gate_after = 60
+        self._gate_open = False
+        self._gate_until = 0.0
+        self.src_win = 10
+        self.src_for = None
+        self.src_none = ""
+        self.src_names = [""] * N_QUELLEN
+        self._src = None            # (Zeit, Name) der letzten Quelle
 
     # ------------------------------------------------------------ Lebenszyklus
     def on_init(self, inputs, store):
@@ -108,6 +126,7 @@ class LogicModule:
                 v = self._bit(inputs.value("m%d" % i))
                 if v is not None:
                     self.state["last"][k] = v
+        self._gate_open = self._gate_state(inputs)
         self._register()
         self._publish()
         self.fw.set_timer("tick", 30)
@@ -127,7 +146,20 @@ class LogicModule:
             return
         if inputs.changed("ack") and self._int(inputs.value("ack"), 0) == 1:
             self.acknowledge()
-        if inputs.changed("free"):
+        # Freigabe (ab v1.1)
+        now = time.time()
+        g = self._gate_state(inputs)
+        if self._gate_open and not g:
+            self._gate_until = now + self.gate_after
+        self._gate_open = g
+        record = (not self.gate_on) or g or now <= self._gate_until
+        # Quellen (ab v1.1): zuerst merken, dann Melder auswerten
+        for i in range(1, N_QUELLEN + 1):
+            ident = "q%d" % i
+            if inputs.changed(ident) and self._bit(inputs.value(ident)):
+                self._src = (now, self.src_names[i - 1] or ("Quelle %d" % i))
+                self.debug.set("Letzte Quelle", "%s (%s)" % (self._src[1], time.strftime("%H:%M:%S")))
+        if inputs.changed("free") and record:
             t = self._text(inputs.value("free")).strip()
             if t:
                 self._add(t, self.free_level, 0, None)
@@ -143,10 +175,12 @@ class LogicModule:
             self.state["last"][k] = v
             if prev == v and not self.every:
                 continue
+            if not record:
+                continue
             on, off, lvl_on, lvl_off = self.texts[i - 1]
             text = on if v else off
             if text:
-                self._add(text, lvl_on if v else lvl_off, i, v)
+                self._add(text + self._source_suffix(i, now), lvl_on if v else lvl_off, i, v)
             else:
                 self._dirty = True
 
@@ -169,6 +203,25 @@ class LogicModule:
         self.free_level = max(0, min(2, self._int(inputs.value("level"), 1)))
         self.every = 1 if self._int(inputs.value("every"), 0) == 1 else 0
         self.texts = [parse_text(self._text(inputs.value("t%d" % i)), 1) for i in range(1, N_MELDER + 1)]
+        self.gate_on = 1 if self._int(inputs.value("gate_on"), 0) == 1 else 0
+        self.gate_after = max(0, min(86400, self._int(inputs.value("gate_after"), 60)))
+        self.src_win = max(0, min(3600, self._int(inputs.value("src_win"), 10)))
+        sf = self._text(inputs.value("src_for")).replace(";", ",").replace(" ", "")
+        self.src_for = set(int(x) for x in sf.split(",") if x.isdigit()) or None
+        self.src_none = self._text(inputs.value("src_none")).strip()
+        self.src_names = [self._text(inputs.value("qn%d" % i)).strip() for i in range(1, N_QUELLEN + 1)]
+
+    def _gate_state(self, inputs):
+        return bool(self._bit(inputs.value("gate1")) or self._bit(inputs.value("gate2")))
+
+    def _source_suffix(self, melder, now):
+        if self.src_for is not None and melder not in self.src_for:
+            return ""
+        if self.src_for is None and not any(self.src_names) and not self.src_none:
+            return ""                       # keine Quellen eingerichtet
+        if self._src is not None and now - self._src[0] <= self.src_win:
+            return " – " + self._src[1]
+        return (" – " + self.src_none) if self.src_none else ""
 
     # ------------------------------------------------------------ Meldungen
     def _add(self, text, level, melder, value):

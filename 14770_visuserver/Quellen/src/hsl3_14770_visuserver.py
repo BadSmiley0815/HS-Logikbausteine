@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14770 – Visu-Server (v1.12)
+HSL3 14770 – Visu-Server (v1.13)
 
 Datenzentrale für die HTML5-Visu (homeserver-webapp). Der HomeServer leitet
 https://<HS>/<Basis-Pfad>/… an diesen Baustein weiter (HSL3-Eingänge base_path /
@@ -13,6 +13,7 @@ Aufgaben:
       GET  api/messages               alle Archive (Name, Anzahl, offene Meldungen/Alarme)
       GET  api/messages?id=wetter&n=200&since=<seq>   Einträge, neueste zuerst
       POST api/messages/ack  {"id": "wetter"}        alle Einträge des Archivs quittieren
+  * v1.13: Meldungsseite fasst Meldungsspeicher mit gleichem Namen zu einem Reiter zusammen (zeitlich sortiert)
   * Seiten (v1.12): meldungen (Meldungsliste mit Filter, Suche, Quittieren) und verlaeufe
     (alle Verläufe nach Raum gruppiert, z. B. „Werkstatt Ist/Soll/Stellwert“ in einem Diagramm).
     Schlüssel: ?key=…, sonst aus dem Browser (hs-visu-key bzw. Schlüssel der Szenen-Seite), sonst Abfrage.
@@ -80,7 +81,7 @@ import urllib.parse
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.12"
+VERSION = "1.13"
 CFG_STORES = 10          # 10 × 9.900 Zeichen ≈ 99 KB komprimiert
 CHUNK = 9900
 MAX_BODY = 4 * 1024 * 1024
@@ -380,7 +381,9 @@ tr.l2 td{background:var(--err-soft)}tr.l1 td{background:var(--warn-soft)}tr.ack 
 var P=new URLSearchParams(location.search),CUR=P.get('id')||'',F='all',ARCH=[],ENT=[];
 var LV=['Info','Warnung','Alarm'];
 function fmt(t){var d=new Date(t),p=function(n){return (n<10?'0':'')+n;};return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
-function tabs(){var h=ARCH.map(function(a){return '<span class="chip'+(a.id===CUR?' on':'')+'" data-a="'+esc(a.id)+'">'+esc(a.name)+(a.open?'<span class="badge">'+a.open+'</span>':'')+'</span>';}).join('');
+function grpA(){var G={},O=[];ARCH.forEach(function(a){if(!G[a.name]){G[a.name]={id:a.id,name:a.name,open:0,ids:[]};O.push(G[a.name]);}G[a.name].ids.push(a.id);G[a.name].open+=a.open||0;});return O;}
+function curIds(){var g=grpA().filter(function(x){return x.id===CUR;})[0];return g?g.ids:(CUR?[CUR]:[]);}
+function tabs(){var h=grpA().map(function(a){return '<span class="chip'+(a.id===CUR?' on':'')+'" data-a="'+esc(a.id)+'">'+esc(a.name)+(a.open?'<span class="badge">'+a.open+'</span>':'')+'</span>';}).join('');
  document.getElementById('tabs').innerHTML=h||'<span class="empty">Kein Meldungsspeicher 14784 angemeldet.</span>';
  document.querySelectorAll('[data-a]').forEach(function(e){e.onclick=function(){CUR=e.dataset.a;load();};});}
 function draw(){var q=document.getElementById('q').value.toLowerCase();
@@ -389,11 +392,12 @@ function draw(){var q=document.getElementById('q').value.toLowerCase();
  document.getElementById('list').innerHTML=rows.length?'<table><tr><th>Zeit</th><th>Stufe</th><th>Meldung</th></tr>'+rows.map(function(e){
   return '<tr class="l'+e.level+(e.ack?' ack':'')+'"><td class="t">'+fmt(e.t)+'</td><td><span class="lv lv'+e.level+'">'+LV[e.level]+'</span></td><td>'+esc(e.text)+(e.ack||!e.level?'':' <small style="color:var(--muted)">(offen)</small>')+'</td></tr>';}).join('')+'</table>'
   :'<div class="empty">Keine Meldungen.</div>';}
-function load(){api('api/messages').then(function(d){ARCH=d.archives||[];if(!CUR&&ARCH.length)CUR=ARCH[0].id;tabs();
- if(!CUR){ENT=[];draw();return;}return api('api/messages?id='+encodeURIComponent(CUR)+'&n=1000').then(function(r){ENT=r.entries||[];draw();});}).catch(function(e){});}
+function load(){api('api/messages').then(function(d){ARCH=d.archives||[];if(!CUR&&ARCH.length)CUR=ARCH[0].id;var gs=grpA();if(CUR&&!gs.some(function(x){return x.id===CUR;})){gs.forEach(function(x){if(x.ids.indexOf(CUR)>=0)CUR=x.id;});}tabs();
+ if(!CUR){ENT=[];draw();return;}return Promise.all(curIds().map(function(i){return api('api/messages?id='+encodeURIComponent(i)+'&n=1000');})).then(function(rs){
+  var e=[];rs.forEach(function(r){e=e.concat(r.entries||[]);});e.sort(function(a,b){return b.t-a.t;});ENT=e;draw();});}).catch(function(e){});}
 document.querySelectorAll('[data-f]').forEach(function(e){e.onclick=function(){F=e.dataset.f;draw();};});
 document.getElementById('q').oninput=draw;
-document.getElementById('ack').onclick=function(){if(!CUR)return;api('api/messages/ack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:CUR})}).then(function(){setTimeout(load,2500);});};
+document.getElementById('ack').onclick=function(){if(!CUR)return;Promise.all(curIds().map(function(i){return api('api/messages/ack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:i})});})).then(function(){setTimeout(load,2500);});};
 load();setInterval(load,15000);
 </script></body></html>"""
 

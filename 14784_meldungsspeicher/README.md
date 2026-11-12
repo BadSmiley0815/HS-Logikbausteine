@@ -1,8 +1,10 @@
-# 14784 Meldungsspeicher – Version 1.0
+# 14784 Meldungsspeicher – Version 1.1
 
-**ID 14784 · Version 1.0 · HSL3**
+**ID 14784 · Version 1.1 · HSL3**
 
 Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Texten, Freitext, Quittieren; Abruf über den Visu-Server 14770.
+
+**Neu in 1.1:** Freigabe (E42–E45) – Melder nur aufzeichnen, solange z. B. die Alarmanlage scharf ist (Alarmverfolgung); Quellen (E46–E72) – bis zu 12 Quellen mit Namen, die an die Meldung gehängt werden („Alarmanlage scharf – Schlüsselschalter Eingang“).
 
 ## Baustein
 
@@ -51,6 +53,37 @@ Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Text
 - E39 Max. Einträge (50-10000) [Zahl]
 - E40 Alle quittieren (1) [1 Bit]
 - E41 Alle löschen (1) [1 Bit]
+- E42 Melder nur bei Freigabe aufzeichnen (1=ja) [1 Bit]
+- E43 Freigabe 1 (z. B. extern scharf) [1 Bit]
+- E44 Freigabe 2 (z. B. intern scharf) [1 Bit]
+- E45 Nachlauf nach Ende der Freigabe (s) [Zahl]
+- E46 Quelle: Zeitfenster (s) [Zahl]
+- E47 Quelle nur an Melder (z. B. 1,2; leer=alle) [Text]
+- E48 Text ohne erkannte Quelle (z. B. Visu/QC) [Text]
+- E49 Quelle 1 (jedes Telegramm <>0) [1 Bit/Text]
+- E50 Quelle 2 (jedes Telegramm <>0) [1 Bit/Text]
+- E51 Quelle 3 (jedes Telegramm <>0) [1 Bit/Text]
+- E52 Quelle 4 (jedes Telegramm <>0) [1 Bit/Text]
+- E53 Quelle 5 (jedes Telegramm <>0) [1 Bit/Text]
+- E54 Quelle 6 (jedes Telegramm <>0) [1 Bit/Text]
+- E55 Quelle 7 (jedes Telegramm <>0) [1 Bit/Text]
+- E56 Quelle 8 (jedes Telegramm <>0) [1 Bit/Text]
+- E57 Quelle 9 (jedes Telegramm <>0) [1 Bit/Text]
+- E58 Quelle 10 (jedes Telegramm <>0) [1 Bit/Text]
+- E59 Quelle 11 (jedes Telegramm <>0) [1 Bit/Text]
+- E60 Quelle 12 (jedes Telegramm <>0) [1 Bit/Text]
+- E61 Quelle 1 Name [Text]
+- E62 Quelle 2 Name [Text]
+- E63 Quelle 3 Name [Text]
+- E64 Quelle 4 Name [Text]
+- E65 Quelle 5 Name [Text]
+- E66 Quelle 6 Name [Text]
+- E67 Quelle 7 Name [Text]
+- E68 Quelle 8 Name [Text]
+- E69 Quelle 9 Name [Text]
+- E70 Quelle 10 Name [Text]
+- E71 Quelle 11 Name [Text]
+- E72 Quelle 12 Name [Text]
 
 ## Ausgänge
 
@@ -59,6 +92,11 @@ Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Text
 - A3 Offene Meldungen (unquittiert) [Zahl]
 - A4 Offener Alarm [1 Bit]
 - A5 Status [Text]
+
+## Versionen
+
+- **1.1** (2026-11-12) – Freigabe für Alarmverfolgung, Quellen an der Meldung.
+- **1.0** (2026-11-11) – erste Version.
 
 ## Dateien
 

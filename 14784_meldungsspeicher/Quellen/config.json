@@ -5,7 +5,7 @@
     "id": "14784",
     "name": "14784 Message store",
     "hsl_filename": "14784_meldungsspeicher.hsl",
-    "version": "1.0",
+    "version": "1.1",
     "inputs": [
       {
         "type": "number",
@@ -252,6 +252,192 @@
         "identifier": "clear",
         "init_value": 0,
         "label": "I41 Delete all (1) [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "gate_on",
+        "init_value": 0,
+        "label": "I42 Record signals only while enabled (1=yes) [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "gate1",
+        "init_value": 0,
+        "label": "I43 Enable 1 (e.g. armed external) [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "gate2",
+        "init_value": 0,
+        "label": "I44 Enable 2 (e.g. armed internal) [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "gate_after",
+        "init_value": 60,
+        "label": "I45 Keep recording after enable ends (s) [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "src_win",
+        "init_value": 10,
+        "label": "I46 Source window (s) [number]"
+      },
+      {
+        "type": "string",
+        "identifier": "src_for",
+        "init_value": "",
+        "label": "I47 Source only for signals (e.g. 1,2; empty=all) [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "src_none",
+        "init_value": "",
+        "label": "I48 Text if no source seen (e.g. Visu/QC) [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q1",
+        "init_value": "",
+        "label": "I49 Source 1 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q2",
+        "init_value": "",
+        "label": "I50 Source 2 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q3",
+        "init_value": "",
+        "label": "I51 Source 3 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q4",
+        "init_value": "",
+        "label": "I52 Source 4 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q5",
+        "init_value": "",
+        "label": "I53 Source 5 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q6",
+        "init_value": "",
+        "label": "I54 Source 6 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q7",
+        "init_value": "",
+        "label": "I55 Source 7 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q8",
+        "init_value": "",
+        "label": "I56 Source 8 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q9",
+        "init_value": "",
+        "label": "I57 Source 9 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q10",
+        "init_value": "",
+        "label": "I58 Source 10 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q11",
+        "init_value": "",
+        "label": "I59 Source 11 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "q12",
+        "init_value": "",
+        "label": "I60 Source 12 (any telegram <>0) [1 bit/text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn1",
+        "init_value": "",
+        "label": "I61 Source 1 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn2",
+        "init_value": "",
+        "label": "I62 Source 2 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn3",
+        "init_value": "",
+        "label": "I63 Source 3 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn4",
+        "init_value": "",
+        "label": "I64 Source 4 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn5",
+        "init_value": "",
+        "label": "I65 Source 5 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn6",
+        "init_value": "",
+        "label": "I66 Source 6 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn7",
+        "init_value": "",
+        "label": "I67 Source 7 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn8",
+        "init_value": "",
+        "label": "I68 Source 8 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn9",
+        "init_value": "",
+        "label": "I69 Source 9 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn10",
+        "init_value": "",
+        "label": "I70 Source 10 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn11",
+        "init_value": "",
+        "label": "I71 Source 11 name [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "qn12",
+        "init_value": "",
+        "label": "I72 Source 12 name [text]"
       }
     ],
     "outputs": [
@@ -526,6 +712,99 @@
           },
           {
             "label": "E41 Alle löschen (1) [1 Bit]"
+          },
+          {
+            "label": "E42 Melder nur bei Freigabe aufzeichnen (1=ja) [1 Bit]"
+          },
+          {
+            "label": "E43 Freigabe 1 (z. B. extern scharf) [1 Bit]"
+          },
+          {
+            "label": "E44 Freigabe 2 (z. B. intern scharf) [1 Bit]"
+          },
+          {
+            "label": "E45 Nachlauf nach Ende der Freigabe (s) [Zahl]"
+          },
+          {
+            "label": "E46 Quelle: Zeitfenster (s) [Zahl]"
+          },
+          {
+            "label": "E47 Quelle nur an Melder (z. B. 1,2; leer=alle) [Text]"
+          },
+          {
+            "label": "E48 Text ohne erkannte Quelle (z. B. Visu/QC) [Text]"
+          },
+          {
+            "label": "E49 Quelle 1 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E50 Quelle 2 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E51 Quelle 3 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E52 Quelle 4 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E53 Quelle 5 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E54 Quelle 6 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E55 Quelle 7 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E56 Quelle 8 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E57 Quelle 9 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E58 Quelle 10 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E59 Quelle 11 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E60 Quelle 12 (jedes Telegramm <>0) [1 Bit/Text]"
+          },
+          {
+            "label": "E61 Quelle 1 Name [Text]"
+          },
+          {
+            "label": "E62 Quelle 2 Name [Text]"
+          },
+          {
+            "label": "E63 Quelle 3 Name [Text]"
+          },
+          {
+            "label": "E64 Quelle 4 Name [Text]"
+          },
+          {
+            "label": "E65 Quelle 5 Name [Text]"
+          },
+          {
+            "label": "E66 Quelle 6 Name [Text]"
+          },
+          {
+            "label": "E67 Quelle 7 Name [Text]"
+          },
+          {
+            "label": "E68 Quelle 8 Name [Text]"
+          },
+          {
+            "label": "E69 Quelle 9 Name [Text]"
+          },
+          {
+            "label": "E70 Quelle 10 Name [Text]"
+          },
+          {
+            "label": "E71 Quelle 11 Name [Text]"
+          },
+          {
+            "label": "E72 Quelle 12 Name [Text]"
           }
         ],
         "translation_outputs": [

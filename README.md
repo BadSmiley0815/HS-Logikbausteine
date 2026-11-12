@@ -13,7 +13,7 @@ Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14785**
 
 | ID | Baustein | Version | Port / Pfad |
 |---|---|---|---|
-| 14770 | [Visu-Server](14770_visuserver/) | 1.12 | 8092 `/visu-daten/` |
+| 14770 | [Visu-Server](14770_visuserver/) | 1.13 | 8092 `/visu-daten/` |
 | 14771 | [Verlaufsspeicher für Diagramme](14771_verlauf/) | 2.7 |  |
 | 14772 | KNX-Tunnel Senden – noch nicht veröffentlicht | ? |  |
 | 14773 | KNX-Tunnel Empfangen – noch nicht veröffentlicht | ? |  |
@@ -27,7 +27,7 @@ Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14785**
 | 14781 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14782 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14783 | [Kamera-Proxy](14783_kameraproxy/) | 0.4 (Prüffassung) | 8095 `/kamera/` |
-| 14784 | [Meldungsspeicher](14784_meldungsspeicher/) | 1.0 |  |
+| 14784 | [Meldungsspeicher](14784_meldungsspeicher/) | 1.1 |  |
 
 ## Auf einen Blick
 
