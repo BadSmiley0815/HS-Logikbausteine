@@ -7,7 +7,7 @@ Passend dazu: [QC-Client](https://github.com/BadSmiley0815/QC-Client) – der Qu
 
 Alle Versionen aller Bausteine: [CHANGELOG.md](CHANGELOG.md)
 
-Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14785**
+Stand 12.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14786**
 
 ## Bausteine
 
@@ -28,6 +28,7 @@ Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14785**
 | 14782 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14783 | [Kamera-Proxy](14783_kameraproxy/) | 0.4 (Prüffassung) | 8095 `/kamera/` |
 | 14784 | [Meldungsspeicher](14784_meldungsspeicher/) | 1.1 |  |
+| 14785 | [Bewässerung 5 Kreise (kaskadierbar)](14785_Bewaesserung/) | 1.0 |  |
 
 ## Auf einen Blick
 
@@ -75,7 +76,11 @@ Axis-Kameras per Digest für den QC-Client.
 
 ### [14784 Meldungsspeicher](14784_meldungsspeicher/)
 
-Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Texten, Freitext, Quittieren; Abruf über den Visu-Server 14770.
+Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Texten, Freitext, Quittieren; Abruf über den Visu-Server 14770; ab 1.1 Freigabe (Alarmverfolgung) und Quellen (z. B. Schlüsselschalter) an der Meldung.
+
+### [14785 Bewässerung 5 Kreise (kaskadierbar)](14785_Bewaesserung/)
+
+Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge); Endzeit statt Startzeit, Lauf 1/2 (12 h), Regen-/Frostsperre, Parallel/Überlappung, Netzteil 24 V, Pumpe, Nachspeisung, Trockenlauf.
 
 ## Regeln
 
