@@ -1,0 +1,99 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><title>14785 Bewässerung 5 Kreise (kaskadierbar) (v1.0)</title><style>body{font:14px/1.5 Arial,sans-serif;margin:16px;max-width:900px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eef}code{background:#f3f3f3;padding:0 3px}.b{display:inline-block;background:#e8eefc;border-radius:10px;padding:1px 8px;margin-right:6px}.w{background:#fff6e0;border-left:4px solid #e0a000;padding:6px 10px}</style></head><body>
+<h2>14785 – Bewässerung 5 Kreise (kaskadierbar) (v1.0)</h2>
+<p><span class="b">Baustein-ID 14785</span><span class="b">Version 1.0</span><span class="b">HSL 3.0</span></p>
+<p>Gartenbewässerung mit 5 Kreisen je Baustein. Über die Kaskade lassen sich beliebig viele Bausteine hintereinanderschalten (Master → Folge 1 → Folge 2 …), z. B. 2 Bausteine für 10 Kreise.</p>
+<h3>Funktion</h3><ul><li><b>Laufzeit 0 = Kreis wird übersprungen.</b> Wetterfaktor (E9) skaliert alle Laufzeiten.</li><li><b>Lauf 1</b> = alle Kreise mit Laufzeit. <b>Lauf 2</b> (12 h später) = nur Kreise mit Zyklus 2. Die Laufzeit gilt je Lauf.</li><li><b>Endzeit statt Startzeit:</b> In E8 steht, wann Lauf 1 fertig sein soll. Der Master rechnet die Gesamtlaufzeit der ganzen Kette aus (A8/A9) und startet selbst zur empfohlenen Startzeit (A10–A13). Ändern sich Laufzeiten oder Wetterfaktor, verschiebt sich der Start automatisch. Die Zeitschaltuhr im QC braucht es nur noch für die <b>Tage</b>: sie schaltet E5 Automatik.</li><li><b>Reihenfolge:</b> Kreise laufen in Nummernreihenfolge. „Parallel erlaubt“ = 0: Kreis läuft allein (Regner). = 1: läuft neben anderen Parallel-Kreisen, bis E16 erreicht ist (Tropfschläuche). Parallel nur innerhalb eines Bausteins – Tropfer-Kreise in denselben Baustein legen.</li><li><b>Handstart</b> (Kreis-Eingang „Hand“ = 1): läuft kein Programm, startet ein Hand-Lauf (A5 = 3) mit Netzteil und Pumpe. Läuft gerade ein Programm, wird der Kreis hinten angehängt bzw. nach dem Programm gestartet. „Hand“ = 0 bricht ab.</li><li><b>Regensperre</b> je Kreis wählbar. Erst nach E11 Sekunden Dauerregen aktiv, danach noch E12 Minuten. Ein laufender Kreis mit Regensperre wird abgebrochen, wartende werden übersprungen, Kreise ohne Regensperre laufen weiter. Nicht nachgeholt.</li><li><b>Frostsperre</b> für alle Kreise (Hysterese 1 K). Automatikstart entfällt; Handstart je nach E15.</li><li><b>Watchdog:</b> kein Ventil länger offen als E19.</li><li><b>HS-Neustart:</b> alle Ventile zu, ein unterbrochener Lauf wird nicht fortgesetzt.</li></ul>
+<h3>Versorgung (nur Master)</h3><ul><li><b>Netzteil 24 V (A1):</b> E20 Modus 0 = nur während des Laufs (Vorlauf E21, Nachlauf E22), 1 = dauerhaft, 2 = zusätzlich E23 Minuten nach jedem Lauf an.</li><li><b>Pumpe (A2):</b> Einschaltverzögerung nach dem Ventil (E24), Druckentlastung vor dem letzten Ventil (E25). Bei Überlappung läuft sie durch, bei Pause geht sie zwischen den Kreisen aus.</li><li><b>Fall A – Nachbefüllung autark</b> (Schwimmer schaltet ein 24-V-Ventil direkt, der HS weiß davon nichts): E26/E27 frei lassen, E20 = 2 (oder 1), damit der Schwimmer auch nach dem Lauf Spannung hat. <b>Kein Trockenlaufschutz durch den Baustein</b> – die Pumpe braucht ihren eigenen (Druckschalter/Trockenlaufschutz an der Pumpe).</li><li><b>Fall B – Schwimmer am KNX:</b> E26 (min, 1 = leer) startet A3 Nachspeisung, E27 (max, 1 = voll) beendet sie, sonst nach E29. Mit E28 = 1 nur während eines Laufs. Bleibt die Zisterne während eines Laufs länger als E30 leer, pausiert der Lauf (Pumpe aus, Ventile zu, Restzeiten bleiben) und läuft weiter, sobald wieder Wasser da ist.</li></ul>
+<h3>Kaskade</h3><ul><li>Erster Baustein: E1 = 0 (Master), alle allgemeinen Eingänge hier. Weitere Bausteine: E1 = 1 (Folge), E2 = erste Kreisnummer (6, 11 …).</li><li>Verbindung je über ein <b>Text-iKO</b> pro Richtung: <code>A19 Master → E3 Folge 1</code>, <code>A20 Folge 1 → E4 Master</code>, dann <code>A19 Folge 1 → E3 Folge 2</code>, <code>A20 Folge 2 → E4 Folge 1</code> usw.</li><li>Der Master arbeitet seine Kreise ab und gibt dann an Folge 1 weiter. Netzteil, Pumpe, Nachspeisung, Regen/Frost und Start/Stopp steuert nur der Master; die Folge meldet offene Ventile, Restzeiten, Handanforderungen und Störungen zurück.</li><li>Empfehlung: E18 Überlappung 2–5 s, damit die Pumpe bei der Übergabe zwischen den Bausteinen nicht kurz gegen geschlossene Ventile läuft.</li></ul>
+<h3>iKOs anlegen</h3><ul><li>Am schnellsten per CSV-Import im Experten: <i>Kommunikationsobjekte → Extras → Datenabgleich → CSV-Datei synchronisieren/importieren</i>.</li><li>Einstellwerte (Laufzeiten, Zyklus, Endzeit …) als <b>remanente</b> iKOs anlegen, damit sie einen Neustart überstehen.</li></ul>
+<p class="w">Am HS noch zu prüfen: Uhrzeit-KO (DPT 10) an E8/A10/A12 – falls der HS die Uhrzeit anders übergibt, an E8 einen 14-Byte-Text „06:00“ verwenden und A11/A13 (Text) anzeigen. Lange Texte (A18–A20) über Text-iKOs.</p>
+<h3>Eingänge</h3><table><tr><th>Nr.</th><th>Eingang</th><th>Start</th><th>Hinweis</th></tr>
+<tr><td>E1</td><td>Modus (0=Master 1=Folge) [Zahl]</td><td>0</td><td>0 = Master (erster Baustein), 1 = Folge. Folge-Bausteine bekommen alle allgemeinen Werte über die Kaskade; ihre E5–E31 bleiben frei.</td></tr>
+<tr><td>E2</td><td>Erste Kreisnummer [Zahl]</td><td>1</td><td>Nummer des ersten Kreises dieses Bausteins für Status und Anzeige (Master 1, Folge 1 = 6, Folge 2 = 11 …).</td></tr>
+<tr><td>E3</td><td>Kaskade von Vorgänger (A19) [Text]</td><td></td><td>Nur Folge: A19 des Vorgängers anschließen (Text-iKO).</td></tr>
+<tr><td>E4</td><td>Rückmeldung von Folge (A20) [Text]</td><td></td><td>A20 des nächsten Folge-Bausteins anschließen (Text-iKO). Leer = keine Folge.</td></tr>
+<tr><td>E5</td><td>Automatik Ein/Aus [1 Bit]</td><td>1</td><td>Tagesfreigabe für den automatischen Start, z. B. von einer Zeitschaltuhr nur Mo/Mi/Fr. Ein laufender Lauf wird nicht abgebrochen.</td></tr>
+<tr><td>E6</td><td>Programm starten (Lauf 1) [1 Bit]</td><td>0</td><td>1 startet Lauf 1 sofort (alle Kreise mit Laufzeit).</td></tr>
+<tr><td>E7</td><td>Alles stoppen [1 Bit]</td><td>0</td><td>1 schließt alle Ventile der ganzen Kette und verwirft Warteschlange und Handanforderungen.</td></tr>
+<tr><td>E8</td><td>Gewünschtes Ende Lauf 1, Lauf 2 = +12 h [Uhrzeit/Text hh:mm]</td><td>06:00</td><td>Uhrzeit, zu der Lauf 1 fertig sein soll. Lauf 2 endet 12 h später. Text „06:00“, Zahl ≤ 24 = Stunden (6.5 = 06:30), Zahl > 24 = Sekunden ab Mitternacht.</td></tr>
+<tr><td>E9</td><td>Wetterfaktor [% Zahl]</td><td>100</td><td>Skaliert alle Laufzeiten (100 = wie eingestellt).</td></tr>
+<tr><td>E10</td><td>Regensensor [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E11</td><td>Regen Einschaltverzögerung [s Zahl]</td><td>300</td><td>So lange muss der Regensensor ununterbrochen 1 melden, bevor die Sperre greift.</td></tr>
+<tr><td>E12</td><td>Regen Nachwirkzeit [min Zahl]</td><td>120</td><td>So lange bleibt die Sperre nach dem Regen noch aktiv (0 = sofort aus).</td></tr>
+<tr><td>E13</td><td>Außentemperatur [2 Byte Gleitkomma]</td><td>20</td><td>Ohne Anschluss bleibt der Startwert 20 °C (keine Frostsperre).</td></tr>
+<tr><td>E14</td><td>Frostgrenze [°C Zahl]</td><td>3</td><td>Unter dieser Temperatur Frostsperre für alle Kreise, aus erst wieder ab Grenze + 1 K.</td></tr>
+<tr><td>E15</td><td>Handstart bei Regen/Frost erlaubt [1 Bit]</td><td>1</td><td>1 = Handstart einzelner Kreise auch bei Regen- oder Frostsperre (z. B. zum Entleeren).</td></tr>
+<tr><td>E16</td><td>Max. Kreise gleichzeitig je Baustein [Zahl]</td><td>1</td><td>Wie viele Kreise mit „Parallel erlaubt“ in diesem Baustein gleichzeitig laufen dürfen.</td></tr>
+<tr><td>E17</td><td>Pause zwischen Kreisen [s Zahl]</td><td>0</td><td>Wartezeit nach dem Schließen eines Ventils. Ist eine Pause eingestellt, gilt die Überlappung nicht und die Pumpe geht in der Pause aus.</td></tr>
+<tr><td>E18</td><td>Überlappung Kreiswechsel [s Zahl]</td><td>0</td><td>Das nächste Ventil öffnet so viele Sekunden, bevor das vorige schließt; die Pumpe läuft durch. Empfehlung bei Kaskade: 2–5 s.</td></tr>
+<tr><td>E19</td><td>Max. Laufzeit je Ventil, Watchdog [min Zahl]</td><td>120</td><td>Sicherheitsgrenze: kein Ventil bleibt länger offen. Laufzeiten darüber werden gekappt.</td></tr>
+<tr><td>E20</td><td>Netzteil-Modus 0=Lauf 1=dauerhaft 2=Lauf+Fenster [Zahl]</td><td>2</td><td>0 = nur während des Laufs, 1 = dauerhaft an, 2 = Lauf + Nachspeisefenster (E23).</td></tr>
+<tr><td>E21</td><td>Netzteil Vorlauf [s Zahl]</td><td>2</td><td></td></tr>
+<tr><td>E22</td><td>Netzteil Nachlauf [s Zahl]</td><td>5</td><td></td></tr>
+<tr><td>E23</td><td>Nachspeisefenster nach Lauf [min Zahl]</td><td>60</td><td>Modus 2: So lange bleibt das Netzteil nach einem Lauf noch an, damit ein autarker Schwimmer (24-V-Ventil am selben Netzteil) nachfüllen kann.</td></tr>
+<tr><td>E24</td><td>Pumpe Einschaltverzögerung nach Ventil [s Zahl]</td><td>3</td><td>Erst öffnet das Ventil, dann läuft die Pumpe an.</td></tr>
+<tr><td>E25</td><td>Pumpe Druckentlastung [s Zahl]</td><td>3</td><td>Die Pumpe geht so viele Sekunden vor dem letzten Ventil aus (Druck ablassen).</td></tr>
+<tr><td>E26</td><td>Füllstand min, 1=leer [1 Bit]</td><td>0</td><td>Nur bei Schwimmer am KNX: 1 = Zisterne leer. Startet die Nachspeisung; während eines Laufs nach E30 Trockenlaufschutz.</td></tr>
+<tr><td>E27</td><td>Füllstand max, 1=voll [1 Bit]</td><td>0</td><td>Optional: 1 = voll, beendet die Nachspeisung. Wurde nie eine 1 empfangen, beendet die Max-Zeit die Nachspeisung ohne Störung.</td></tr>
+<tr><td>E28</td><td>Nachspeisung nur während Lauf [1 Bit]</td><td>0</td><td>1 = nachspeisen nur während eines Laufs.</td></tr>
+<tr><td>E29</td><td>Nachspeisung Max-Zeit [min Zahl]</td><td>60</td><td>Watchdog Nachspeisung. Mit Max-Schwimmer → Störung bei Überschreitung.</td></tr>
+<tr><td>E30</td><td>Trockenlauf Verzögerung [s Zahl]</td><td>30</td><td>Zisterne länger leer → Pumpe aus, Ventile zu, Lauf pausiert; Restzeiten bleiben erhalten.</td></tr>
+<tr><td>E31</td><td>Störung quittieren [1 Bit]</td><td>0</td><td>1 löscht gespeicherte Störungen (Watchdog, Nachspeisung).</td></tr>
+<tr><td>E32</td><td>Kreis 1 Laufzeit, 0=überspringen [min Zahl]</td><td>0</td><td></td></tr>
+<tr><td>E33</td><td>Kreis 1 Zyklus 1=1x 2=2x täglich [Zahl]</td><td>1</td><td></td></tr>
+<tr><td>E34</td><td>Kreis 1 Regensperre beachten [1 Bit]</td><td>1</td><td></td></tr>
+<tr><td>E35</td><td>Kreis 1 Parallel erlaubt [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E36</td><td>Kreis 1 Hand Start/Stopp [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E37</td><td>Kreis 2 Laufzeit, 0=überspringen [min Zahl]</td><td>0</td><td></td></tr>
+<tr><td>E38</td><td>Kreis 2 Zyklus 1=1x 2=2x täglich [Zahl]</td><td>1</td><td></td></tr>
+<tr><td>E39</td><td>Kreis 2 Regensperre beachten [1 Bit]</td><td>1</td><td></td></tr>
+<tr><td>E40</td><td>Kreis 2 Parallel erlaubt [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E41</td><td>Kreis 2 Hand Start/Stopp [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E42</td><td>Kreis 3 Laufzeit, 0=überspringen [min Zahl]</td><td>0</td><td></td></tr>
+<tr><td>E43</td><td>Kreis 3 Zyklus 1=1x 2=2x täglich [Zahl]</td><td>1</td><td></td></tr>
+<tr><td>E44</td><td>Kreis 3 Regensperre beachten [1 Bit]</td><td>1</td><td></td></tr>
+<tr><td>E45</td><td>Kreis 3 Parallel erlaubt [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E46</td><td>Kreis 3 Hand Start/Stopp [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E47</td><td>Kreis 4 Laufzeit, 0=überspringen [min Zahl]</td><td>0</td><td></td></tr>
+<tr><td>E48</td><td>Kreis 4 Zyklus 1=1x 2=2x täglich [Zahl]</td><td>1</td><td></td></tr>
+<tr><td>E49</td><td>Kreis 4 Regensperre beachten [1 Bit]</td><td>1</td><td></td></tr>
+<tr><td>E50</td><td>Kreis 4 Parallel erlaubt [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E51</td><td>Kreis 4 Hand Start/Stopp [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E52</td><td>Kreis 5 Laufzeit, 0=überspringen [min Zahl]</td><td>0</td><td></td></tr>
+<tr><td>E53</td><td>Kreis 5 Zyklus 1=1x 2=2x täglich [Zahl]</td><td>1</td><td></td></tr>
+<tr><td>E54</td><td>Kreis 5 Regensperre beachten [1 Bit]</td><td>1</td><td></td></tr>
+<tr><td>E55</td><td>Kreis 5 Parallel erlaubt [1 Bit]</td><td>0</td><td></td></tr>
+<tr><td>E56</td><td>Kreis 5 Hand Start/Stopp [1 Bit]</td><td>0</td><td></td></tr>
+</table><h3>Ausgänge</h3><table><tr><th>Nr.</th><th>Ausgang</th><th>Hinweis</th></tr>
+<tr><td>A1</td><td>Versorgung 24 V [1 Bit]</td><td>Nur Master. Mit Vor- und Nachlauf.</td></tr>
+<tr><td>A2</td><td>Pumpe [1 Bit]</td><td>Nur Master. Gilt für die ganze Kette.</td></tr>
+<tr><td>A3</td><td>Nachspeisung [1 Bit]</td><td>Nur Master.</td></tr>
+<tr><td>A4</td><td>Programm läuft [1 Bit]</td><td></td></tr>
+<tr><td>A5</td><td>Aktiver Lauf 0=keiner 1 2 3=Hand [Zahl]</td><td></td></tr>
+<tr><td>A6</td><td>Aktive Kreise [14 Byte Text]</td><td>Kreisnummern aller offenen Ventile der Kette, z. B. „3,4,5“.</td></tr>
+<tr><td>A7</td><td>Restzeit gesamt [min Zahl]</td><td>Restzeit des laufenden Laufs über die ganze Kette.</td></tr>
+<tr><td>A8</td><td>Gesamtlaufzeit Lauf 1 [min Zahl]</td><td>Geplante Dauer Lauf 1 der ganzen Kette inkl. Netzteil-Vorlauf, mit Wetterfaktor, Pausen, Überlappung, Parallelität. Kreise mit Regensperre sind immer mitgerechnet.</td></tr>
+<tr><td>A9</td><td>Gesamtlaufzeit Lauf 2 [min Zahl]</td><td>Wie A8, nur Kreise mit Zyklus 2.</td></tr>
+<tr><td>A10</td><td>Startzeit Lauf 1 [Uhrzeit, s ab 0 Uhr]</td><td>Startzeit = Ende − Gesamtlaufzeit; der Master startet zu dieser Zeit selbst (wenn E5 = 1).</td></tr>
+<tr><td>A11</td><td>Startzeit Lauf 1 [14 Byte Text]</td><td></td></tr>
+<tr><td>A12</td><td>Startzeit Lauf 2 [Uhrzeit, s ab 0 Uhr]</td><td>Wie A10 für Lauf 2 (Ende + 12 h).</td></tr>
+<tr><td>A13</td><td>Startzeit Lauf 2 [14 Byte Text]</td><td></td></tr>
+<tr><td>A14</td><td>Regensperre aktiv [1 Bit]</td><td></td></tr>
+<tr><td>A15</td><td>Frostsperre aktiv [1 Bit]</td><td></td></tr>
+<tr><td>A16</td><td>Störung [1 Bit]</td><td>Watchdog, Nachspeisung zu lang, Trockenlauf oder Störung in einer Folge.</td></tr>
+<tr><td>A17</td><td>Status kurz [14 Byte Text]</td><td>Max. 14 Zeichen, z. B. „L1 K3 12m“, „Start 05:36“, „Regensperre“.</td></tr>
+<tr><td>A18</td><td>Status ausführlich [Text]</td><td>Ausführlicher Status mit letzter Meldung (für Visu, nicht für KNX).</td></tr>
+<tr><td>A19</td><td>Kaskade an Folge (E3) [Text]</td><td>An E3 des nächsten Folge-Bausteins.</td></tr>
+<tr><td>A20</td><td>Rückmeldung an Vorgänger (E4) [Text]</td><td>Nur Folge: an E4 des Vorgängers.</td></tr>
+<tr><td>A21</td><td>Kreis 1 Ventil [1 Bit]</td><td></td></tr>
+<tr><td>A22</td><td>Kreis 1 Restzeit [min Zahl]</td><td></td></tr>
+<tr><td>A23</td><td>Kreis 2 Ventil [1 Bit]</td><td></td></tr>
+<tr><td>A24</td><td>Kreis 2 Restzeit [min Zahl]</td><td></td></tr>
+<tr><td>A25</td><td>Kreis 3 Ventil [1 Bit]</td><td></td></tr>
+<tr><td>A26</td><td>Kreis 3 Restzeit [min Zahl]</td><td></td></tr>
+<tr><td>A27</td><td>Kreis 4 Ventil [1 Bit]</td><td></td></tr>
+<tr><td>A28</td><td>Kreis 4 Restzeit [min Zahl]</td><td></td></tr>
+<tr><td>A29</td><td>Kreis 5 Ventil [1 Bit]</td><td></td></tr>
+<tr><td>A30</td><td>Kreis 5 Restzeit [min Zahl]</td><td></td></tr>
+</table><h3>Versionen</h3><ul><li><b>1.0</b> – erste Version: 5 Kreise, Kaskade, Lauf 1/2 mit Endzeit, Regen/Frost, Netzteil/Pumpe/Nachspeisung, Trockenlauf</li></ul>
+<p>© BadSmiley0815 · GPL-3.0 · github.com/BadSmiley0815/HS-Logikbausteine</p></body></html>

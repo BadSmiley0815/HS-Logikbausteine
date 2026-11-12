@@ -196,6 +196,19 @@
    "datei": "14784_meldungsspeicher/14784_meldungsspeicher.hslz",
    "einsatz": "Eigenes Meldungsarchiv (z. B. Wetterstation, Alarmanlage) – 16 Melder mit Texten, Freitext, Quittieren; Abruf über den Visu-Server 14770; ab 1.1 Freigabe (Alarmverfolgung) und Quellen (z. B. Schlüsselschalter) an der Meldung",
    "status": "neu, am HS noch nicht getestet"
+  },
+  {
+   "id": 14785,
+   "name": "Bewässerung 5 Kreise (kaskadierbar)",
+   "version": "1.0",
+   "art": "HSL3",
+   "kategorie": "Garten",
+   "port": null,
+   "pfad": "",
+   "ex": "",
+   "datei": "14785_Bewaesserung/14785_Bewaesserung.hslz",
+   "einsatz": "Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge); Endzeit statt Startzeit, Lauf 1/2 (12 h), Regen-/Frostsperre, Parallel/Überlappung, Netzteil 24 V, Pumpe, Nachspeisung, Trockenlauf",
+   "status": "neu, am HS noch nicht getestet"
   }
  ],
  "regeln": [

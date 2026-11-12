@@ -1,0 +1,178 @@
+5000|"Garden\14785 Irrigation 5 circuits (cascadable)"|0|56|"I1 Mode (0=master 1=follower) [number]"|"I2 First circuit number [number]"|"I3 Cascade from predecessor (O19) [text]"|"I4 Feedback from follower (O20) [text]"|"I5 Automatic on/off [1 bit]"|"I6 Start program (run 1) [1 bit]"|"I7 Stop all [1 bit]"|"I8 Desired end run 1, run 2 = +12 h [time/text hh:mm]"|"I9 Weather factor [% number]"|"I10 Rain sensor [1 bit]"|"I11 Rain on-delay [s number]"|"I12 Rain hold time after rain [min number]"|"I13 Outdoor temperature [2 byte float]"|"I14 Frost limit [degC number]"|"I15 Manual start allowed at rain/frost [1 bit]"|"I16 Max. circuits at once per block [number]"|"I17 Pause between circuits [s number]"|"I18 Overlap at circuit change [s number]"|"I19 Max. run time per valve, watchdog [min number]"|"I20 PSU mode 0=run 1=permanent 2=run+window [number]"|"I21 PSU lead time [s number]"|"I22 PSU run-on [s number]"|"I23 Refill window after run [min number]"|"I24 Pump on-delay after valve [s number]"|"I25 Pump pressure relief [s number]"|"I26 Level min, 1=empty [1 bit]"|"I27 Level max, 1=full [1 bit]"|"I28 Refill only during run [1 bit]"|"I29 Refill max. time [min number]"|"I30 Dry-run delay [s number]"|"I31 Acknowledge fault [1 bit]"|"I32 Circuit 1 run time, 0=skip [min number]"|"I33 Circuit 1 cycle 1=1x 2=2x daily [number]"|"I34 Circuit 1 observe rain lock [1 bit]"|"I35 Circuit 1 parallel allowed [1 bit]"|"I36 Circuit 1 manual start/stop [1 bit]"|"I37 Circuit 2 run time, 0=skip [min number]"|"I38 Circuit 2 cycle 1=1x 2=2x daily [number]"|"I39 Circuit 2 observe rain lock [1 bit]"|"I40 Circuit 2 parallel allowed [1 bit]"|"I41 Circuit 2 manual start/stop [1 bit]"|"I42 Circuit 3 run time, 0=skip [min number]"|"I43 Circuit 3 cycle 1=1x 2=2x daily [number]"|"I44 Circuit 3 observe rain lock [1 bit]"|"I45 Circuit 3 parallel allowed [1 bit]"|"I46 Circuit 3 manual start/stop [1 bit]"|"I47 Circuit 4 run time, 0=skip [min number]"|"I48 Circuit 4 cycle 1=1x 2=2x daily [number]"|"I49 Circuit 4 observe rain lock [1 bit]"|"I50 Circuit 4 parallel allowed [1 bit]"|"I51 Circuit 4 manual start/stop [1 bit]"|"I52 Circuit 5 run time, 0=skip [min number]"|"I53 Circuit 5 cycle 1=1x 2=2x daily [number]"|"I54 Circuit 5 observe rain lock [1 bit]"|"I55 Circuit 5 parallel allowed [1 bit]"|"I56 Circuit 5 manual start/stop [1 bit]"|30|"O1 Supply 24 V [1 bit]"|"O2 Pump [1 bit]"|"O3 Refill [1 bit]"|"O4 Program running [1 bit]"|"O5 Active run 0=none 1 2 3=manual [number]"|"O6 Active circuits [14 byte text]"|"O7 Remaining time total [min number]"|"O8 Total run time run 1 [min number]"|"O9 Total run time run 2 [min number]"|"O10 Start time run 1 [time, s from midnight]"|"O11 Start time run 1 [14 byte text]"|"O12 Start time run 2 [time, s from midnight]"|"O13 Start time run 2 [14 byte text]"|"O14 Rain lock active [1 bit]"|"O15 Frost lock active [1 bit]"|"O16 Fault [1 bit]"|"O17 Status short [14 byte text]"|"O18 Status detailed [text]"|"O19 Cascade to follower (I3) [text]"|"O20 Feedback to predecessor (I4) [text]"|"O21 Circuit 1 valve [1 bit]"|"O22 Circuit 1 remaining time [min number]"|"O23 Circuit 2 valve [1 bit]"|"O24 Circuit 2 remaining time [min number]"|"O25 Circuit 3 valve [1 bit]"|"O26 Circuit 3 remaining time [min number]"|"O27 Circuit 4 valve [1 bit]"|"O28 Circuit 4 remaining time [min number]"|"O29 Circuit 5 valve [1 bit]"|"O30 Circuit 5 remaining time [min number]"|"1.0"|0|0
+4999|"de"|"Garten\14785 Bewässerung 5 Kreise (kaskadierbar)"|"E1 Modus (0=Master 1=Folge) [Zahl]"|"E2 Erste Kreisnummer [Zahl]"|"E3 Kaskade von Vorgänger (A19) [Text]"|"E4 Rückmeldung von Folge (A20) [Text]"|"E5 Automatik Ein/Aus [1 Bit]"|"E6 Programm starten (Lauf 1) [1 Bit]"|"E7 Alles stoppen [1 Bit]"|"E8 Gewünschtes Ende Lauf 1, Lauf 2 = +12 h [Uhrzeit/Text hh:mm]"|"E9 Wetterfaktor [% Zahl]"|"E10 Regensensor [1 Bit]"|"E11 Regen Einschaltverzögerung [s Zahl]"|"E12 Regen Nachwirkzeit [min Zahl]"|"E13 Außentemperatur [2 Byte Gleitkomma]"|"E14 Frostgrenze [°C Zahl]"|"E15 Handstart bei Regen/Frost erlaubt [1 Bit]"|"E16 Max. Kreise gleichzeitig je Baustein [Zahl]"|"E17 Pause zwischen Kreisen [s Zahl]"|"E18 Überlappung Kreiswechsel [s Zahl]"|"E19 Max. Laufzeit je Ventil, Watchdog [min Zahl]"|"E20 Netzteil-Modus 0=Lauf 1=dauerhaft 2=Lauf+Fenster [Zahl]"|"E21 Netzteil Vorlauf [s Zahl]"|"E22 Netzteil Nachlauf [s Zahl]"|"E23 Nachspeisefenster nach Lauf [min Zahl]"|"E24 Pumpe Einschaltverzögerung nach Ventil [s Zahl]"|"E25 Pumpe Druckentlastung [s Zahl]"|"E26 Füllstand min, 1=leer [1 Bit]"|"E27 Füllstand max, 1=voll [1 Bit]"|"E28 Nachspeisung nur während Lauf [1 Bit]"|"E29 Nachspeisung Max-Zeit [min Zahl]"|"E30 Trockenlauf Verzögerung [s Zahl]"|"E31 Störung quittieren [1 Bit]"|"E32 Kreis 1 Laufzeit, 0=überspringen [min Zahl]"|"E33 Kreis 1 Zyklus 1=1x 2=2x täglich [Zahl]"|"E34 Kreis 1 Regensperre beachten [1 Bit]"|"E35 Kreis 1 Parallel erlaubt [1 Bit]"|"E36 Kreis 1 Hand Start/Stopp [1 Bit]"|"E37 Kreis 2 Laufzeit, 0=überspringen [min Zahl]"|"E38 Kreis 2 Zyklus 1=1x 2=2x täglich [Zahl]"|"E39 Kreis 2 Regensperre beachten [1 Bit]"|"E40 Kreis 2 Parallel erlaubt [1 Bit]"|"E41 Kreis 2 Hand Start/Stopp [1 Bit]"|"E42 Kreis 3 Laufzeit, 0=überspringen [min Zahl]"|"E43 Kreis 3 Zyklus 1=1x 2=2x täglich [Zahl]"|"E44 Kreis 3 Regensperre beachten [1 Bit]"|"E45 Kreis 3 Parallel erlaubt [1 Bit]"|"E46 Kreis 3 Hand Start/Stopp [1 Bit]"|"E47 Kreis 4 Laufzeit, 0=überspringen [min Zahl]"|"E48 Kreis 4 Zyklus 1=1x 2=2x täglich [Zahl]"|"E49 Kreis 4 Regensperre beachten [1 Bit]"|"E50 Kreis 4 Parallel erlaubt [1 Bit]"|"E51 Kreis 4 Hand Start/Stopp [1 Bit]"|"E52 Kreis 5 Laufzeit, 0=überspringen [min Zahl]"|"E53 Kreis 5 Zyklus 1=1x 2=2x täglich [Zahl]"|"E54 Kreis 5 Regensperre beachten [1 Bit]"|"E55 Kreis 5 Parallel erlaubt [1 Bit]"|"E56 Kreis 5 Hand Start/Stopp [1 Bit]"|"A1 Versorgung 24 V [1 Bit]"|"A2 Pumpe [1 Bit]"|"A3 Nachspeisung [1 Bit]"|"A4 Programm läuft [1 Bit]"|"A5 Aktiver Lauf 0=keiner 1 2 3=Hand [Zahl]"|"A6 Aktive Kreise [14 Byte Text]"|"A7 Restzeit gesamt [min Zahl]"|"A8 Gesamtlaufzeit Lauf 1 [min Zahl]"|"A9 Gesamtlaufzeit Lauf 2 [min Zahl]"|"A10 Startzeit Lauf 1 [Uhrzeit, s ab 0 Uhr]"|"A11 Startzeit Lauf 1 [14 Byte Text]"|"A12 Startzeit Lauf 2 [Uhrzeit, s ab 0 Uhr]"|"A13 Startzeit Lauf 2 [14 Byte Text]"|"A14 Regensperre aktiv [1 Bit]"|"A15 Frostsperre aktiv [1 Bit]"|"A16 Störung [1 Bit]"|"A17 Status kurz [14 Byte Text]"|"A18 Status ausführlich [Text]"|"A19 Kaskade an Folge (E3) [Text]"|"A20 Rückmeldung an Vorgänger (E4) [Text]"|"A21 Kreis 1 Ventil [1 Bit]"|"A22 Kreis 1 Restzeit [min Zahl]"|"A23 Kreis 2 Ventil [1 Bit]"|"A24 Kreis 2 Restzeit [min Zahl]"|"A25 Kreis 3 Ventil [1 Bit]"|"A26 Kreis 3 Restzeit [min Zahl]"|"A27 Kreis 4 Ventil [1 Bit]"|"A28 Kreis 4 Restzeit [min Zahl]"|"A29 Kreis 5 Ventil [1 Bit]"|"A30 Kreis 5 Restzeit [min Zahl]"
+4999|"en"|"Garden\14785 Irrigation 5 circuits (cascadable)"|"I1 Mode (0=master 1=follower) [number]"|"I2 First circuit number [number]"|"I3 Cascade from predecessor (O19) [text]"|"I4 Feedback from follower (O20) [text]"|"I5 Automatic on/off [1 bit]"|"I6 Start program (run 1) [1 bit]"|"I7 Stop all [1 bit]"|"I8 Desired end run 1, run 2 = +12 h [time/text hh:mm]"|"I9 Weather factor [% number]"|"I10 Rain sensor [1 bit]"|"I11 Rain on-delay [s number]"|"I12 Rain hold time after rain [min number]"|"I13 Outdoor temperature [2 byte float]"|"I14 Frost limit [degC number]"|"I15 Manual start allowed at rain/frost [1 bit]"|"I16 Max. circuits at once per block [number]"|"I17 Pause between circuits [s number]"|"I18 Overlap at circuit change [s number]"|"I19 Max. run time per valve, watchdog [min number]"|"I20 PSU mode 0=run 1=permanent 2=run+window [number]"|"I21 PSU lead time [s number]"|"I22 PSU run-on [s number]"|"I23 Refill window after run [min number]"|"I24 Pump on-delay after valve [s number]"|"I25 Pump pressure relief [s number]"|"I26 Level min, 1=empty [1 bit]"|"I27 Level max, 1=full [1 bit]"|"I28 Refill only during run [1 bit]"|"I29 Refill max. time [min number]"|"I30 Dry-run delay [s number]"|"I31 Acknowledge fault [1 bit]"|"I32 Circuit 1 run time, 0=skip [min number]"|"I33 Circuit 1 cycle 1=1x 2=2x daily [number]"|"I34 Circuit 1 observe rain lock [1 bit]"|"I35 Circuit 1 parallel allowed [1 bit]"|"I36 Circuit 1 manual start/stop [1 bit]"|"I37 Circuit 2 run time, 0=skip [min number]"|"I38 Circuit 2 cycle 1=1x 2=2x daily [number]"|"I39 Circuit 2 observe rain lock [1 bit]"|"I40 Circuit 2 parallel allowed [1 bit]"|"I41 Circuit 2 manual start/stop [1 bit]"|"I42 Circuit 3 run time, 0=skip [min number]"|"I43 Circuit 3 cycle 1=1x 2=2x daily [number]"|"I44 Circuit 3 observe rain lock [1 bit]"|"I45 Circuit 3 parallel allowed [1 bit]"|"I46 Circuit 3 manual start/stop [1 bit]"|"I47 Circuit 4 run time, 0=skip [min number]"|"I48 Circuit 4 cycle 1=1x 2=2x daily [number]"|"I49 Circuit 4 observe rain lock [1 bit]"|"I50 Circuit 4 parallel allowed [1 bit]"|"I51 Circuit 4 manual start/stop [1 bit]"|"I52 Circuit 5 run time, 0=skip [min number]"|"I53 Circuit 5 cycle 1=1x 2=2x daily [number]"|"I54 Circuit 5 observe rain lock [1 bit]"|"I55 Circuit 5 parallel allowed [1 bit]"|"I56 Circuit 5 manual start/stop [1 bit]"|"O1 Supply 24 V [1 bit]"|"O2 Pump [1 bit]"|"O3 Refill [1 bit]"|"O4 Program running [1 bit]"|"O5 Active run 0=none 1 2 3=manual [number]"|"O6 Active circuits [14 byte text]"|"O7 Remaining time total [min number]"|"O8 Total run time run 1 [min number]"|"O9 Total run time run 2 [min number]"|"O10 Start time run 1 [time, s from midnight]"|"O11 Start time run 1 [14 byte text]"|"O12 Start time run 2 [time, s from midnight]"|"O13 Start time run 2 [14 byte text]"|"O14 Rain lock active [1 bit]"|"O15 Frost lock active [1 bit]"|"O16 Fault [1 bit]"|"O17 Status short [14 byte text]"|"O18 Status detailed [text]"|"O19 Cascade to follower (I3) [text]"|"O20 Feedback to predecessor (I4) [text]"|"O21 Circuit 1 valve [1 bit]"|"O22 Circuit 1 remaining time [min number]"|"O23 Circuit 2 valve [1 bit]"|"O24 Circuit 2 remaining time [min number]"|"O25 Circuit 3 valve [1 bit]"|"O26 Circuit 3 remaining time [min number]"|"O27 Circuit 4 valve [1 bit]"|"O28 Circuit 4 remaining time [min number]"|"O29 Circuit 5 valve [1 bit]"|"O30 Circuit 5 remaining time [min number]"
+5001|56|30|1|0|1|0|"HSL3.main.ElektroRausch______"
+5002|1|0|0
+5002|2|1|0
+5002|3|""|1
+5002|4|""|1
+5002|5|1|0
+5002|6|0|0
+5002|7|0|0
+5002|8|"06:00"|1
+5002|9|100|0
+5002|10|0|0
+5002|11|300|0
+5002|12|120|0
+5002|13|20|0
+5002|14|3|0
+5002|15|1|0
+5002|16|1|0
+5002|17|0|0
+5002|18|0|0
+5002|19|120|0
+5002|20|2|0
+5002|21|2|0
+5002|22|5|0
+5002|23|60|0
+5002|24|3|0
+5002|25|3|0
+5002|26|0|0
+5002|27|0|0
+5002|28|0|0
+5002|29|60|0
+5002|30|30|0
+5002|31|0|0
+5002|32|0|0
+5002|33|1|0
+5002|34|1|0
+5002|35|0|0
+5002|36|0|0
+5002|37|0|0
+5002|38|1|0
+5002|39|1|0
+5002|40|0|0
+5002|41|0|0
+5002|42|0|0
+5002|43|1|0
+5002|44|1|0
+5002|45|0|0
+5002|46|0|0
+5002|47|0|0
+5002|48|1|0
+5002|49|1|0
+5002|50|0|0
+5002|51|0|0
+5002|52|0|0
+5002|53|1|0
+5002|54|1|0
+5002|55|0|0
+5002|56|0|0
+5004|1|0|0|1|0
+5004|2|0|0|1|0
+5004|3|0|0|1|0
+5004|4|0|0|1|0
+5004|5|0|0|1|0
+5004|6|""|0|1|1
+5004|7|0|0|1|0
+5004|8|0|0|1|0
+5004|9|0|0|1|0
+5004|10|0|0|1|0
+5004|11|""|0|1|1
+5004|12|0|0|1|0
+5004|13|""|0|1|1
+5004|14|0|0|1|0
+5004|15|0|0|1|0
+5004|16|0|0|1|0
+5004|17|""|0|1|1
+5004|18|""|0|1|1
+5004|19|""|0|1|1
+5004|20|""|0|1|1
+5004|21|0|0|1|0
+5004|22|0|0|1|0
+5004|23|0|0|1|0
+5004|24|0|0|1|0
+5004|25|0|0|1|0
+5004|26|0|0|1|0
+5004|27|0|0|1|0
+5004|28|0|0|1|0
+5004|29|0|0|1|0
+5004|30|0|0|1|0
+5012|0|""|"HSL3.set_input_name(1, 'mode')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(2, 'first')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(3, 'cin')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(4, 'fbin')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(5, 'auto')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(6, 'start')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(7, 'stop')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(8, 'end')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(9, 'wf')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(10, 'rain')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(11, 'rain_on')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(12, 'rain_after')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(13, 't_out')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(14, 'frost')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(15, 'hand_ok')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(16, 'max_par')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(17, 'pause')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(18, 'overlap')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(19, 'wd')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(20, 'psu_mode')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(21, 'psu_pre')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(22, 'psu_post')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(23, 'window')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(24, 'pump_delay')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(25, 'relief')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(26, 'lmin')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(27, 'lmax')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(28, 'refill_run')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(29, 'refill_max')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(30, 'dry')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(31, 'ack')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(32, 'k1_t')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(33, 'k1_cyc')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(34, 'k1_rain')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(35, 'k1_par')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(36, 'k1_hand')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(37, 'k2_t')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(38, 'k2_cyc')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(39, 'k2_rain')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(40, 'k2_par')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(41, 'k2_hand')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(42, 'k3_t')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(43, 'k3_cyc')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(44, 'k3_rain')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(45, 'k3_par')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(46, 'k3_hand')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(47, 'k4_t')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(48, 'k4_cyc')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(49, 'k4_rain')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(50, 'k4_par')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(51, 'k4_hand')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(52, 'k5_t')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(53, 'k5_cyc')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(54, 'k5_rain')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(55, 'k5_par')"|""|0|0|0|0
+5012|0|""|"HSL3.set_input_name(56, 'k5_hand')"|""|0|0|0|0
+5012|0|""|"HSL3.set_timer_name(1, 'tick')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(1, 'psu')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(2, 'pump')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(3, 'refill')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(4, 'running')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(5, 'run_no')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(6, 'active')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(7, 'rest')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(8, 'dur1')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(9, 'dur2')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(10, 'st1')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(11, 'st1t')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(12, 'st2')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(13, 'st2t')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(14, 'rainlock')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(15, 'frostlock')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(16, 'fault')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(17, 'status')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(18, 'status_l')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(19, 'cout')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(20, 'fbout')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(21, 'k1_valve')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(22, 'k1_rest')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(23, 'k2_valve')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(24, 'k2_rest')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(25, 'k3_valve')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(26, 'k3_rest')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(27, 'k4_valve')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(28, 'k4_rest')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(29, 'k5_valve')"|""|0|0|0|0
+5012|0|""|"HSL3.set_output_name(30, 'k5_rest')"|""|0|0|0|0
+5012|0|""|"HSL3.load('hsl3_14785_bewaesserung', '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')"|""|0|0|0|0

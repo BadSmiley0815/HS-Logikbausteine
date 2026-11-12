@@ -13,6 +13,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 | [14778](#14778-szenen-server) | Szenen-Server | 4.3 |
 | [14783](#14783-kamera-proxy) | Kamera-Proxy | 0.4 |
 | [14784](#14784-meldungsspeicher) | Meldungsspeicher | 1.1 |
+| [14785](#14785-bewässerung-5-kreise-kaskadierbar) | Bewässerung 5 Kreise (kaskadierbar) | 1.0 |
 
 ---
 
@@ -71,3 +72,6 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 ## 14784 Meldungsspeicher
 - **1.1** (2026-11-12) – Freigabe (E42–E45): Melder nur aufzeichnen, solange z. B. die Alarmanlage scharf ist, plus Nachlauf – für eine Alarmverfolgung mit Bewegungsmeldern und Türkontakten. Quellen (E46–E72): bis zu 12 Quellen mit Namen; ändert sich ein Melder kurz danach, wird die Quelle an die Meldung gehängt („Alarmanlage extern scharf – Schlüsselschalter Eingang“), sonst ein einstellbarer Text (z. B. „Visu/QC/Zeitschaltuhr“).
 - **1.0** (2026-11-11) – erste Version: eigenes Meldungsarchiv je Instanz, 16 Melder mit Text `EIN;AUS;Stufe EIN;Stufe AUS`, Freitext-Eingang, Quittieren, Löschen, remanent; Abruf über Visu-Server 14770 ab v1.11.
+
+## 14785 Bewässerung 5 Kreise (kaskadierbar)
+- **1.0** (2026-11-12) – erste Version: 5 Kreise je Baustein, Kaskade Master/Folge über Text-iKOs, Endzeit statt Startzeit (Lauf 1, Lauf 2 = +12 h für Kreise mit Zyklus 2), Laufzeit 0 = überspringen, Wetterfaktor, Parallel je Kreis + max. gleichzeitig, Pause/Überlappung, Regensperre je Kreis mit Einschaltverzögerung/Nachwirkzeit, Frostsperre, Watchdog, Netzteil 24 V (3 Modi), Pumpe mit Verzögerung/Druckentlastung, Nachspeisung mit Schwimmer min/max, Trockenlaufschutz.

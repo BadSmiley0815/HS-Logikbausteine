@@ -1,0 +1,99 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>14785 Irrigation 5 circuits (cascadable) (v1.0)</title><style>body{font:14px/1.5 Arial,sans-serif;margin:16px;max-width:900px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eef}code{background:#f3f3f3;padding:0 3px}.b{display:inline-block;background:#e8eefc;border-radius:10px;padding:1px 8px;margin-right:6px}.w{background:#fff6e0;border-left:4px solid #e0a000;padding:6px 10px}</style></head><body>
+<h2>14785 – Irrigation 5 circuits (cascadable) (v1.0)</h2>
+<p><span class="b">Block ID 14785</span><span class="b">Version 1.0</span><span class="b">HSL 3.0</span></p>
+<p>Garden irrigation with 5 circuits per block. Any number of blocks can be chained (master → follower 1 → follower 2 …), e.g. 2 blocks for 10 circuits.</p>
+<h3>Function</h3><ul><li><b>Run time 0 = circuit skipped.</b> The weather factor (I9) scales all run times.</li><li><b>Run 1</b> = all circuits with a run time. <b>Run 2</b> (12 h later) = only circuits with cycle 2.</li><li><b>End time instead of start time:</b> I8 sets when run 1 shall be finished. The master calculates the total run time of the whole chain (O8/O9) and starts by itself at the recommended start time (O10–O13). A time switch is only needed for the <b>days</b> (I5 automatic).</li><li><b>Order:</b> circuits run in number order. Parallel allowed = 0: runs alone (sprinklers); = 1: runs with other parallel circuits up to I16 (drip lines). Parallel only within one block.</li><li><b>Manual start</b> (circuit input = 1): without a running program a manual run (O5 = 3) starts incl. PSU and pump; during a program the circuit is appended or started afterwards. 0 stops it.</li><li><b>Rain lock</b> per circuit, active after I11 s of continuous rain, held for I12 min. Running circuits with rain lock are stopped, waiting ones skipped.</li><li><b>Frost lock</b> for all circuits (1 K hysteresis). <b>Watchdog</b> I19. After a HS restart all valves are closed.</li></ul>
+<h3>Supply (master only)</h3><ul><li><b>24 V PSU (O1):</b> mode 0 = during runs, 1 = permanent, 2 = run + refill window I23.</li><li><b>Pump (O2):</b> on-delay after valve (I24), pressure relief before last valve (I25).</li><li><b>Case A – autonomous refill</b> (float switches a 24 V valve directly): leave I26/I27 free, use PSU mode 2 or 1. No dry-run protection by the block.</li><li><b>Case B – float on KNX:</b> I26 (1 = empty) starts O3, I27 (1 = full) stops it, otherwise I29. Empty longer than I30 during a run → run paused until water is back.</li></ul>
+<h3>Cascade</h3><ul><li>First block I1 = 0 (master), further blocks I1 = 1 (follower), I2 = first circuit number (6, 11 …).</li><li>One text iKO per direction: <code>O19 → I3</code> of the next block, <code>O20 → I4</code> of the previous block.</li><li>Recommendation: overlap I18 = 2–5 s.</li></ul>
+<h3>Creating iKOs</h3><ul><li>Fastest via Experte CSV import: <i>Communication objects → Extras → Data synchronisation → synchronise/import CSV file</i>. Create setting iKOs as retentive.</li></ul>
+<p class="w">To be verified on the HS: time object (DPT 10) at I8/O10/O12 – otherwise use a 14 byte text "06:00" at I8 and O11/O13.</p>
+<h3>Inputs</h3><table><tr><th>No.</th><th>Input</th><th>Init</th><th>Note</th></tr>
+<tr><td>I1</td><td>Mode (0=master 1=follower) [number]</td><td>0</td><td></td></tr>
+<tr><td>I2</td><td>First circuit number [number]</td><td>1</td><td></td></tr>
+<tr><td>I3</td><td>Cascade from predecessor (O19) [text]</td><td></td><td></td></tr>
+<tr><td>I4</td><td>Feedback from follower (O20) [text]</td><td></td><td></td></tr>
+<tr><td>I5</td><td>Automatic on/off [1 bit]</td><td>1</td><td></td></tr>
+<tr><td>I6</td><td>Start program (run 1) [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I7</td><td>Stop all [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I8</td><td>Desired end run 1, run 2 = +12 h [time/text hh:mm]</td><td>06:00</td><td></td></tr>
+<tr><td>I9</td><td>Weather factor [% number]</td><td>100</td><td></td></tr>
+<tr><td>I10</td><td>Rain sensor [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I11</td><td>Rain on-delay [s number]</td><td>300</td><td></td></tr>
+<tr><td>I12</td><td>Rain hold time after rain [min number]</td><td>120</td><td></td></tr>
+<tr><td>I13</td><td>Outdoor temperature [2 byte float]</td><td>20</td><td></td></tr>
+<tr><td>I14</td><td>Frost limit [degC number]</td><td>3</td><td></td></tr>
+<tr><td>I15</td><td>Manual start allowed at rain/frost [1 bit]</td><td>1</td><td></td></tr>
+<tr><td>I16</td><td>Max. circuits at once per block [number]</td><td>1</td><td></td></tr>
+<tr><td>I17</td><td>Pause between circuits [s number]</td><td>0</td><td></td></tr>
+<tr><td>I18</td><td>Overlap at circuit change [s number]</td><td>0</td><td></td></tr>
+<tr><td>I19</td><td>Max. run time per valve, watchdog [min number]</td><td>120</td><td></td></tr>
+<tr><td>I20</td><td>PSU mode 0=run 1=permanent 2=run+window [number]</td><td>2</td><td></td></tr>
+<tr><td>I21</td><td>PSU lead time [s number]</td><td>2</td><td></td></tr>
+<tr><td>I22</td><td>PSU run-on [s number]</td><td>5</td><td></td></tr>
+<tr><td>I23</td><td>Refill window after run [min number]</td><td>60</td><td></td></tr>
+<tr><td>I24</td><td>Pump on-delay after valve [s number]</td><td>3</td><td></td></tr>
+<tr><td>I25</td><td>Pump pressure relief [s number]</td><td>3</td><td></td></tr>
+<tr><td>I26</td><td>Level min, 1=empty [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I27</td><td>Level max, 1=full [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I28</td><td>Refill only during run [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I29</td><td>Refill max. time [min number]</td><td>60</td><td></td></tr>
+<tr><td>I30</td><td>Dry-run delay [s number]</td><td>30</td><td></td></tr>
+<tr><td>I31</td><td>Acknowledge fault [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I32</td><td>Circuit 1 run time, 0=skip [min number]</td><td>0</td><td></td></tr>
+<tr><td>I33</td><td>Circuit 1 cycle 1=1x 2=2x daily [number]</td><td>1</td><td></td></tr>
+<tr><td>I34</td><td>Circuit 1 observe rain lock [1 bit]</td><td>1</td><td></td></tr>
+<tr><td>I35</td><td>Circuit 1 parallel allowed [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I36</td><td>Circuit 1 manual start/stop [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I37</td><td>Circuit 2 run time, 0=skip [min number]</td><td>0</td><td></td></tr>
+<tr><td>I38</td><td>Circuit 2 cycle 1=1x 2=2x daily [number]</td><td>1</td><td></td></tr>
+<tr><td>I39</td><td>Circuit 2 observe rain lock [1 bit]</td><td>1</td><td></td></tr>
+<tr><td>I40</td><td>Circuit 2 parallel allowed [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I41</td><td>Circuit 2 manual start/stop [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I42</td><td>Circuit 3 run time, 0=skip [min number]</td><td>0</td><td></td></tr>
+<tr><td>I43</td><td>Circuit 3 cycle 1=1x 2=2x daily [number]</td><td>1</td><td></td></tr>
+<tr><td>I44</td><td>Circuit 3 observe rain lock [1 bit]</td><td>1</td><td></td></tr>
+<tr><td>I45</td><td>Circuit 3 parallel allowed [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I46</td><td>Circuit 3 manual start/stop [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I47</td><td>Circuit 4 run time, 0=skip [min number]</td><td>0</td><td></td></tr>
+<tr><td>I48</td><td>Circuit 4 cycle 1=1x 2=2x daily [number]</td><td>1</td><td></td></tr>
+<tr><td>I49</td><td>Circuit 4 observe rain lock [1 bit]</td><td>1</td><td></td></tr>
+<tr><td>I50</td><td>Circuit 4 parallel allowed [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I51</td><td>Circuit 4 manual start/stop [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I52</td><td>Circuit 5 run time, 0=skip [min number]</td><td>0</td><td></td></tr>
+<tr><td>I53</td><td>Circuit 5 cycle 1=1x 2=2x daily [number]</td><td>1</td><td></td></tr>
+<tr><td>I54</td><td>Circuit 5 observe rain lock [1 bit]</td><td>1</td><td></td></tr>
+<tr><td>I55</td><td>Circuit 5 parallel allowed [1 bit]</td><td>0</td><td></td></tr>
+<tr><td>I56</td><td>Circuit 5 manual start/stop [1 bit]</td><td>0</td><td></td></tr>
+</table><h3>Outputs</h3><table><tr><th>No.</th><th>Output</th><th>Note</th></tr>
+<tr><td>O1</td><td>Supply 24 V [1 bit]</td><td></td></tr>
+<tr><td>O2</td><td>Pump [1 bit]</td><td></td></tr>
+<tr><td>O3</td><td>Refill [1 bit]</td><td></td></tr>
+<tr><td>O4</td><td>Program running [1 bit]</td><td></td></tr>
+<tr><td>O5</td><td>Active run 0=none 1 2 3=manual [number]</td><td></td></tr>
+<tr><td>O6</td><td>Active circuits [14 byte text]</td><td></td></tr>
+<tr><td>O7</td><td>Remaining time total [min number]</td><td></td></tr>
+<tr><td>O8</td><td>Total run time run 1 [min number]</td><td></td></tr>
+<tr><td>O9</td><td>Total run time run 2 [min number]</td><td></td></tr>
+<tr><td>O10</td><td>Start time run 1 [time, s from midnight]</td><td></td></tr>
+<tr><td>O11</td><td>Start time run 1 [14 byte text]</td><td></td></tr>
+<tr><td>O12</td><td>Start time run 2 [time, s from midnight]</td><td></td></tr>
+<tr><td>O13</td><td>Start time run 2 [14 byte text]</td><td></td></tr>
+<tr><td>O14</td><td>Rain lock active [1 bit]</td><td></td></tr>
+<tr><td>O15</td><td>Frost lock active [1 bit]</td><td></td></tr>
+<tr><td>O16</td><td>Fault [1 bit]</td><td></td></tr>
+<tr><td>O17</td><td>Status short [14 byte text]</td><td></td></tr>
+<tr><td>O18</td><td>Status detailed [text]</td><td></td></tr>
+<tr><td>O19</td><td>Cascade to follower (I3) [text]</td><td></td></tr>
+<tr><td>O20</td><td>Feedback to predecessor (I4) [text]</td><td></td></tr>
+<tr><td>O21</td><td>Circuit 1 valve [1 bit]</td><td></td></tr>
+<tr><td>O22</td><td>Circuit 1 remaining time [min number]</td><td></td></tr>
+<tr><td>O23</td><td>Circuit 2 valve [1 bit]</td><td></td></tr>
+<tr><td>O24</td><td>Circuit 2 remaining time [min number]</td><td></td></tr>
+<tr><td>O25</td><td>Circuit 3 valve [1 bit]</td><td></td></tr>
+<tr><td>O26</td><td>Circuit 3 remaining time [min number]</td><td></td></tr>
+<tr><td>O27</td><td>Circuit 4 valve [1 bit]</td><td></td></tr>
+<tr><td>O28</td><td>Circuit 4 remaining time [min number]</td><td></td></tr>
+<tr><td>O29</td><td>Circuit 5 valve [1 bit]</td><td></td></tr>
+<tr><td>O30</td><td>Circuit 5 remaining time [min number]</td><td></td></tr>
+</table><h3>Versions</h3><ul><li><b>1.0</b> – first version</li></ul>
+<p>© BadSmiley0815 · GPL-3.0 · github.com/BadSmiley0815/HS-Logikbausteine</p></body></html>

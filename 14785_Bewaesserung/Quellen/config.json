@@ -1,0 +1,1077 @@
+{
+  "module": {
+    "category": "Garden",
+    "context": "ElektroRausch_14785",
+    "id": "14785",
+    "name": "14785 Irrigation 5 circuits (cascadable)",
+    "hsl_filename": "14785_Bewaesserung.hsl",
+    "version": "1.0",
+    "inputs": [
+      {
+        "type": "number",
+        "identifier": "mode",
+        "init_value": 0,
+        "label": "I1 Mode (0=master 1=follower) [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "first",
+        "init_value": 1,
+        "label": "I2 First circuit number [number]"
+      },
+      {
+        "type": "string",
+        "identifier": "cin",
+        "init_value": "",
+        "label": "I3 Cascade from predecessor (O19) [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "fbin",
+        "init_value": "",
+        "label": "I4 Feedback from follower (O20) [text]"
+      },
+      {
+        "type": "number",
+        "identifier": "auto",
+        "init_value": 1,
+        "label": "I5 Automatic on/off [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "start",
+        "init_value": 0,
+        "label": "I6 Start program (run 1) [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "stop",
+        "init_value": 0,
+        "label": "I7 Stop all [1 bit]"
+      },
+      {
+        "type": "string",
+        "identifier": "end",
+        "init_value": "06:00",
+        "label": "I8 Desired end run 1, run 2 = +12 h [time/text hh:mm]"
+      },
+      {
+        "type": "number",
+        "identifier": "wf",
+        "init_value": 100,
+        "label": "I9 Weather factor [% number]"
+      },
+      {
+        "type": "number",
+        "identifier": "rain",
+        "init_value": 0,
+        "label": "I10 Rain sensor [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "rain_on",
+        "init_value": 300,
+        "label": "I11 Rain on-delay [s number]"
+      },
+      {
+        "type": "number",
+        "identifier": "rain_after",
+        "init_value": 120,
+        "label": "I12 Rain hold time after rain [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "t_out",
+        "init_value": 20,
+        "label": "I13 Outdoor temperature [2 byte float]"
+      },
+      {
+        "type": "number",
+        "identifier": "frost",
+        "init_value": 3,
+        "label": "I14 Frost limit [degC number]"
+      },
+      {
+        "type": "number",
+        "identifier": "hand_ok",
+        "init_value": 1,
+        "label": "I15 Manual start allowed at rain/frost [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "max_par",
+        "init_value": 1,
+        "label": "I16 Max. circuits at once per block [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "pause",
+        "init_value": 0,
+        "label": "I17 Pause between circuits [s number]"
+      },
+      {
+        "type": "number",
+        "identifier": "overlap",
+        "init_value": 0,
+        "label": "I18 Overlap at circuit change [s number]"
+      },
+      {
+        "type": "number",
+        "identifier": "wd",
+        "init_value": 120,
+        "label": "I19 Max. run time per valve, watchdog [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "psu_mode",
+        "init_value": 2,
+        "label": "I20 PSU mode 0=run 1=permanent 2=run+window [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "psu_pre",
+        "init_value": 2,
+        "label": "I21 PSU lead time [s number]"
+      },
+      {
+        "type": "number",
+        "identifier": "psu_post",
+        "init_value": 5,
+        "label": "I22 PSU run-on [s number]"
+      },
+      {
+        "type": "number",
+        "identifier": "window",
+        "init_value": 60,
+        "label": "I23 Refill window after run [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "pump_delay",
+        "init_value": 3,
+        "label": "I24 Pump on-delay after valve [s number]"
+      },
+      {
+        "type": "number",
+        "identifier": "relief",
+        "init_value": 3,
+        "label": "I25 Pump pressure relief [s number]"
+      },
+      {
+        "type": "number",
+        "identifier": "lmin",
+        "init_value": 0,
+        "label": "I26 Level min, 1=empty [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "lmax",
+        "init_value": 0,
+        "label": "I27 Level max, 1=full [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "refill_run",
+        "init_value": 0,
+        "label": "I28 Refill only during run [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "refill_max",
+        "init_value": 60,
+        "label": "I29 Refill max. time [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "dry",
+        "init_value": 30,
+        "label": "I30 Dry-run delay [s number]"
+      },
+      {
+        "type": "number",
+        "identifier": "ack",
+        "init_value": 0,
+        "label": "I31 Acknowledge fault [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k1_t",
+        "init_value": 0,
+        "label": "I32 Circuit 1 run time, 0=skip [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k1_cyc",
+        "init_value": 1,
+        "label": "I33 Circuit 1 cycle 1=1x 2=2x daily [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k1_rain",
+        "init_value": 1,
+        "label": "I34 Circuit 1 observe rain lock [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k1_par",
+        "init_value": 0,
+        "label": "I35 Circuit 1 parallel allowed [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k1_hand",
+        "init_value": 0,
+        "label": "I36 Circuit 1 manual start/stop [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k2_t",
+        "init_value": 0,
+        "label": "I37 Circuit 2 run time, 0=skip [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k2_cyc",
+        "init_value": 1,
+        "label": "I38 Circuit 2 cycle 1=1x 2=2x daily [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k2_rain",
+        "init_value": 1,
+        "label": "I39 Circuit 2 observe rain lock [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k2_par",
+        "init_value": 0,
+        "label": "I40 Circuit 2 parallel allowed [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k2_hand",
+        "init_value": 0,
+        "label": "I41 Circuit 2 manual start/stop [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k3_t",
+        "init_value": 0,
+        "label": "I42 Circuit 3 run time, 0=skip [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k3_cyc",
+        "init_value": 1,
+        "label": "I43 Circuit 3 cycle 1=1x 2=2x daily [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k3_rain",
+        "init_value": 1,
+        "label": "I44 Circuit 3 observe rain lock [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k3_par",
+        "init_value": 0,
+        "label": "I45 Circuit 3 parallel allowed [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k3_hand",
+        "init_value": 0,
+        "label": "I46 Circuit 3 manual start/stop [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k4_t",
+        "init_value": 0,
+        "label": "I47 Circuit 4 run time, 0=skip [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k4_cyc",
+        "init_value": 1,
+        "label": "I48 Circuit 4 cycle 1=1x 2=2x daily [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k4_rain",
+        "init_value": 1,
+        "label": "I49 Circuit 4 observe rain lock [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k4_par",
+        "init_value": 0,
+        "label": "I50 Circuit 4 parallel allowed [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k4_hand",
+        "init_value": 0,
+        "label": "I51 Circuit 4 manual start/stop [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k5_t",
+        "init_value": 0,
+        "label": "I52 Circuit 5 run time, 0=skip [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k5_cyc",
+        "init_value": 1,
+        "label": "I53 Circuit 5 cycle 1=1x 2=2x daily [number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k5_rain",
+        "init_value": 1,
+        "label": "I54 Circuit 5 observe rain lock [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k5_par",
+        "init_value": 0,
+        "label": "I55 Circuit 5 parallel allowed [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k5_hand",
+        "init_value": 0,
+        "label": "I56 Circuit 5 manual start/stop [1 bit]"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "number",
+        "identifier": "psu",
+        "init_value": 0,
+        "label": "O1 Supply 24 V [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "pump",
+        "init_value": 0,
+        "label": "O2 Pump [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "refill",
+        "init_value": 0,
+        "label": "O3 Refill [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "running",
+        "init_value": 0,
+        "label": "O4 Program running [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "run_no",
+        "init_value": 0,
+        "label": "O5 Active run 0=none 1 2 3=manual [number]"
+      },
+      {
+        "type": "string",
+        "identifier": "active",
+        "init_value": "",
+        "label": "O6 Active circuits [14 byte text]"
+      },
+      {
+        "type": "number",
+        "identifier": "rest",
+        "init_value": 0,
+        "label": "O7 Remaining time total [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "dur1",
+        "init_value": 0,
+        "label": "O8 Total run time run 1 [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "dur2",
+        "init_value": 0,
+        "label": "O9 Total run time run 2 [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "st1",
+        "init_value": 0,
+        "label": "O10 Start time run 1 [time, s from midnight]"
+      },
+      {
+        "type": "string",
+        "identifier": "st1t",
+        "init_value": "",
+        "label": "O11 Start time run 1 [14 byte text]"
+      },
+      {
+        "type": "number",
+        "identifier": "st2",
+        "init_value": 0,
+        "label": "O12 Start time run 2 [time, s from midnight]"
+      },
+      {
+        "type": "string",
+        "identifier": "st2t",
+        "init_value": "",
+        "label": "O13 Start time run 2 [14 byte text]"
+      },
+      {
+        "type": "number",
+        "identifier": "rainlock",
+        "init_value": 0,
+        "label": "O14 Rain lock active [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "frostlock",
+        "init_value": 0,
+        "label": "O15 Frost lock active [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "fault",
+        "init_value": 0,
+        "label": "O16 Fault [1 bit]"
+      },
+      {
+        "type": "string",
+        "identifier": "status",
+        "init_value": "",
+        "label": "O17 Status short [14 byte text]"
+      },
+      {
+        "type": "string",
+        "identifier": "status_l",
+        "init_value": "",
+        "label": "O18 Status detailed [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "cout",
+        "init_value": "",
+        "label": "O19 Cascade to follower (I3) [text]"
+      },
+      {
+        "type": "string",
+        "identifier": "fbout",
+        "init_value": "",
+        "label": "O20 Feedback to predecessor (I4) [text]"
+      },
+      {
+        "type": "number",
+        "identifier": "k1_valve",
+        "init_value": 0,
+        "label": "O21 Circuit 1 valve [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k1_rest",
+        "init_value": 0,
+        "label": "O22 Circuit 1 remaining time [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k2_valve",
+        "init_value": 0,
+        "label": "O23 Circuit 2 valve [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k2_rest",
+        "init_value": 0,
+        "label": "O24 Circuit 2 remaining time [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k3_valve",
+        "init_value": 0,
+        "label": "O25 Circuit 3 valve [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k3_rest",
+        "init_value": 0,
+        "label": "O26 Circuit 3 remaining time [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k4_valve",
+        "init_value": 0,
+        "label": "O27 Circuit 4 valve [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k4_rest",
+        "init_value": 0,
+        "label": "O28 Circuit 4 remaining time [min number]"
+      },
+      {
+        "type": "number",
+        "identifier": "k5_valve",
+        "init_value": 0,
+        "label": "O29 Circuit 5 valve [1 bit]"
+      },
+      {
+        "type": "number",
+        "identifier": "k5_rest",
+        "init_value": 0,
+        "label": "O30 Circuit 5 remaining time [min number]"
+      }
+    ],
+    "stores": [],
+    "timers": [
+      {
+        "identifier": "tick"
+      }
+    ],
+    "scripts": [
+      {
+        "filename": "hsl3_14785_bewaesserung.py"
+      }
+    ],
+    "translations": [
+      {
+        "language": "de",
+        "name": "14785 Bewässerung 5 Kreise (kaskadierbar)",
+        "category": "Garten",
+        "translation_inputs": [
+          {
+            "label": "E1 Modus (0=Master 1=Folge) [Zahl]"
+          },
+          {
+            "label": "E2 Erste Kreisnummer [Zahl]"
+          },
+          {
+            "label": "E3 Kaskade von Vorgänger (A19) [Text]"
+          },
+          {
+            "label": "E4 Rückmeldung von Folge (A20) [Text]"
+          },
+          {
+            "label": "E5 Automatik Ein/Aus [1 Bit]"
+          },
+          {
+            "label": "E6 Programm starten (Lauf 1) [1 Bit]"
+          },
+          {
+            "label": "E7 Alles stoppen [1 Bit]"
+          },
+          {
+            "label": "E8 Gewünschtes Ende Lauf 1, Lauf 2 = +12 h [Uhrzeit/Text hh:mm]"
+          },
+          {
+            "label": "E9 Wetterfaktor [% Zahl]"
+          },
+          {
+            "label": "E10 Regensensor [1 Bit]"
+          },
+          {
+            "label": "E11 Regen Einschaltverzögerung [s Zahl]"
+          },
+          {
+            "label": "E12 Regen Nachwirkzeit [min Zahl]"
+          },
+          {
+            "label": "E13 Außentemperatur [2 Byte Gleitkomma]"
+          },
+          {
+            "label": "E14 Frostgrenze [°C Zahl]"
+          },
+          {
+            "label": "E15 Handstart bei Regen/Frost erlaubt [1 Bit]"
+          },
+          {
+            "label": "E16 Max. Kreise gleichzeitig je Baustein [Zahl]"
+          },
+          {
+            "label": "E17 Pause zwischen Kreisen [s Zahl]"
+          },
+          {
+            "label": "E18 Überlappung Kreiswechsel [s Zahl]"
+          },
+          {
+            "label": "E19 Max. Laufzeit je Ventil, Watchdog [min Zahl]"
+          },
+          {
+            "label": "E20 Netzteil-Modus 0=Lauf 1=dauerhaft 2=Lauf+Fenster [Zahl]"
+          },
+          {
+            "label": "E21 Netzteil Vorlauf [s Zahl]"
+          },
+          {
+            "label": "E22 Netzteil Nachlauf [s Zahl]"
+          },
+          {
+            "label": "E23 Nachspeisefenster nach Lauf [min Zahl]"
+          },
+          {
+            "label": "E24 Pumpe Einschaltverzögerung nach Ventil [s Zahl]"
+          },
+          {
+            "label": "E25 Pumpe Druckentlastung [s Zahl]"
+          },
+          {
+            "label": "E26 Füllstand min, 1=leer [1 Bit]"
+          },
+          {
+            "label": "E27 Füllstand max, 1=voll [1 Bit]"
+          },
+          {
+            "label": "E28 Nachspeisung nur während Lauf [1 Bit]"
+          },
+          {
+            "label": "E29 Nachspeisung Max-Zeit [min Zahl]"
+          },
+          {
+            "label": "E30 Trockenlauf Verzögerung [s Zahl]"
+          },
+          {
+            "label": "E31 Störung quittieren [1 Bit]"
+          },
+          {
+            "label": "E32 Kreis 1 Laufzeit, 0=überspringen [min Zahl]"
+          },
+          {
+            "label": "E33 Kreis 1 Zyklus 1=1x 2=2x täglich [Zahl]"
+          },
+          {
+            "label": "E34 Kreis 1 Regensperre beachten [1 Bit]"
+          },
+          {
+            "label": "E35 Kreis 1 Parallel erlaubt [1 Bit]"
+          },
+          {
+            "label": "E36 Kreis 1 Hand Start/Stopp [1 Bit]"
+          },
+          {
+            "label": "E37 Kreis 2 Laufzeit, 0=überspringen [min Zahl]"
+          },
+          {
+            "label": "E38 Kreis 2 Zyklus 1=1x 2=2x täglich [Zahl]"
+          },
+          {
+            "label": "E39 Kreis 2 Regensperre beachten [1 Bit]"
+          },
+          {
+            "label": "E40 Kreis 2 Parallel erlaubt [1 Bit]"
+          },
+          {
+            "label": "E41 Kreis 2 Hand Start/Stopp [1 Bit]"
+          },
+          {
+            "label": "E42 Kreis 3 Laufzeit, 0=überspringen [min Zahl]"
+          },
+          {
+            "label": "E43 Kreis 3 Zyklus 1=1x 2=2x täglich [Zahl]"
+          },
+          {
+            "label": "E44 Kreis 3 Regensperre beachten [1 Bit]"
+          },
+          {
+            "label": "E45 Kreis 3 Parallel erlaubt [1 Bit]"
+          },
+          {
+            "label": "E46 Kreis 3 Hand Start/Stopp [1 Bit]"
+          },
+          {
+            "label": "E47 Kreis 4 Laufzeit, 0=überspringen [min Zahl]"
+          },
+          {
+            "label": "E48 Kreis 4 Zyklus 1=1x 2=2x täglich [Zahl]"
+          },
+          {
+            "label": "E49 Kreis 4 Regensperre beachten [1 Bit]"
+          },
+          {
+            "label": "E50 Kreis 4 Parallel erlaubt [1 Bit]"
+          },
+          {
+            "label": "E51 Kreis 4 Hand Start/Stopp [1 Bit]"
+          },
+          {
+            "label": "E52 Kreis 5 Laufzeit, 0=überspringen [min Zahl]"
+          },
+          {
+            "label": "E53 Kreis 5 Zyklus 1=1x 2=2x täglich [Zahl]"
+          },
+          {
+            "label": "E54 Kreis 5 Regensperre beachten [1 Bit]"
+          },
+          {
+            "label": "E55 Kreis 5 Parallel erlaubt [1 Bit]"
+          },
+          {
+            "label": "E56 Kreis 5 Hand Start/Stopp [1 Bit]"
+          }
+        ],
+        "translation_outputs": [
+          {
+            "label": "A1 Versorgung 24 V [1 Bit]"
+          },
+          {
+            "label": "A2 Pumpe [1 Bit]"
+          },
+          {
+            "label": "A3 Nachspeisung [1 Bit]"
+          },
+          {
+            "label": "A4 Programm läuft [1 Bit]"
+          },
+          {
+            "label": "A5 Aktiver Lauf 0=keiner 1 2 3=Hand [Zahl]"
+          },
+          {
+            "label": "A6 Aktive Kreise [14 Byte Text]"
+          },
+          {
+            "label": "A7 Restzeit gesamt [min Zahl]"
+          },
+          {
+            "label": "A8 Gesamtlaufzeit Lauf 1 [min Zahl]"
+          },
+          {
+            "label": "A9 Gesamtlaufzeit Lauf 2 [min Zahl]"
+          },
+          {
+            "label": "A10 Startzeit Lauf 1 [Uhrzeit, s ab 0 Uhr]"
+          },
+          {
+            "label": "A11 Startzeit Lauf 1 [14 Byte Text]"
+          },
+          {
+            "label": "A12 Startzeit Lauf 2 [Uhrzeit, s ab 0 Uhr]"
+          },
+          {
+            "label": "A13 Startzeit Lauf 2 [14 Byte Text]"
+          },
+          {
+            "label": "A14 Regensperre aktiv [1 Bit]"
+          },
+          {
+            "label": "A15 Frostsperre aktiv [1 Bit]"
+          },
+          {
+            "label": "A16 Störung [1 Bit]"
+          },
+          {
+            "label": "A17 Status kurz [14 Byte Text]"
+          },
+          {
+            "label": "A18 Status ausführlich [Text]"
+          },
+          {
+            "label": "A19 Kaskade an Folge (E3) [Text]"
+          },
+          {
+            "label": "A20 Rückmeldung an Vorgänger (E4) [Text]"
+          },
+          {
+            "label": "A21 Kreis 1 Ventil [1 Bit]"
+          },
+          {
+            "label": "A22 Kreis 1 Restzeit [min Zahl]"
+          },
+          {
+            "label": "A23 Kreis 2 Ventil [1 Bit]"
+          },
+          {
+            "label": "A24 Kreis 2 Restzeit [min Zahl]"
+          },
+          {
+            "label": "A25 Kreis 3 Ventil [1 Bit]"
+          },
+          {
+            "label": "A26 Kreis 3 Restzeit [min Zahl]"
+          },
+          {
+            "label": "A27 Kreis 4 Ventil [1 Bit]"
+          },
+          {
+            "label": "A28 Kreis 4 Restzeit [min Zahl]"
+          },
+          {
+            "label": "A29 Kreis 5 Ventil [1 Bit]"
+          },
+          {
+            "label": "A30 Kreis 5 Restzeit [min Zahl]"
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "name": "14785 Irrigation 5 circuits (cascadable)",
+        "category": "Garden",
+        "translation_inputs": [
+          {
+            "label": "I1 Mode (0=master 1=follower) [number]"
+          },
+          {
+            "label": "I2 First circuit number [number]"
+          },
+          {
+            "label": "I3 Cascade from predecessor (O19) [text]"
+          },
+          {
+            "label": "I4 Feedback from follower (O20) [text]"
+          },
+          {
+            "label": "I5 Automatic on/off [1 bit]"
+          },
+          {
+            "label": "I6 Start program (run 1) [1 bit]"
+          },
+          {
+            "label": "I7 Stop all [1 bit]"
+          },
+          {
+            "label": "I8 Desired end run 1, run 2 = +12 h [time/text hh:mm]"
+          },
+          {
+            "label": "I9 Weather factor [% number]"
+          },
+          {
+            "label": "I10 Rain sensor [1 bit]"
+          },
+          {
+            "label": "I11 Rain on-delay [s number]"
+          },
+          {
+            "label": "I12 Rain hold time after rain [min number]"
+          },
+          {
+            "label": "I13 Outdoor temperature [2 byte float]"
+          },
+          {
+            "label": "I14 Frost limit [degC number]"
+          },
+          {
+            "label": "I15 Manual start allowed at rain/frost [1 bit]"
+          },
+          {
+            "label": "I16 Max. circuits at once per block [number]"
+          },
+          {
+            "label": "I17 Pause between circuits [s number]"
+          },
+          {
+            "label": "I18 Overlap at circuit change [s number]"
+          },
+          {
+            "label": "I19 Max. run time per valve, watchdog [min number]"
+          },
+          {
+            "label": "I20 PSU mode 0=run 1=permanent 2=run+window [number]"
+          },
+          {
+            "label": "I21 PSU lead time [s number]"
+          },
+          {
+            "label": "I22 PSU run-on [s number]"
+          },
+          {
+            "label": "I23 Refill window after run [min number]"
+          },
+          {
+            "label": "I24 Pump on-delay after valve [s number]"
+          },
+          {
+            "label": "I25 Pump pressure relief [s number]"
+          },
+          {
+            "label": "I26 Level min, 1=empty [1 bit]"
+          },
+          {
+            "label": "I27 Level max, 1=full [1 bit]"
+          },
+          {
+            "label": "I28 Refill only during run [1 bit]"
+          },
+          {
+            "label": "I29 Refill max. time [min number]"
+          },
+          {
+            "label": "I30 Dry-run delay [s number]"
+          },
+          {
+            "label": "I31 Acknowledge fault [1 bit]"
+          },
+          {
+            "label": "I32 Circuit 1 run time, 0=skip [min number]"
+          },
+          {
+            "label": "I33 Circuit 1 cycle 1=1x 2=2x daily [number]"
+          },
+          {
+            "label": "I34 Circuit 1 observe rain lock [1 bit]"
+          },
+          {
+            "label": "I35 Circuit 1 parallel allowed [1 bit]"
+          },
+          {
+            "label": "I36 Circuit 1 manual start/stop [1 bit]"
+          },
+          {
+            "label": "I37 Circuit 2 run time, 0=skip [min number]"
+          },
+          {
+            "label": "I38 Circuit 2 cycle 1=1x 2=2x daily [number]"
+          },
+          {
+            "label": "I39 Circuit 2 observe rain lock [1 bit]"
+          },
+          {
+            "label": "I40 Circuit 2 parallel allowed [1 bit]"
+          },
+          {
+            "label": "I41 Circuit 2 manual start/stop [1 bit]"
+          },
+          {
+            "label": "I42 Circuit 3 run time, 0=skip [min number]"
+          },
+          {
+            "label": "I43 Circuit 3 cycle 1=1x 2=2x daily [number]"
+          },
+          {
+            "label": "I44 Circuit 3 observe rain lock [1 bit]"
+          },
+          {
+            "label": "I45 Circuit 3 parallel allowed [1 bit]"
+          },
+          {
+            "label": "I46 Circuit 3 manual start/stop [1 bit]"
+          },
+          {
+            "label": "I47 Circuit 4 run time, 0=skip [min number]"
+          },
+          {
+            "label": "I48 Circuit 4 cycle 1=1x 2=2x daily [number]"
+          },
+          {
+            "label": "I49 Circuit 4 observe rain lock [1 bit]"
+          },
+          {
+            "label": "I50 Circuit 4 parallel allowed [1 bit]"
+          },
+          {
+            "label": "I51 Circuit 4 manual start/stop [1 bit]"
+          },
+          {
+            "label": "I52 Circuit 5 run time, 0=skip [min number]"
+          },
+          {
+            "label": "I53 Circuit 5 cycle 1=1x 2=2x daily [number]"
+          },
+          {
+            "label": "I54 Circuit 5 observe rain lock [1 bit]"
+          },
+          {
+            "label": "I55 Circuit 5 parallel allowed [1 bit]"
+          },
+          {
+            "label": "I56 Circuit 5 manual start/stop [1 bit]"
+          }
+        ],
+        "translation_outputs": [
+          {
+            "label": "O1 Supply 24 V [1 bit]"
+          },
+          {
+            "label": "O2 Pump [1 bit]"
+          },
+          {
+            "label": "O3 Refill [1 bit]"
+          },
+          {
+            "label": "O4 Program running [1 bit]"
+          },
+          {
+            "label": "O5 Active run 0=none 1 2 3=manual [number]"
+          },
+          {
+            "label": "O6 Active circuits [14 byte text]"
+          },
+          {
+            "label": "O7 Remaining time total [min number]"
+          },
+          {
+            "label": "O8 Total run time run 1 [min number]"
+          },
+          {
+            "label": "O9 Total run time run 2 [min number]"
+          },
+          {
+            "label": "O10 Start time run 1 [time, s from midnight]"
+          },
+          {
+            "label": "O11 Start time run 1 [14 byte text]"
+          },
+          {
+            "label": "O12 Start time run 2 [time, s from midnight]"
+          },
+          {
+            "label": "O13 Start time run 2 [14 byte text]"
+          },
+          {
+            "label": "O14 Rain lock active [1 bit]"
+          },
+          {
+            "label": "O15 Frost lock active [1 bit]"
+          },
+          {
+            "label": "O16 Fault [1 bit]"
+          },
+          {
+            "label": "O17 Status short [14 byte text]"
+          },
+          {
+            "label": "O18 Status detailed [text]"
+          },
+          {
+            "label": "O19 Cascade to follower (I3) [text]"
+          },
+          {
+            "label": "O20 Feedback to predecessor (I4) [text]"
+          },
+          {
+            "label": "O21 Circuit 1 valve [1 bit]"
+          },
+          {
+            "label": "O22 Circuit 1 remaining time [min number]"
+          },
+          {
+            "label": "O23 Circuit 2 valve [1 bit]"
+          },
+          {
+            "label": "O24 Circuit 2 remaining time [min number]"
+          },
+          {
+            "label": "O25 Circuit 3 valve [1 bit]"
+          },
+          {
+            "label": "O26 Circuit 3 remaining time [min number]"
+          },
+          {
+            "label": "O27 Circuit 4 valve [1 bit]"
+          },
+          {
+            "label": "O28 Circuit 4 remaining time [min number]"
+          },
+          {
+            "label": "O29 Circuit 5 valve [1 bit]"
+          },
+          {
+            "label": "O30 Circuit 5 remaining time [min number]"
+          }
+        ]
+      }
+    ]
+  }
+}
