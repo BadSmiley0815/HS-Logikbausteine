@@ -21,7 +21,7 @@ Stand 11.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14785**
 | 14775 | [RLT Luftqualitätsregelung](14775_RLT_Luftqualitaet/) | 1.6 |  |
 | 14776 | [WRG-Pumpenregelung](14776_WRG_Pumpenregelung/) | 1.0 |  |
 | 14777 | [Kompressor-Klappensteuerung](14777_Kompressor_Klappensteuerung/) | 1.2 |  |
-| 14778 | [Szenen-Server](14778_szenenserver/) | 4.2.2 | 8093 `/szenen/` |
+| 14778 | [Szenen-Server](14778_szenenserver/) | 4.3 | 8093 `/szenen/` |
 | 14779 | Zeitschaltuhr + Aufzeichnung – geplant | – | 8094 (reserviert) |
 | 14780 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14781 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |

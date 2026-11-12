@@ -5,7 +5,7 @@
     "id": "14778",
     "name": "14778 Scene server",
     "hsl_filename": "14778_szenenserver.hsl",
-    "version": "4.2.2",
+    "version": "4.3",
     "inputs": [
       {
         "type": "base_path",

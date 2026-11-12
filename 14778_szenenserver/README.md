@@ -1,6 +1,6 @@
-# 14778 Szenen-Server – Version 4.2.2
+# 14778 Szenen-Server – Version 4.3
 
-**ID 14778 · Version 4.2.2 · HSL3**
+**ID 14778 · Version 4.3 · HSL3**
 
 Szenensteuerung über eigene Webseite.
 

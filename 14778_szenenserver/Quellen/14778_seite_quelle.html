@@ -452,6 +452,10 @@ Rückmeldung an A2 (aktive Szene, DPT 17.001) und A3–A10 (Szene 1–8 aktiv, 1
         <label for="cDelay">Nach Regen wiederherstellen</label><div class="kv"><span style="display:flex;gap:6px;align-items:center"><input id="cDelay" type="number" min="0" max="240" step="1" style="width:90px"> min ohne Regen</span></div>
       </div>
       <div class="hint">KO als Gruppenadresse (z. B. <code>5/0/1</code>) – muss für den Gateway-Benutzer freigegeben sein. <br>Sommer/Winter in Anlehnung an DIN: der Baustein speichert um <b>7, 14 und 22 Uhr</b> die Außentemperatur, Tagesmittel = (T7 + T14 + T22 + T22) / 4. Ab der Grenze (Standard 16 °C) gilt <b>Sommer</b>, darunter bzw. ohne Temperatur <b>Winter</b>. Umgeschaltet wird nur zu den Messzeitpunkten; fehlen anfangs Messwerte, wird die aktuelle Temperatur eingesetzt. Ausgänge A13–A17.</div></fieldset>
+      <fieldset><legend>Senden – Buslast (gilt für alle Gruppen)</legend><div class="fg">
+        <label for="cBurst">Telegramme am Stück</label><div class="kv"><span style="display:flex;gap:6px;align-items:center"><input id="cBurst" type="number" min="0" max="50" step="1" style="width:90px"> (0 = ohne Begrenzung)</span></div>
+        <label for="cPause">danach Pause</label><div class="kv"><span style="display:flex;gap:6px;align-items:center"><input id="cPause" type="number" min="0" max="10" step="0.1" style="width:90px"> s</span></div>
+      </div><div class="hint">Beim Szenenaufruf werden höchstens so viele Werte am Stück gesendet, dann wird pausiert (bewährt: 5 Telegramme, 1 s Pause). Wird ein KO noch einmal geschaltet, bevor es gesendet wurde, geht nur der neueste Wert raus.</div></fieldset>
       <fieldset><legend>Nachholen</legend>
         <label><input type="checkbox" id="gCatch"> Zurückgestellte Werte der aktiven Szene senden, sobald die Bedingung erfüllt ist (Dämmerung beginnt), und bei Wechsel Sommer/Winter die andere Zeile senden</label>
         <div class="hint">Ohne Haken werden Werte, deren Bedingung beim Szenenaufruf nicht erfüllt ist, verworfen. Regen-Funktionen werden immer nach dem Regen wiederhergestellt.</div>
@@ -1805,6 +1809,7 @@ function editGroup(g, isNew) {
   $("#gTrigKey").value = g.triggerKey || ""; $("#gNum").value = String(g.numbering ?? 0); DLG_G = g;
   $("#cDuskKey").value = CFG.duskKey || ""; $("#cRainKey").value = CFG.rainKey || ""; $("#cTempKey").value = CFG.tempKey || "";
   $("#cLimit").value = CFG.tempLimit ?? 16; $("#cDelay").value = CFG.rainDelay ?? 5;
+  $("#cBurst").value = CFG.sendBurst ?? 5; $("#cPause").value = CFG.sendPause ?? 1;
   updateSensLive();
   $("#gCatch").checked = !!g.duskCatchUp; $("#gLive").checked = !!g.liveToScene; $("#gTitle").value = CFG.title || "";
   $("#gDel").hidden = isNew || CFG.groups.length < 2;
@@ -1826,7 +1831,8 @@ function editGroup(g, isNew) {
     });
     Object.assign(CFG, {
       duskKey: normKey($("#cDuskKey").value), rainKey: normKey($("#cRainKey").value), tempKey: normKey($("#cTempKey").value),
-      tempLimit: num($("#cLimit").value) ?? 16, rainDelay: Math.max(0, parseInt($("#cDelay").value) || 0)
+      tempLimit: num($("#cLimit").value) ?? 16, rainDelay: Math.max(0, parseInt($("#cDelay").value) || 0),
+      sendBurst: Math.max(0, Math.min(50, parseInt($("#cBurst").value) || 0)), sendPause: Math.max(0, Math.min(10, num($("#cPause").value) ?? 1))
     });
     CFG.title = $("#gTitle").value.trim() || "Szenen";
     if (g.trigger) CFG.groups.forEach(x => { if (x !== g) x.trigger = 0; });
