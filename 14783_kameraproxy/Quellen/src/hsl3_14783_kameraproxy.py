@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14783 – Kamera-Proxy (v0.5, Prüffassung)
+HSL3 14783 – Kamera-Proxy (v0.6, Prüffassung)
 
 Holt Bilder und MJPEG-Ströme von Netzwerkkameras (Axis, beliebige Standbild-Adresse oder ONVIF)
 mit Anmeldung (Digest oder Basic, bei ONVIF zusätzlich WS-Security) und gibt sie über die Weiterleitung des HomeServers aus – gleiche Adresse und gleiches Zertifikat
@@ -40,7 +40,7 @@ import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "0.5"
+VERSION = "0.6"
 CAMS = 6
 JPG_PATH = "/axis-cgi/jpg/image.cgi"
 MJPG_PATH = "/axis-cgi/mjpg/video.cgi"
@@ -320,6 +320,7 @@ class Onvif:
         self.profiles = []
         self.src = {}
         self.last = None
+        self.used = ""                  # zuletzt wirklich abgerufene Standbild-Adresse (für die Prüfseite)
         self.ready = self.stale = False
         self.tried = 0.0
         self.error = None
@@ -385,7 +386,7 @@ class Onvif:
                              "enc": _first(e, "Encoding"), "w": _int(_first(e, "Width")), "h": _int(_first(e, "Height"))})
         if not profiles:
             raise ValueError("ONVIF: keine Profile")
-        self.profiles, self.src, self.last = profiles, {}, None
+        self.profiles, self.src, self.last, self.used = profiles, {}, None, ""
 
     def _pick(self, want):
         sized = [p for p in self.profiles if p["w"] and p["h"]]
@@ -449,7 +450,7 @@ class Onvif:
             s = self.last
             if self.ready and s:
                 p = s["profile"]
-                out.update(profil="%s %dx%d" % (p["name"] or p["token"], p["w"], p["h"]), standbild=s["show"],
+                out.update(profil="%s %dx%d" % (p["name"] or p["token"], p["w"], p["h"]), standbild=self.used or s["show"],
                            strom=s["stream"], uhr="%+d s" % round(self.offset))
             return out
 
@@ -713,7 +714,10 @@ class LogicModule:
             todo = [u for u in uris if u not in cam["skip"]] or uris[-1:]
             for n, uri in enumerate(todo):
                 try:
-                    return Resp(*client.get(uri, stream=stream))
+                    r = Resp(*client.get(uri, stream=stream))
+                    if cam["mode"] == "onvif":
+                        cam["onvif"].used = _masked(uri)
+                    return r
                 except urllib.error.HTTPError as e:
                     if e.code != 400 or n == len(todo) - 1:
                         raise

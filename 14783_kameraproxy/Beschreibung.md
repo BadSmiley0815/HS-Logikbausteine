@@ -41,7 +41,7 @@ Axis führt ONVIF-Konten getrennt von den normalen Konten: Ein ONVIF-Konto gilt 
 | `https://<HS>/kamera/einfahrt.mjpg?k=<Schlüssel>` | Live-Bild als MJPEG-Strom |
 | `https://<HS>/kamera/einfahrt.jpg?k=<Schlüssel>&resolution=640x360` | Standbild in anderer Auflösung |
 | `https://<HS>/kamera/einfahrt.mjpg?k=<Schlüssel>&fps=5` | Live-Bild mit 5 Bildern/s |
-| `https://<HS>/kamera/list?k=<Schlüssel>` | Namen der Kameras: `{"version":"0.5","cams":["einfahrt","hof"]}` |
+| `https://<HS>/kamera/list?k=<Schlüssel>` | Namen der Kameras: `{"version":"0.6","cams":["einfahrt","hof"]}` |
 | `https://<HS>/kamera/test?k=<Schlüssel>` | Prüfung aller Kameras als JSON |
 
 Zusatz-Parameter: `resolution`, `fps`, `compression`, `camera`. Lehnt die Kamera einen Parameter ab (HTTP 400), geht es mit der Vorgabe aus „Adresse“ weiter.
@@ -73,6 +73,7 @@ In eine Webseite eingebunden:
  "art": "onvif",
  "profile": ["profile_1 h264 3840x2160 H264", "profile_1 jpeg 3840x2160 JPEG"],
  "profil": "profile_1 h264 3840x2160",
+ "standbild": "/onvif-cgi/jpg/image.cgi?resolution=1280x720&compression=30",
  "strom": "rtsp://…/onvif-media/media.amp?profile=profile_1_h264",
  "uhr": "-130 s",
  "live": "Standbilder"
@@ -84,6 +85,7 @@ In eine Webseite eingebunden:
 | `art` | `axis`, `url` (Standbild-Adresse) oder `onvif` |
 | `ms` | Zeit für ein Standbild mit gespeicherter Anmeldung |
 | `profile` / `profil` | alle Profile der Kamera / das gewählte |
+| `standbild` | die wirklich abgerufene Standbild-Adresse (ohne Host) |
 | `strom` | RTSP-Adresse der Kamera, nur zur Auskunft (ohne Host und Zugangsdaten) |
 | `uhr` | Abweichung der Kamera-Uhr vom HomeServer; der Baustein gleicht sie für die ONVIF-Anmeldung aus |
 | `http: 401` | Benutzer oder Passwort falsch (bei Axis: ONVIF-Konto an Axis-Pfaden?) |

@@ -1,4 +1,4 @@
-# 14783 Kamera-Proxy V0.5 (Prüffassung) – Einbau
+# 14783 Kamera-Proxy V0.6 (Prüffassung) – Einbau
 
 Stand 15.11.2026. Baustein: `14783_kameraproxy.hslz` (HSL3), Kategorie „Visualisierung“, Kontext `hsl3.kameraproxy`.
 
@@ -38,7 +38,7 @@ Beim Wechsel von 0.4: E1–E16 bleiben an ihrem Platz, E17–E28 kommen hinten d
 - Axis führt ONVIF-Konten getrennt von normalen Konten: Ein ONVIF-Konto gilt für `onvif://…` und `/onvif-cgi/…`, nicht für `/axis-cgi/…`.
 - Strom aus Standbildern: Vorgabe 8 Bilder/s, mit `&fps=…` 1 bis 15. RTSP/H.264 wird nicht umgewandelt, die RTSP-Adresse zeigt die Prüfseite nur an.
 
-## Prüfen (Prüffassung 0.5)
+## Prüfen (Prüffassung 0.6)
 1. A1 Status zeigt „Bereit: /kamera/ (Port 8095), n Kamera(s)“.
 2. Im Browser `https://<HS>/kamera/` öffnen, Schlüssel eingeben, „Prüfen“.
    - Oben steht das Prüfergebnis je Kamera (OK / HTTP 401 = Anmeldung falsch / Fehler).
@@ -57,6 +57,7 @@ Die Prüfseite zeigt je Kamera `http` (Antwort der Kamera), `detail` (Fehlertext
 - Fehler ohne `http` – Kamera nicht erreichbar (IP, http/https)
 
 ## Änderungen
+- 0.6: Prüfung zeigt bei ONVIF unter `standbild` die wirklich abgerufene Adresse (bisher die von der Kamera genannte)
 - 0.5: Adresse mit Pfad wird als Standbild-Adresse übernommen (bisher wurde der Pfad verworfen) · ONVIF (`onvif://…`) mit wählbarer Auflösung · MJPEG-Strom aus Standbildern, wenn die Kamera keinen anbietet · 6 statt 3 Kameras · abgelehnte Parameter werden gemerkt
 - 0.4: Weiterleitungen der Kamera (z. B. http → https) werden befolgt
 - 0.3: Verbindung zur Kamera bleibt offen, Anmeldung wird gespeichert (Standbilder etwa doppelt so schnell) · `…/list` für den QC-Client

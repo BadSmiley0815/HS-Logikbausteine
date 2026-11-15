@@ -11,7 +11,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 | [14776](#14776-wrg-pumpenregelung) | WRG-Pumpenregelung | 1.0 |
 | [14777](#14777-kompressor-klappensteuerung) | Kompressor-Klappensteuerung | 1.2 |
 | [14778](#14778-szenen-server) | Szenen-Server | 4.3 |
-| [14783](#14783-kamera-proxy) | Kamera-Proxy | 0.5 |
+| [14783](#14783-kamera-proxy) | Kamera-Proxy | 0.6 |
 | [14784](#14784-meldungsspeicher) | Meldungsspeicher | 1.1 |
 | [14785](#14785-bewässerung-5-kreise-kaskadierbar) | Bewässerung 5 Kreise (kaskadierbar) | 1.1 |
 
@@ -64,6 +64,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 - **4.0** – offizielle ID 14778 (bisher 19108).
 
 ## 14783 Kamera-Proxy
+- **0.6** (2026-11-15) – Prüfung zeigt bei ONVIF unter `standbild` die wirklich abgerufene Adresse (bisher die von der Kamera genannte, z. B. mit 3840x2160).
 - **0.5** (2026-11-15) – ONVIF: `onvif://<Kamera>` ermittelt Profile und Standbild-Adresse selbst (WS-Security, Abgleich der Kamera-Uhr), Auflösung wählbar (`?resolution=`, Vorgabe 1280x720). Adresse mit Pfad wird als Standbild-Adresse übernommen (bisher wurde der Pfad verworfen). Live-Bild `.mjpg` aus Standbildern, wenn die Kamera keinen MJPEG-Strom anbietet (`&fps=` 1–15). 6 statt 3 Kameras (E17–E28 neu, E1–E16 unverändert). Abgelehnte Parameter werden gemerkt. Prüfung zeigt Art, Profile und RTSP-Adresse. Hilfe im Aufbau der Experten-Hilfe.
 - **0.4** (2026-11-10) – Weiterleitungen der Kamera werden befolgt (http → https).
 - **0.3** (2026-11-10) – Verbindungen bleiben offen, Anmeldung wird gemerkt, `/list` für den QC-Client.

@@ -162,6 +162,7 @@ def chapters_de():
              ["503 vom HomeServer", "E2 Port fehlt oder ist doppelt vergeben"],
          ]) + '<div class="descr">Nach einem ONVIF-Fehler fragt der Baustein die Kamera frühestens nach 15 Sekunden neu.</div>'),
         ("Änderungen", table(["Version", "Änderung"], [
+            ["0.6", "Prüfung zeigt bei ONVIF unter <code>standbild</code> die wirklich abgerufene Adresse (bisher die von der Kamera genannte, z. B. mit 3840x2160)"],
             ["0.5", "Adresse mit Pfad wird als Standbild-Adresse übernommen (bisher wurde der Pfad verworfen) · ONVIF mit wählbarer Auflösung · "
                     "Live-Bild aus Standbildern, wenn die Kamera keinen MJPEG-Strom anbietet · 6 statt 3 Kameras (E17–E28 neu, E1–E16 unverändert) · abgelehnte Parameter werden gemerkt"],
             ["0.4", "Weiterleitungen der Kamera (z. B. http &rarr; https) werden befolgt"],
