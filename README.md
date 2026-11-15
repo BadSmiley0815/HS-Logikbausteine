@@ -7,7 +7,7 @@ Passend dazu: [QC-Client](https://github.com/BadSmiley0815/QC-Client) – der Qu
 
 Alle Versionen aller Bausteine: [CHANGELOG.md](CHANGELOG.md)
 
-Stand 12.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14786**
+Stand 15.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14786**
 
 ## Bausteine
 
@@ -26,7 +26,7 @@ Stand 12.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14786**
 | 14780 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14781 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
 | 14782 | (verworfene Parallelfassung KNX-Tunnel) – nicht verwenden | – |  |
-| 14783 | [Kamera-Proxy](14783_kameraproxy/) | 0.4 (Prüffassung) | 8095 `/kamera/` |
+| 14783 | [Kamera-Proxy](14783_kameraproxy/) | 0.5 (Prüffassung) | 8095 `/kamera/` |
 | 14784 | [Meldungsspeicher](14784_meldungsspeicher/) | 1.1 |  |
 | 14785 | [Bewässerung 5 Kreise (kaskadierbar)](14785_Bewaesserung/) | 1.1 |  |
 
@@ -70,7 +70,7 @@ Szenensteuerung über eigene Webseite.
 
 ### [14783 Kamera-Proxy](14783_kameraproxy/)
 
-Axis-Kameras per Digest für den QC-Client.
+Kamerabilder für QC-Client und Visu ohne Anmeldung im Browser – Axis, beliebige Standbild-Adresse oder ONVIF, bis zu 6 Kameras; Standbild und Live-Bild (MJPEG der Kamera oder aus Standbildern) über die Adresse des HomeServers.
 
 <img src="14783_kameraproxy/bilder/beispiel_pruefseite.png" width="640" alt="Kamera-Proxy">
 
@@ -97,4 +97,4 @@ Gartenbewässerung, 5 Kreise je Baustein, per Kaskade erweiterbar (Master/Folge)
 
 GPL-3.0, siehe [LICENSE](LICENSE). Entwickelt mit Claude (Anthropic). Gira, HomeServer und QuadClient sind Marken der Gira Giersiepen GmbH & Co. KG; dieses Projekt ist kein Produkt von Gira. Der Gira-Generator (HSL3 SDK) ist nicht enthalten.
 
-Bilder neu erzeugen: `python3 tools/blockbild.py <Ordner>` (Baustein), `python3 tools/prinzipbilder.py` (14776/14777), danach `python3 tools/readmes.py`.
+Bilder neu erzeugen: `python3 tools/blockbild.py <Ordner>` (Baustein), `python3 tools/prinzipbilder.py` (14776/14777), danach `python3 tools/readmes.py`. Liegt im Bausteinordner eine `Beschreibung.md`, wird sie in dessen README übernommen.

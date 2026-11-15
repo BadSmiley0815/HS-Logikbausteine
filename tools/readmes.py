@@ -19,7 +19,8 @@ CAPTION = {
     "beispiel_simulation": "Beispiel: Verlauf beim Einschalten des Verdichters (vereinfachte Simulation)",
     "beispiel_szenen": "Ergebnis: Szenen-Seite mit Beispiel-Szenen (ohne Verbindung zum HS aufgenommen)",
     "beispiel_ablauf": "Beispiel: Lauf 1 mit Master und einer Folge – Startzeit aus der gewünschten Endzeit (Simulation mit dem Baustein-Code)",
-    "beispiel_pruefseite": "Ergebnis: Prüfseite mit zwei Testkameras – Standbild schnell nachgeladen und MJPEG-Strom",
+    "beispiel_pruefseite": "Ergebnis: Prüfseite mit drei Testkameras (ONVIF, Standbild-Adresse, Axis) – links Standbild schnell nachgeladen, rechts Live-Bild",
+    "beispiel_schema": "Prinzip: Der Browser spricht nur mit dem HomeServer, der Baustein meldet sich an der Kamera an",
 }
 
 
@@ -49,6 +50,9 @@ def block_readme(b, f):
             key = os.path.splitext(os.path.basename(p))[0]
             cap = CAPTION.get(key, key.replace("_", " "))
             o += [f"**{cap}**", "", f"![{cap}](bilder/{os.path.basename(p)})", ""]
+    extra = os.path.join(d, "Beschreibung.md")          # ausführliche Erklärung und Beispiele, von Hand gepflegt
+    if os.path.exists(extra):
+        o += [open(extra, encoding="utf-8").read().strip(), ""]
     if not os.path.exists(cfg):
         t = open(glob.glob(os.path.join(d, "*.hsl"))[0], encoding="latin-1").read()
         head = [l[2:] if l.startswith("# ") else l[1:] for l in t.splitlines() if l.startswith("#") and not l.startswith("####")]
@@ -99,7 +103,7 @@ o += ["## Regeln", ""] + [f"- {r}" for r in D["regeln"]] + [
       "GPL-3.0, siehe [LICENSE](LICENSE). Entwickelt mit Claude (Anthropic). Gira, HomeServer und QuadClient sind Marken der "
       "Gira Giersiepen GmbH & Co. KG; dieses Projekt ist kein Produkt von Gira. Der Gira-Generator (HSL3 SDK) ist nicht enthalten.", "",
       "Bilder neu erzeugen: `python3 tools/blockbild.py <Ordner>` (Baustein), `python3 tools/prinzipbilder.py` (14776/14777), "
-      "danach `python3 tools/readmes.py`.", ""]
+      "danach `python3 tools/readmes.py`. Liegt im Bausteinordner eine `Beschreibung.md`, wird sie in dessen README übernommen.", ""]
 open(os.path.join(R, "README.md"), "w", encoding="utf-8").write("\n".join(o))
 for b in B:
     f = folder(b)

@@ -1,5 +1,5 @@
 {
- "stand": "12.11.2026",
+ "stand": "15.11.2026",
  "bereich": "14770–14789",
  "bausteine": [
   {
@@ -174,15 +174,15 @@
   {
    "id": 14783,
    "name": "Kamera-Proxy",
-   "version": "0.4 (Prüffassung)",
+   "version": "0.5 (Prüffassung)",
    "art": "HSL3",
    "kategorie": "Visualisierung",
    "port": 8095,
    "pfad": "kamera",
    "ex": "",
    "datei": "14783_kameraproxy/14783_kameraproxy.hslz",
-   "einsatz": "Axis-Kameras per Digest für den QC-Client",
-   "status": "in Arbeit"
+   "einsatz": "Kamerabilder für QC-Client und Visu ohne Anmeldung im Browser – Axis, beliebige Standbild-Adresse oder ONVIF, bis zu 6 Kameras; Standbild und Live-Bild (MJPEG der Kamera oder aus Standbildern) über die Adresse des HomeServers",
+   "status": "Prüffassung, an Axis-Kameras getestet (Axis-Pfade und ONVIF)"
   },
   {
    "id": 14784,

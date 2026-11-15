@@ -1,18 +1,24 @@
 # -*- coding: utf-8 -*-
 """
-HSL3 14783 – Kamera-Proxy (v0.4, Prüffassung)
+HSL3 14783 – Kamera-Proxy (v0.5, Prüffassung)
 
-Holt Bilder und MJPEG-Ströme von Netzwerkkameras (z. B. Axis) mit Anmeldung (Digest oder Basic)
-und gibt sie über die Weiterleitung des HomeServers aus – gleiche Adresse und gleiches Zertifikat
+Holt Bilder und MJPEG-Ströme von Netzwerkkameras (Axis, beliebige Standbild-Adresse oder ONVIF)
+mit Anmeldung (Digest oder Basic, bei ONVIF zusätzlich WS-Security) und gibt sie über die Weiterleitung des HomeServers aus – gleiche Adresse und gleiches Zertifikat
 wie der HS, ohne Anmeldung im Browser:
 
     https://<HS>/<E1>/                    Prüfseite (Kameras, Standbild, Live-Bild, Bilder/s)
     https://<HS>/<E1>/<Name>.jpg?k=<E3>   Standbild
-    https://<HS>/<E1>/<Name>.mjpg?k=<E3>  MJPEG-Strom (wird unverändert durchgereicht)
+    https://<HS>/<E1>/<Name>.mjpg?k=<E3>  MJPEG-Strom (von der Kamera durchgereicht oder,
+                                          wenn sie keinen anbietet, aus Standbildern gebaut)
     https://<HS>/<E1>/test?k=<E3>         Prüfung aller Kameras als JSON
 
 Erlaubte Zusatz-Parameter an die Kamera: resolution, fps, compression, camera
 (z. B. …/einfahrt.mjpg?k=…&resolution=1280x720&fps=10).
+
+Adresse je Kamera (E6, E10, …):
+    <Kamera> oder https://<Kamera>                Axis (feste Pfade /axis-cgi/…)
+    https://<Kamera>/pfad/bild.cgi?…              diese Adresse ist das Standbild
+    onvif://<Kamera>[?resolution=1280x720]        Adressen per ONVIF ermitteln
 
 Zugangsdaten stehen nur im Baustein. Sie werden nie ausgegeben, geloggt oder an den Browser
 geschickt. Der Schlüssel E3 schützt alle Adressen außer der leeren Prüfseite.
@@ -34,10 +40,15 @@ import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "0.4"
-CAMS = 3
+VERSION = "0.5"
+CAMS = 6
 JPG_PATH = "/axis-cgi/jpg/image.cgi"
 MJPG_PATH = "/axis-cgi/mjpg/video.cgi"
+ONVIF_PATH = "/onvif/device_service"
+ONVIF_RES = (1280, 720)              # Wunsch-Auflösung bei ONVIF, wenn keine angegeben ist
+ONVIF_RETRY = 15                     # Sekunden bis zur nächsten ONVIF-Abfrage nach einem Fehler
+FPS_DEFAULT, FPS_MAX = 8.0, 15.0     # Strom aus Standbildern
+BOUNDARY = "hsframe"
 PASS_PARAMS = ("resolution", "fps", "compression", "camera")
 MAX_STREAMS_PER_CAM = 4
 MAX_STREAM_SECONDS = 3600
@@ -109,7 +120,7 @@ class CamClient:
                 best = p
         return best
 
-    def _header(self, uri):
+    def _header(self, uri, method="GET"):
         a = self.auth
         if not a:
             return None
@@ -125,7 +136,7 @@ class CamClient:
         ha1 = hf("%s:%s:%s" % (self.user, a.get("realm", ""), self.pwd))
         if alg.endswith("-SESS"):
             ha1 = hf("%s:%s:%s" % (ha1, a.get("nonce", ""), cnonce))
-        ha2 = hf("GET:" + uri)
+        ha2 = hf(method + ":" + uri)
         qops = [q.strip() for q in a.get("qop", "").split(",") if q.strip()]
         if "auth" in qops:
             resp = hf("%s:%s:%s:%s:auth:%s" % (ha1, a["nonce"], nc, cnonce, ha2))
@@ -139,15 +150,17 @@ class CamClient:
             h += ', opaque="%s"' % a["opaque"]
         return h
 
-    def _send(self, uri, conn):
+    def _send(self, uri, conn, method="GET", body=None, ctype=None):
         hd = {"User-Agent": "HS-14783/" + VERSION, "Connection": "keep-alive"}
-        ah = self._header(uri)
+        ah = self._header(uri, method)
         if ah:
             hd["Authorization"] = ah
-        conn.request("GET", uri, headers=hd)
+        if body is not None:
+            hd["Content-Type"] = ctype or "application/octet-stream"
+        conn.request(method, uri, body=body, headers=hd)
         return conn.getresponse()
 
-    def get(self, uri, stream=False):
+    def get(self, uri, stream=False, method="GET", body=None, ctype=None):
         """Liefert (Antwort, Verbindung). Bei stream=False ist der Inhalt schon gelesen (Antwort.body).
         Weiterleitungen (z. B. http -> https) werden befolgt und für die Kamera gemerkt."""
         attempt = redirects = 0
@@ -160,7 +173,7 @@ class CamClient:
             reused = conn is not None
             conn = conn or self._new_conn()
             try:
-                r = self._send(uri, conn)
+                r = self._send(uri, conn, method, body, ctype)
             except (http.client.HTTPException, OSError):
                 conn.close()
                 if reused:
@@ -226,6 +239,225 @@ class CamClient:
                 except Exception:
                     pass
             self.idle = []
+
+
+# ---------------------------------------------------------------- ONVIF
+_ENV = ('<?xml version="1.0" encoding="UTF-8"?><s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">'
+        '<s:Header>%s</s:Header><s:Body>%s</s:Body></s:Envelope>')
+_SEC = ('<wsse:Security s:mustUnderstand="1" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" '
+        'xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"><wsse:UsernameToken>'
+        '<wsse:Username>%s</wsse:Username>'
+        '<wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">%s</wsse:Password>'
+        '<wsse:Nonce EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">%s</wsse:Nonce>'
+        '<wsu:Created>%s</wsu:Created></wsse:UsernameToken></wsse:Security>')
+_TDS = 'xmlns:tds="http://www.onvif.org/ver10/device/wsdl"'
+_TRT = 'xmlns:trt="http://www.onvif.org/ver10/media/wsdl"'
+
+
+def _esc(t):
+    return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def _unesc(t):
+    for a, b in (("&lt;", "<"), ("&gt;", ">"), ("&quot;", '"'), ("&apos;", "'"), ("&amp;", "&")):
+        t = t.replace(a, b)
+    return t
+
+
+def _els(xml, name):
+    """Alle Elemente <präfix:name …>Inhalt</präfix:name> als (Attribute, Inhalt) – ohne XML-Bibliothek."""
+    return re.findall(r"<(?:[\w.-]+:)?%s(\s[^>]*)?>(.*?)</(?:[\w.-]+:)?%s\s*>" % (name, name), xml, re.S)
+
+
+def _first(xml, name):
+    m = _els(xml, name)
+    return _unesc(m[0][1].strip()) if m else ""
+
+
+def _int(t):
+    try:
+        return int(t)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _res(text):
+    """'1280x720' -> (1280, 720), sonst None."""
+    m = re.match(r"^\s*(\d{2,5})\s*[xX*]\s*(\d{2,5})\s*$", text or "")
+    return (int(m.group(1)), int(m.group(2))) if m else None
+
+
+def _masked(uri):
+    """Pfad und Abfrage einer Adresse für die Prüfseite: ohne Host, ohne Anmeldung, heikle Werte verdeckt."""
+    u = urllib.parse.urlsplit(uri)
+    q = ["%s=%s" % (k, "…" if re.search(r"user|usr|pass|pwd|auth|token|key|login", k, re.I) else v)
+         for k, v in urllib.parse.parse_qsl(u.query, keep_blank_values=True)]
+    return (u.path or "/") + ("?" + "&".join(q) if q else "")
+
+
+def _epoch(y, mo, d, h, mi, sec):
+    """UTC-Zeit in Sekunden seit 1970 (ohne Zusatzmodul)."""
+    leap = lambda j: j % 4 == 0 and (j % 100 != 0 or j % 400 == 0)
+    days = sum(366 if leap(j) else 365 for j in range(1970, y))
+    md = [31, 29 if leap(y) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    days += sum(md[:mo - 1]) + d - 1
+    return days * 86400 + h * 3600 + mi * 60 + sec
+
+
+class Onvif:
+    """Ermittelt per ONVIF (GetSystemDateAndTime, GetCapabilities, GetProfiles, GetSnapshotUri, GetStreamUri)
+    die Standbild- und Strom-Adresse einer Kamera. Anmeldung: WS-Security UsernameToken (PasswordDigest),
+    die Uhr der Kamera wird vorher gelesen. Das Ergebnis wird gemerkt, nach Fehlern frühestens nach
+    ONVIF_RETRY Sekunden neu abgefragt."""
+
+    def __init__(self, host, cands, path, user, pwd):
+        self.host, self.cands, self.path, self.user, self.pwd = host, cands, path, user, pwd
+        self.lock = threading.Lock()
+        self.client = None
+        self.more = {}                  # weitere Clients, falls das Standbild auf einem anderen Port liegt
+        self.offset = 0.0               # Uhr der Kamera minus Uhr des HS
+        self.media = path
+        self.profiles = []
+        self.src = {}
+        self.last = None
+        self.ready = self.stale = False
+        self.tried = 0.0
+        self.error = None
+
+    # -- SOAP
+    def _sec(self):
+        nonce = os.urandom(16)
+        created = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + self.offset))
+        dig = hashlib.sha1(nonce + created.encode("ascii") + self.pwd.encode("utf-8")).digest()
+        return _SEC % (_esc(self.user), base64.b64encode(dig).decode("ascii"),
+                       base64.b64encode(nonce).decode("ascii"), created)
+
+    def _call(self, client, path, body, auth=True):
+        env = _ENV % (self._sec() if auth and self.user else "", body)
+        r, _ = client.get(path, method="POST", body=env.encode("utf-8"), ctype="application/soap+xml; charset=utf-8")
+        return r.body.decode("utf-8", "replace")
+
+    # -- Ablauf
+    def _discover(self):
+        self.close()
+        client = last = None
+        xml = ""
+        for scheme, port in self.cands:                 # onvif://… probiert erst https, dann http
+            c = CamClient("%s://%s:%d" % (scheme, self.host, port), self.user, self.pwd)
+            try:
+                xml = self._call(c, self.path, "<tds:GetSystemDateAndTime %s/>" % _TDS, auth=False)
+            except urllib.error.HTTPError:
+                xml = ""                                # erreichbar, Uhrzeit nur mit Anmeldung -> ohne Abgleich
+            except Exception as e:
+                last = e
+                c.close()
+                continue
+            client = c
+            break
+        if client is None:
+            raise last or OSError("ONVIF nicht erreichbar")
+        self.client = client
+        self.offset = 0.0
+        utc = _els(xml, "UTCDateTime")
+        if utc:
+            v = [_int(_first(utc[0][1], n)) for n in ("Year", "Month", "Day", "Hour", "Minute", "Second")]
+            if v[0] > 2000 and 1 <= v[1] <= 12 and v[2]:
+                self.offset = _epoch(*v) - time.time()
+        self.media = self.path
+        try:                                            # Adresse des Mediendienstes; ohne Antwort gilt der Gerätedienst
+            cap = self._call(client, self.path, "<tds:GetCapabilities %s><tds:Category>Media</tds:Category></tds:GetCapabilities>" % _TDS)
+            med = _els(cap, "Media")
+            x = urllib.parse.urlsplit(_first(med[0][1], "XAddr")) if med else None
+            if x and x.path:
+                self.media = x.path                     # nur der Pfad: Host und http/https bleiben wie eingetragen
+        except urllib.error.HTTPError as e:
+            if e.code == 401:
+                raise
+        xml = self._call(client, self.media, "<trt:GetProfiles %s/>" % _TRT)
+        profiles = []
+        for attrs, inner in _els(xml, "Profiles"):
+            m = re.search(r'\btoken\s*=\s*(?:"([^"]*)"|\'([^\']*)\')', attrs or "")
+            if not m:
+                continue
+            enc = _els(inner, "VideoEncoderConfiguration")
+            e = enc[0][1] if enc else ""
+            profiles.append({"token": _unesc(m.group(1) or m.group(2) or ""), "name": _first(inner, "Name"),
+                             "enc": _first(e, "Encoding"), "w": _int(_first(e, "Width")), "h": _int(_first(e, "Height"))})
+        if not profiles:
+            raise ValueError("ONVIF: keine Profile")
+        self.profiles, self.src, self.last = profiles, {}, None
+
+    def _pick(self, want):
+        sized = [p for p in self.profiles if p["w"] and p["h"]]
+        if not sized:
+            return self.profiles[0]
+        area = want[0] * want[1]
+        return min(sized, key=lambda p: (abs(p["w"] * p["h"] - area), abs(p["w"] - want[0])))
+
+    def _snapshot(self, p):
+        tok = "<trt:ProfileToken>%s</trt:ProfileToken>" % _esc(p["token"])
+        uri = _first(self._call(self.client, self.media, "<trt:GetSnapshotUri %s>%s</trt:GetSnapshotUri>" % (_TRT, tok)), "Uri")
+        if not uri:
+            raise ValueError("ONVIF: Kamera nennt kein Standbild")
+        u = urllib.parse.urlsplit(uri)
+        client = self.client
+        try:
+            port = u.port
+        except ValueError:
+            port = None
+        if u.scheme in ("http", "https") and port and port != client.port:
+            key = (u.scheme, port)
+            if key not in self.more:
+                self.more[key] = CamClient("%s://%s:%d" % (u.scheme, self.host, port), self.user, self.pwd)
+            client = self.more[key]
+        stream = ""
+        try:
+            stream = _first(self._call(
+                self.client, self.media,
+                '<trt:GetStreamUri %s xmlns:tt="http://www.onvif.org/ver10/schema"><trt:StreamSetup><tt:Stream>RTP-Unicast</tt:Stream>'
+                '<tt:Transport><tt:Protocol>RTSP</tt:Protocol></tt:Transport></trt:StreamSetup>%s</trt:GetStreamUri>' % (_TRT, tok)), "Uri")
+        except Exception:
+            pass                                        # nur Auskunft für die Prüfseite
+        return {"profile": p, "client": client, "path": u.path or "/",
+                "query": urllib.parse.parse_qsl(u.query, keep_blank_values=True),
+                "show": _masked(uri), "stream": (stream.split("://")[0] + "://…" + _masked(stream)) if stream else ""}
+
+    def source(self, want):
+        """Quelle des Standbilds für die gewünschte Auflösung (w, h)."""
+        with self.lock:
+            now = time.time()
+            if not self.ready or (self.stale and now - self.tried >= ONVIF_RETRY):
+                if not self.ready and self.error is not None and now - self.tried < ONVIF_RETRY:
+                    raise self.error
+                self.tried = now
+                try:
+                    self._discover()
+                except Exception as e:
+                    self.ready, self.error = False, e
+                    raise
+                self.ready, self.stale, self.error = True, False, None
+            p = self._pick(want)
+            s = self.src.get(p["token"])
+            if s is None:
+                s = self.src[p["token"]] = self._snapshot(p)
+            self.last = s
+            return s
+
+    def info(self):
+        with self.lock:
+            out = {"profile": ["%s %dx%d %s" % (p["name"] or p["token"], p["w"], p["h"], p["enc"]) for p in self.profiles]}
+            s = self.last
+            if self.ready and s:
+                p = s["profile"]
+                out.update(profil="%s %dx%d" % (p["name"] or p["token"], p["w"], p["h"]), standbild=s["show"],
+                           strom=s["stream"], uhr="%+d s" % round(self.offset))
+            return out
+
+    def close(self):
+        for c in [self.client] + list(self.more.values()):
+            if c is not None:
+                c.close()
+        self.client, self.more = None, {}
 
 
 class Resp:
@@ -298,22 +530,55 @@ class LogicModule:
             addr = self._text(inputs.value("cam%d_addr" % i)).strip()
             if not name or not addr:
                 continue
-            if "://" not in addr:
-                addr = "http://" + addr
-            u = urllib.parse.urlsplit(addr)            # Schema://Host[:Port]; Pfad wird ignoriert,
-            addr = "%s://%s" % (u.scheme or "http", u.netloc or u.path.split("/")[0])
-            params = {k: v for k, v in urllib.parse.parse_qsl(u.query) if k in PASS_PARAMS}   # ?resolution=…&camera=… gilt als Vorgabe
-            user, pwd = self._text(inputs.value("cam%d_user" % i)), self._text(inputs.value("cam%d_pwd" % i))
+            key = (addr, self._text(inputs.value("cam%d_user" % i)), self._text(inputs.value("cam%d_pwd" % i)))
             old = self.cams.get(name)
-            client = old["client"] if old and old["client"].key == (addr, user, pwd) else CamClient(addr, user, pwd)
-            cams[name] = {"addr": addr, "params": params, "client": client}
+            cams[name] = old if old and old["key"] == key else self._make_cam(*key)
         with self._lock:
             for n, c in self.cams.items():
-                if n not in cams or cams[n]["client"] is not c["client"]:
-                    c["client"].close()
+                if cams.get(n) is not c:
+                    self._close_cam(c)
             self.cams = cams
         self.debug.set("Kameras", ", ".join(sorted(cams)) or "keine")
         self.debug.set("Schutz", "Schlüssel gesetzt" if self.key else "OHNE Schlüssel")
+
+    @staticmethod
+    def _make_cam(addr, user, pwd):
+        """Art der Kamera aus der Adresse: nur Host -> Axis, Adresse mit Pfad -> dieses Standbild, onvif://… -> ONVIF."""
+        cam = {"key": (addr, user, pwd), "mode": "axis", "client": None, "onvif": None,
+               "jpg": JPG_PATH, "mjpg": MJPG_PATH, "fixed": {}, "skip": set()}
+        if addr.lower().startswith("onvif://"):
+            u, schemes, onvif = urllib.parse.urlsplit("http://" + addr[8:]), ("https", "http"), True
+        else:
+            if "://" not in addr:
+                addr = "http://" + addr
+            u = urllib.parse.urlsplit(addr)
+            schemes = ("https" if u.scheme.lower() == "https" else "http",)
+            onvif = u.path.rstrip("/").lower() == ONVIF_PATH
+        q = urllib.parse.parse_qsl(u.query, keep_blank_values=True)
+        cam["params"] = {k: v for k, v in q if k in PASS_PARAMS}     # ?resolution=…&camera=… gilt als Vorgabe
+        host = u.hostname or ""
+        if ":" in host:
+            host = "[%s]" % host
+        try:
+            port = u.port
+        except ValueError:
+            port = None
+        if onvif:
+            path = u.path if u.path.strip("/") else ONVIF_PATH
+            cam.update(mode="onvif", jpg=None, mjpg=None,
+                       onvif=Onvif(host, [(s, port or (443 if s == "https" else 80)) for s in schemes], path, user, pwd))
+            return cam
+        cam["client"] = CamClient("%s://%s%s" % (schemes[0], host, ":%d" % port if port else ""), user, pwd)
+        if u.path not in ("", "/", JPG_PATH, MJPG_PATH):               # ganze Standbild-Adresse einer beliebigen Kamera
+            cam.update(mode="url", jpg=u.path, mjpg=None, fixed={k: v for k, v in q if k not in PASS_PARAMS})
+        return cam
+
+    @staticmethod
+    def _close_cam(cam):
+        if cam["client"] is not None:
+            cam["client"].close()
+        if cam["onvif"] is not None:
+            cam["onvif"].close()
 
     # ------------------------------------------------------------ Server
     def _start(self):
@@ -417,16 +682,51 @@ class LogicModule:
         return hmac.compare_digest((params.get("k") or params.get("key") or "").encode("utf-8"), self.key.encode("utf-8"))
 
     # ------------------------------------------------------------ Kamera
-    def _open(self, cam, path, extra, _try=0, stream=False):
-        q = dict(cam.get("params") or {}) if _try < 2 else {}
-        if _try == 0:
-            q.update(extra)                            # Anfrage aus dem Browser überschreibt die Vorgabe aus der Adresse
-        uri = path + ("?" + urllib.parse.urlencode(q) if q else "")
+    def _source(self, cam, kind, extra):
+        """Liefert (Client, Pfad, Liste möglicher Parameter-Sätze – der erste ist der gewünschte)."""
+        if cam["mode"] == "onvif":
+            want = _res(extra.get("resolution")) or _res(cam["params"].get("resolution")) or ONVIF_RES
+            s = cam["onvif"].source(want)
+            base = dict(s["query"])
+            over = dict(base)
+            for src in (cam["params"], extra):          # nur Parameter, die die Kamera in ihrer Adresse selbst nennt
+                over.update({k: v for k, v in src.items() if k in base})
+            if "resolution" in base:
+                over["resolution"] = "%dx%d" % want
+            return s["client"], s["path"], [over, base]
+        full = dict(cam["fixed"])
+        full.update(cam["params"])
+        dflt = dict(full)
+        full.update(extra)                              # Anfrage aus dem Browser überschreibt die Vorgabe aus der Adresse
+        return cam["client"], cam[kind], [full, dflt, dict(cam["fixed"])]
+
+    def _open(self, cam, kind, extra, stream=False):
+        """Öffnet Standbild (kind "jpg") oder Strom ("mjpg"). Lehnt die Kamera Parameter ab (HTTP 400),
+        geht es mit der Vorgabe und dann ohne weiter; abgelehnte Sätze werden gemerkt."""
         try:
-            return Resp(*cam["client"].get(uri, stream=stream))
+            client, path, cands = self._source(cam, kind, extra)
+            uris = []
+            for q in cands:
+                uri = path + ("?" + urllib.parse.urlencode(q) if q else "")
+                if uri not in uris:
+                    uris.append(uri)
+            todo = [u for u in uris if u not in cam["skip"]] or uris[-1:]
+            for n, uri in enumerate(todo):
+                try:
+                    return Resp(*client.get(uri, stream=stream))
+                except urllib.error.HTTPError as e:
+                    if e.code != 400 or n == len(todo) - 1:
+                        raise
+                    if len(cam["skip"]) > 50:
+                        cam["skip"].clear()
+                    cam["skip"].add(uri)
         except urllib.error.HTTPError as e:
-            if e.code == 400 and q and _try < 2:      # Kamera kennt einen Parameter nicht -> nur Vorgabe, dann ganz ohne
-                return self._open(cam, path, extra, _try + 1 if (_try or extra) else 2, stream)
+            if cam["mode"] == "onvif" and e.code != 400:
+                cam["onvif"].stale = True               # Adresse könnte sich geändert haben -> später neu ermitteln
+            raise
+        except Exception:
+            if cam["mode"] == "onvif":
+                cam["onvif"].stale = True
             raise
 
     @staticmethod
@@ -441,7 +741,7 @@ class LogicModule:
 
     def _jpg(self, h, cam, extra):
         try:
-            r = self._open(cam, JPG_PATH, extra)
+            r = self._open(cam, "jpg", extra)
             body = r.read()
             ctype = r.headers.get("Content-Type", "image/jpeg")
         except urllib.error.HTTPError as e:
@@ -461,18 +761,29 @@ class LogicModule:
             return self._send(h, 503, "text/plain; charset=utf-8", b"Zu viele Zuschauer")
         self.fw.run_in_context(self._publish_streams, ())
         try:
+            r = first = None
+            still = {k: v for k, v in extra.items() if k != "fps"}
             try:
-                r = self._open(cam, MJPG_PATH, extra, stream=True)
+                if cam["mjpg"]:
+                    try:
+                        r = self._open(cam, "mjpg", extra, stream=True)
+                    except urllib.error.HTTPError:
+                        r = None                        # Kamera bietet keinen MJPEG-Strom -> aus Standbildern bauen
+                if r is None:
+                    first = self._open(cam, "jpg", still).read()
             except urllib.error.HTTPError as e:
                 return self._send(h, 502, "text/plain; charset=utf-8", ("Kamera: HTTP %d" % e.code).encode())
             except Exception as e:
                 return self._send(h, 504, "text/plain; charset=utf-8", ("Kamera nicht erreichbar: %s" % type(e).__name__).encode())
             h.send_response(200)
-            h.send_header("Content-Type", r.headers.get("Content-Type", "multipart/x-mixed-replace; boundary=myboundary"))
+            h.send_header("Content-Type", r.headers.get("Content-Type", "multipart/x-mixed-replace; boundary=myboundary")
+                          if r is not None else "multipart/x-mixed-replace; boundary=" + BOUNDARY)
             h.send_header("Cache-Control", "no-store")
             h.send_header("X-Accel-Buffering", "no")
             h.end_headers()
             end = time.time() + MAX_STREAM_SECONDS
+            if r is None:
+                return self._push(h, cam, still, first, extra.get("fps"), end)
             try:
                 while time.time() < end:
                     chunk = r.read1(16384) if hasattr(r, "read1") else r.read(16384)
@@ -490,19 +801,42 @@ class LogicModule:
                 self.streams[name] = max(0, self.streams.get(name, 1) - 1)
             self.fw.run_in_context(self._publish_streams, ())
 
+    def _push(self, h, cam, extra, body, fps, end):
+        """MJPEG-Strom aus schnell nachgeladenen Standbildern (für Kameras ohne eigenen MJPEG-Strom)."""
+        step = 1.0 / min(FPS_MAX, max(1.0, self._num(fps, FPS_DEFAULT)))
+        errors = 0
+        while time.time() < end:
+            t0 = time.time()
+            if body:
+                h.wfile.write(("--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n" % (BOUNDARY, len(body))).encode("ascii"))
+                h.wfile.write(body)
+                h.wfile.write(b"\r\n")
+                h.wfile.flush()
+            try:
+                body = self._open(cam, "jpg", extra).read()
+                errors = 0
+            except (urllib.error.HTTPError, http.client.HTTPException, OSError, ValueError):
+                body, errors = None, errors + 1
+                if errors >= 5:                         # Kamera weg -> Strom beenden, der Browser baut neu auf
+                    return
+                time.sleep(1.0)
+            wait = step - (time.time() - t0)
+            if wait > 0:
+                time.sleep(wait)
+
     def _test_all(self):
         out = []
         with self._lock:
             cams = dict(self.cams)
         for name, cam in sorted(cams.items()):
             try:                                       # einmal vorab, damit „ms“ die Zeit mit gespeicherter Anmeldung zeigt
-                self._open(cam, JPG_PATH, {}).read()
+                self._open(cam, "jpg", {}).read()
             except Exception:
                 pass
             t0 = time.time()
             res = {"name": name, "ok": False}
             try:
-                r = self._open(cam, JPG_PATH, {})
+                r = self._open(cam, "jpg", {})
                 body = r.read()
                 res.update(ok=True, http=r.status, bytes=len(body), ms=int((time.time() - t0) * 1000),
                            type=r.headers.get("Content-Type", ""))
@@ -512,7 +846,13 @@ class LogicModule:
                            server=(e.headers.get("Server") or "")[:40], detail=self._detail(e))
             except Exception as e:
                 res.update(error="%s: %s" % (type(e).__name__, str(getattr(e, "reason", e))[:120]))
-            res["ziel"] = cam["addr"].split("://")[0] + "://…" + JPG_PATH
+            res["art"] = cam["mode"]
+            if cam["mode"] == "onvif":
+                res.update(cam["onvif"].info())
+                res["live"] = "Standbilder"
+            else:
+                res["ziel"] = ("https" if cam["client"].https else "http") + "://…" + cam["jpg"]
+                res["live"] = "MJPEG der Kamera, sonst Standbilder" if cam["mjpg"] else "Standbilder"
             out.append(res)
         self.fw.run_in_context(self._publish_test, (out,))
         return {"version": VERSION, "cams": out}
