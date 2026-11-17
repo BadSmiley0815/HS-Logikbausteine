@@ -58,6 +58,8 @@ Diagramm als Bild (v1.9):
        14771 E11 = 0 blendet ebenfalls aus (grau „(aus)“ in der Legende)
        v1.14: ax2=<Einheit,…> legt fest, welche Einheiten auf die rechte Achse kommen (chart, chart.svg/png),
        z. B. ax2=°C,% → links ppm (CO₂ + VOC), rechts Temperatur und Prozent; ohne ax2 wie bisher
+       v1.15: Diagrammseite holt die Verläufe nacheinander und wiederholt bei 503/Netzfehler bis zu 4×
+       (vorher gleichzeitig → über den HS-Fernzugang/Proxy oft „Failed to fetch“)
   GET  chart.png?…  (v1.10) dasselbe Diagramm als PNG – für das Kamera-Element der Experten-Visu,
        das sein Bild zyklisch neu lädt (Live-Diagramm); 4 s Zwischenspeicher je Aufruf
        fertiges SVG-Bild – für die Experten-/Firmware-Visu (/hsvisu/), die kein HTML im Text
@@ -83,7 +85,7 @@ import urllib.parse
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.14"
+VERSION = "1.15"
 CFG_STORES = 10          # 10 × 9.900 Zeichen ≈ 99 KB komprimiert
 CHUNK = 9900
 MAX_BODY = 4 * 1024 * 1024
@@ -255,10 +257,12 @@ function fmt(v,dec){if(v===null||v===undefined)return '–';return Number(v).toL
 function nav(){var h='';NAV.forEach(function(x){if(x[0]===U&&(x[1]||DEF[x[0]])===(N||DEF[U]))WIN=(x[3]||0)*DY;});NAV.forEach(function(x,i){h+='<button data-i="'+i+'"'+(x[0]===U&&(x[1]||DEF[x[0]])===(N||DEF[U])?' class="on"':'')+'>'+x[2]+'</button>';});
  var n=document.getElementById('nav');n.innerHTML=(ZOOM?'<button class="zr" id="zr" title="Zoom aufheben (oder Doppelklick ins Diagramm)">&#8634; Zoom zurück</button>':'')+(P.get('nav')==='0'?'':h);var zr=document.getElementById('zr');if(zr)zr.onclick=function(){ZOOM=null;nav();draw();};
  Array.prototype.forEach.call(n.querySelectorAll('button[data-i]'),function(b){b.onclick=function(){var x=NAV[+b.dataset.i];U=x[0];N=x[1];WIN=(x[3]||0)*DY;SCR=null;ZOOM=null;nav();load();};});}
-function get(id){return fetch(base+'api/history?id='+encodeURIComponent(id)+'&u='+U+'&n='+(N||DEF[U])+(key?'&key='+encodeURIComponent(key):''),{cache:'no-store'})
- .then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d&&d.error||('HTTP '+r.status));return d;});});}
+function get(id,tr){tr=tr||0;return fetch(base+'api/history?id='+encodeURIComponent(id)+'&u='+U+'&n='+(N||DEF[U])+(key?'&key='+encodeURIComponent(key):''),{cache:'no-store'})
+ .then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d&&d.error||('HTTP '+r.status));return d;});})
+ .catch(function(e){if(tr<4)return new Promise(function(ok){setTimeout(ok,500+tr*500);}).then(function(){return get(id,tr+1);});throw e;});}  /* v1.15: Wiederholung bei 503/Netzfehler */
+function getAll(ids){var out=[];return ids.reduce(function(p,id){return p.then(function(){return get(id).then(function(d){out.push(d);});});},Promise.resolve()).then(function(){return out;});}  /* v1.15: nacheinander statt gleichzeitig – der HS-Proxy liefert bei vielen parallelen Abrufen 503 */
 function load(){if(!ids.length){msg('Kein Verlauf angegeben (?id=…)');return;}
- Promise.all(ids.map(get)).then(function(rs){var tl=Math.max.apply(null,rs.map(function(d){return d.t_last||0;}));REQ={t0:back(tl,U,(N||DEF[U])-1),t1:tl};S=rs.map(function(d,i){var n=d.vals.length,pts=[];
+ getAll(ids).then(function(rs){var tl=Math.max.apply(null,rs.map(function(d){return d.t_last||0;}));REQ={t0:back(tl,U,(N||DEF[U])-1),t1:tl};S=rs.map(function(d,i){var n=d.vals.length,pts=[];
    for(var k=0;k<n;k++){pts.push([back(d.t_last,U,n-1-k),d.vals[k]]);}
    return {id:d.id,name:d.name||d.id,unit:d.unit||'',dec:(d.dec===undefined?1:d.dec),col:COL[i%COL.length],pts:pts,cur:d.current,on:OFF.indexOf(d.id)<0};});
   legend();draw();msg('');}).catch(function(e){msg('Fehler: '+e.message);});}
