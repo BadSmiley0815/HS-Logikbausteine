@@ -1,6 +1,6 @@
-# 14770 Visu-Server – Version 1.15
+# 14770 Visu-Server – Version 1.16
 
-**ID 14770 · Version 1.15 · HSL3**
+**ID 14770 · Version 1.16 · HSL3**
 
 homeserver-webapp, Diagramme.
 

@@ -5,7 +5,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 
 | ID | Baustein | aktuell |
 |---|---|---|
-| [14770](#14770-visu-server) | Visu-Server | 1.15 |
+| [14770](#14770-visu-server) | Visu-Server | 1.16 |
 | [14771](#14771-verlaufsspeicher-für-diagramme) | Verlaufsspeicher für Diagramme | 2.7 |
 | [14775](#14775-rlt-luftqualitätsregelung) | RLT Luftqualitätsregelung | 1.7 |
 | [14776](#14776-wrg-pumpenregelung) | WRG-Pumpenregelung | 1.0 |
@@ -18,6 +18,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 ---
 
 ## 14770 Visu-Server
+- **1.16** (2026-11-17) – Diagrammseite `chart` wieder mit weißem Hintergrund als Standard (eingebettet in die Visu sonst schlecht lesbar); `bg=<Farbe>` bzw. `bg=none` für transparent.
 - **1.15** (2026-11-17) – Diagrammseite lädt die Verläufe nacheinander statt gleichzeitig und wiederholt bei HTTP 503 oder Netzfehler bis zu 4×. Vorher kam über Fernzugang/Proxy teils „Failed to fetch“.
 - **1.14** (2026-11-17) – Diagramme (`chart`, `chart.svg`/`.png`): Parameter `ax2=<Einheit,…>` legt fest, welche Einheiten auf die rechte Achse kommen, z. B. `ax2=°C,%` → links ppm (CO₂ und VOC), rechts Temperatur und Prozent. Mehrere Einheiten je Achse, Beschriftung „°C / %“. Ohne `ax2` wie bisher.
 - **1.13** (2026-11-12) – Meldungsseite: Meldungsspeicher mit gleichem Namen erscheinen als ein Reiter, Einträge zeitlich gemischt (z. B. zwei Instanzen „Alarmverfolgung“); „Alle quittieren“ gilt für alle Archive des Reiters.

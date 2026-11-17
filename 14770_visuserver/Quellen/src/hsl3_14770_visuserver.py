@@ -58,6 +58,7 @@ Diagramm als Bild (v1.9):
        14771 E11 = 0 blendet ebenfalls aus (grau „(aus)“ in der Legende)
        v1.14: ax2=<Einheit,…> legt fest, welche Einheiten auf die rechte Achse kommen (chart, chart.svg/png),
        z. B. ax2=°C,% → links ppm (CO₂ + VOC), rechts Temperatur und Prozent; ohne ax2 wie bisher
+       v1.16: Diagrammseite (chart) hat standardmaessig weissen Hintergrund; bg=<Farbe> oder bg=none (transparent)
        v1.15: Diagrammseite holt die Verläufe nacheinander und wiederholt bei 503/Netzfehler bis zu 4×
        (vorher gleichzeitig → über den HS-Fernzugang/Proxy oft „Failed to fetch“)
   GET  chart.png?…  (v1.10) dasselbe Diagramm als PNG – für das Kamera-Element der Experten-Visu,
@@ -85,7 +86,7 @@ import urllib.parse
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.15"
+VERSION = "1.16"
 CFG_STORES = 10          # 10 × 9.900 Zeichen ≈ 99 KB komprimiert
 CHUNK = 9900
 MAX_BODY = 4 * 1024 * 1024
@@ -212,6 +213,7 @@ svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 <script>
 (function(){
 var P=new URLSearchParams(location.search);
+(function(){var b=(P.get('bg')||'fff').replace(/^#/,'');var c=(b==='none'||b==='transparent')?'transparent':(/^[0-9a-fA-F]{3,8}$/.test(b)?'#'+b:b);document.documentElement.style.background=c;document.body.style.background=c;})();  /* v1.16: Hintergrund standardmaessig weiss, bg=none = transparent */
 var base=location.pathname.replace(/\/chart(\.html)?\/?$/,'/');
 var ids=(P.get('id')||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
 var key=P.get('key')||'';if(!key){try{key=localStorage.getItem('hs-visu-key')||'';if(!key){var _s=localStorage.getItem('hs-szenen-key')||'';try{_s=JSON.parse(_s);}catch(e){}key=_s||'';}}catch(e){}}
