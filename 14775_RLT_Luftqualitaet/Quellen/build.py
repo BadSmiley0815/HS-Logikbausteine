@@ -33,10 +33,15 @@ def de(t):
     return t.replace("Aussen", "Außen").replace("aussen", "außen").replace("Äussen", "Außen")
 
 
+def en(t):
+    return t.replace("degC", "°C")
+
+
 def slot(t, typ=None):
-    ident, init, _de, en = t
+    ident, init, _de, en_ = t
+    en_ = en(en_)
     typ = typ or ("string" if isinstance(init, str) else "number")
-    return {"type": typ, "identifier": ident, "init_value": init, "label": en}
+    return {"type": typ, "identifier": ident, "init_value": init, "label": en_}
 
 
 def main():
@@ -50,15 +55,15 @@ def main():
         "hsl_filename": hsl, "version": VERSION,
         "inputs": [slot(i) for i in M.INPUTS],
         "outputs": [slot(o) for o in M.OUTPUTS],
-        "stores": [], "timers": [],
+        "stores": [], "timers": [{"identifier": "tick"}],
         "scripts": [{"filename": SCRIPT}],
         "translations": [
             {"language": "de", "name": NAME_DE, "category": CAT_DE,
              "translation_inputs": [{"label": de(i[2])} for i in M.INPUTS],
              "translation_outputs": [{"label": de(o[2])} for o in M.OUTPUTS]},
             {"language": "en", "name": NAME_EN, "category": CAT_EN,
-             "translation_inputs": [{"label": i[3]} for i in M.INPUTS],
-             "translation_outputs": [{"label": o[3]} for o in M.OUTPUTS]},
+             "translation_inputs": [{"label": en(i[3])} for i in M.INPUTS],
+             "translation_outputs": [{"label": en(o[3])} for o in M.OUTPUTS]},
         ]}}
     with open(os.path.join(b, "config.json"), "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2, ensure_ascii=False)

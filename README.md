@@ -18,7 +18,7 @@ Stand 15.11.2026 · ID-Bereich 14770–14789 · nächste freie ID **14786**
 | 14772 | KNX-Tunnel Senden – noch nicht veröffentlicht | ? |  |
 | 14773 | KNX-Tunnel Empfangen – noch nicht veröffentlicht | ? |  |
 | 14774 | KNX-Tunnel Gateway-Server – noch nicht veröffentlicht | ? |  |
-| 14775 | [RLT Luftqualitätsregelung](14775_RLT_Luftqualitaet/) | 1.6 |  |
+| 14775 | [RLT Luftqualitätsregelung](14775_RLT_Luftqualitaet/) | 1.7 |  |
 | 14776 | [WRG-Pumpenregelung](14776_WRG_Pumpenregelung/) | 1.0 |  |
 | 14777 | [Kompressor-Klappensteuerung](14777_Kompressor_Klappensteuerung/) | 1.2 |  |
 | 14778 | [Szenen-Server](14778_szenenserver/) | 4.3 | 8093 `/szenen/` |

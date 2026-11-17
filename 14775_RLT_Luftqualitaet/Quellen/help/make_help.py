@@ -86,6 +86,16 @@ wird erst unter E25 − E26 wieder gelb, Gelb erst unter E24 − E26 wieder grü
 der Messwert um eine Schwelle schwankt. Die Ampel wird auch bei Anlage AUS berechnet. Ist die Kennlinie fallend
 eingestellt (E7 &lt; E6, z. B. Luftqualität in %), schaltet auch die Ampel in diese Richtung: kleiner = schlechter.<br>
 <b>Visu-Tipp:</b> Im Experten den Wert von A12 über eine Werte-Liste in ein grünes, gelbes oder rotes Symbol umsetzen.""",
+  s6="6. Glättung der Luftqualität (ab v1.7)", t6="""VOC- und CO₂-Fühler springen oft kurz, z. B. wenn ein
+Tor aufgeht oder ein Stapler vorbeifährt. Ohne Glättung folgen Drehzahl und Klappen jedem Sprung sofort, die Anlage
+regelt dann hörbar ständig nach. Mit <b>E27</b> rechnet der Baustein intern mit dem <b>gleitenden, zeitgewichteten
+Mittelwert</b> der letzten E27 Minuten (alle 30 s und bei jedem neuen Messwert neu berechnet). Zeitgewichtet heißt:
+ein Wert zählt so lange, wie er anlag – Fühler, die oft senden, zählen nicht stärker als seltene.<br>
+<b>Empfehlung:</b> 10 min. Ein Sprung, der nur 5 min anliegt, wirkt dann höchstens zur Hälfte – und nicht mehr
+schlagartig, sondern verteilt über einige Minuten. Länger anhaltend schlechte Luft wird weiterhin voll ausgeregelt, nur eben über einige Minuten.<br>
+<b>Start:</b> Nach einem HS-Start wird über die schon vorhandene Zeit gemittelt (erster echter Messwert zuerst). Der
+Startwert 0 eines noch nicht belegten KOs wird nicht übernommen.<br>
+<b>A13</b> gibt den geglätteten Wert aus (für Visu und Verlauf). E27 = 0 schaltet die Glättung aus.""",
   cap_amp="Bild 6: Ampel mit Standardwerten (gelb ab 1000 ppm, rot ab 1400 ppm, Hysterese 50 ppm).",
   ex_intro="Die Werte sind mit der Logik des Bausteins und den Standardeinstellungen gerechnet (CO₂-Sensor, gut = 800 ppm, schlecht = 1400 ppm, Soll 20 °C).",
   ex_head=["Situation", "E1", "E2 LQ", "E3 Raum", "E5 Außen", "A1 Zuluft", "A2 Abluft", "A3 UM", "A4 AU", "A5 FO", "A12 Ampel", "Wirkung"],
@@ -151,6 +161,10 @@ air flows in through gates and leaks.<br><br>
   s5="5. Air quality traffic light", t5="""O12 shows the air quality as a traffic light: <b>0 = green</b>,
 <b>1 = yellow</b> from I24, <b>2 = red</b> from I25. Switching back uses hysteresis I26. Also calculated when the plant
 is OFF. With a falling curve (I7 &lt; I6) the traffic light follows: lower = worse.""",
+  s6="6. Air quality smoothing (from v1.7)", t6="""With <b>I27</b> the module uses the <b>time-weighted moving
+average</b> of the air quality value over the last I27 minutes (recalculated every 30 s and on each new value), so short
+peaks no longer make fans and dampers hunt. Recommended: 10 min. After a restart the average covers the time available so
+far (no drop to 0). <b>O13</b> outputs the smoothed value. I27 = 0 switches smoothing off.""",
   cap_amp="Figure 6: traffic light with defaults (yellow from 1000 ppm, red from 1400 ppm, hysteresis 50 ppm).",
   ex_intro="Calculated with the module logic and default settings (CO₂ sensor, good = 800 ppm, bad = 1400 ppm, setpoint 20 °C).",
   ex_head=["Situation", "I1", "I2 AQ", "I3 room", "I5 outd.", "O1 supply", "O2 exhaust", "O3 REC", "O4 OA", "O5 EA", "O12 light", "Effect"],
@@ -203,7 +217,11 @@ IN_DESCR = {
         "Stellung der Umluftklappe bei Anlage AUS.",
         "Ab diesem Luftqualitätswert zeigt die Ampel gelb.",
         "Ab diesem Luftqualitätswert zeigt die Ampel rot.",
-        "Hysterese beim Zurückschalten (rot → gelb erst unter E25 − E26, gelb → grün erst unter E24 − E26)."],
+        "Hysterese beim Zurückschalten (rot → gelb erst unter E25 − E26, gelb → grün erst unter E24 − E26).",
+        "Glättung des Luftqualitäts-Istwerts (E2) als gleitender, zeitgewichteter Mittelwert über so viele Minuten. "
+        "0 = aus (Verhalten wie bis v1.6). Typisch 10–15 min: kurze Spitzen (Tor auf, Stapler) lassen Drehzahl und Klappen "
+        "dann ruhig. Kennlinie, Klappen, Ventilatoren und Ampel rechnen mit dem geglätteten Wert. Nach dem Start wird über "
+        "die bereits vorhandene Zeit gemittelt, es gibt keinen Einbruch auf 0."],
  "EN": ["0 = plant OFF, ≠ 0 = plant ON (time schedule, enable only).",
         "Air quality sensor value (e.g. CO₂ ppm or VOC).", "Room temperature °C.", "Room setpoint °C.",
         "Outdoor temperature °C.", "Value for “good” air quality.", "Value for “bad” air quality.",
@@ -215,7 +233,9 @@ IN_DESCR = {
         "ΔT where correction reaches I21.", "Supply correction at ΔT = I20.",
         "Lower supply limit during free cooling (0 = none).", "Recirculation damper when plant OFF.",
         "Traffic light turns yellow from this value.", "Traffic light turns red from this value.",
-        "Hysteresis when switching back (red → yellow below I25 − I26, yellow → green below I24 − I26)."],
+        "Hysteresis when switching back (red → yellow below I25 − I26, yellow → green below I24 − I26).",
+        "Smoothing of the air quality value (I2) as time-weighted moving average over this many minutes. 0 = off "
+        "(behaviour as up to v1.6). Typical 10–15 min. Curve, dampers, fans and traffic light use the smoothed value."],
 }
 OUT_DESCR = {
  "DE": ["Drehzahlsollwert Zuluftventilator (inkl. Freecooling-Korrektur).", "Drehzahlsollwert Abluftventilator.",
@@ -223,27 +243,31 @@ OUT_DESCR = {
         "1 = Anlage freigegeben (Freigabe für Temperaturregelung).", "1 = Übertemperatur, 100 % Außenluft.",
         "1 = Freecooling aktiv.", "Aktuelle Zuluftreduzierung durch Freecooling.",
         "Luftqualität auf der Kennlinie: 0 % = gut, 100 % = schlecht (für die Visu).", "Klartext-Zustand.",
-        "Ampel Luftqualität: <b>0 = grün, 1 = gelb, 2 = rot</b>. Wird auch bei Anlage AUS berechnet."],
+        "Ampel Luftqualität: <b>0 = grün, 1 = gelb, 2 = rot</b>. Wird auch bei Anlage AUS berechnet.",
+        "Luftqualität nach der Glättung (E27), mit der der Baustein rechnet. Bei E27 = 0 gleich E2. Für Visu und Verlauf."],
  "EN": ["Supply fan speed setpoint (incl. free cooling).", "Exhaust fan speed setpoint.",
         "Recirculation damper.", "Outdoor air damper.", "Exhaust damper.", "1 = plant enabled.",
         "1 = overtemperature.", "1 = free cooling active.", "Current supply reduction.",
         "Air quality on curve: 0 % good, 100 % bad.", "Plain-text status.",
-        "Air quality traffic light: <b>0 = green, 1 = yellow, 2 = red</b>. Also calculated when the plant is OFF."],
+        "Air quality traffic light: <b>0 = green, 1 = yellow, 2 = red</b>. Also calculated when the plant is OFF.",
+        "Air quality after smoothing (I27) as used by the module. Equal to I2 when I27 = 0."],
 }
 
 
 IN_DPT = ["1.001", "9.008", "9.001", "9.001", "9.001", "9.008", "9.008",
           "5.001", "5.001", "5.001", "5.001", "5.001", "5.001", "9.002", "9.002",
           "5.001", "5.001", "9.001", "9.002", "9.002", "5.001", "5.001", "5.001",
-          "9.008", "9.008", "9.008"]
-OUT_DPT = ["9.xxx", "9.xxx", "9.xxx", "9.xxx", "9.xxx", "1.001", "1.001", "1.001", "5.001", "5.001", "16.000", "5.010"]
+          "9.008", "9.008", "9.008", "7.006"]
+OUT_DPT = ["9.xxx", "9.xxx", "9.xxx", "9.xxx", "9.xxx", "1.001", "1.001", "1.001", "5.001", "5.001", "16.000", "5.010", "9.008"]
 DPT_NAME = {
  "DE": {"1.001": "Schalten", "5.001": "Prozent (0–100 %)", "9.001": "Temperatur (°C)",
         "9.002": "Temperaturdifferenz (K)", "9.008": "Luftqualität (ppm)", "16.000": "Text",
-        "5.010": "Zählwert 8 Bit (0–255)", "9.xxx": "2-Byte-Gleitkomma, 0–100 (alternativ 5.001)"},
+        "5.010": "Zählwert 8 Bit (0–255)", "9.xxx": "2-Byte-Gleitkomma, 0–100 (alternativ 5.001)",
+        "7.006": "Zeit in Minuten (Zahl)"},
  "EN": {"1.001": "Switch", "5.001": "Percentage (0–100 %)", "9.001": "Temperature (°C)",
         "9.002": "Temperature difference (K)", "9.008": "Air quality (ppm)", "16.000": "Text",
-        "5.010": "Counter 8 bit (0–255)", "9.xxx": "2-byte float, 0–100 (alternatively 5.001)"},
+        "5.010": "Counter 8 bit (0–255)", "9.xxx": "2-byte float, 0–100 (alternatively 5.001)",
+        "7.006": "Time in minutes (number)"},
 }
 DPT_NOTE = {
  "DE": """Die DPTs sind Empfehlungen für die angeschlossenen KOs. Der Baustein rechnet nur mit Zahlen und kennt
@@ -266,19 +290,19 @@ KNX has no dedicated traffic-light DPT; O12 is an 8-bit value (DPT 5.010): 0 = g
 
 AMP_TXT = {"DE": ("grün", "gelb", "rot"), "EN": ("green", "yellow", "red")}
 
-UNIT = {"1.001": "0 / 1", "5.001": "%", "9.001": "°C", "9.002": "K", "9.008": "ppm", "16.000": "Text", "5.010": "0 / 1 / 2", "9.xxx": "%"}
+UNIT = {"1.001": "0 / 1", "5.001": "%", "9.001": "°C", "9.002": "K", "9.008": "ppm", "16.000": "Text", "5.010": "0 / 1 / 2", "9.xxx": "%", "7.006": "min"}
 
 IN_GROUPS = {
  "DE": [("Messwerte und Freigabe", 1, 5), ("Kennlinie Luftqualität", 6, 7), ("Klappen", 8, 13),
         ("Übertemperatur", 14, 15), ("Ventilatoren", 16, 17), ("Freecooling", 18, 22), ("Anlage AUS", 23, 23),
-        ("Ampel Luftqualität", 24, 26)],
+        ("Ampel Luftqualität", 24, 26), ("Glättung Luftqualität", 27, 27)],
  "EN": [("Measured values and enable", 1, 5), ("Air quality curve", 6, 7), ("Dampers", 8, 13),
         ("Overtemperature", 14, 15), ("Fans", 16, 17), ("Free cooling", 18, 22), ("Plant OFF", 23, 23),
-        ("Air quality traffic light", 24, 26)],
+        ("Air quality traffic light", 24, 26), ("Air quality smoothing", 27, 27)],
 }
 OUT_GROUPS = {
- "DE": [("Ventilatoren", 1, 2), ("Klappen", 3, 5), ("Zustände", 6, 8), ("Visu und Diagnose", 9, 12)],
- "EN": [("Fans", 1, 2), ("Dampers", 3, 5), ("States", 6, 8), ("Visualisation and diagnostics", 9, 12)],
+ "DE": [("Ventilatoren", 1, 2), ("Klappen", 3, 5), ("Zustände", 6, 8), ("Visu und Diagnose", 9, 13)],
+ "EN": [("Fans", 1, 2), ("Dampers", 3, 5), ("States", 6, 8), ("Visualisation and diagnostics", 9, 13)],
 }
 IN_NAMES = {
  "DE": ["Freigabe Zeitprogramm", "Luftqualität Istwert", "Raumtemperatur", "Raumsolltemperatur", "Außentemperatur",
@@ -288,7 +312,8 @@ IN_NAMES = {
         "Übertemperatur EIN ab", "Übertemperatur AUS unter",
         "Mindestdrehzahl", "Maximaldrehzahl",
         "Außentemperatur mindestens", "ΔT Beginn Korrektur", "ΔT Ende Korrektur", "Korrektur bei ΔT Ende",
-        "Zuluft-Untergrenze", "Umluftklappe bei AUS", "Ampel gelb ab", "Ampel rot ab", "Ampel Hysterese"],
+        "Zuluft-Untergrenze", "Umluftklappe bei AUS", "Ampel gelb ab", "Ampel rot ab", "Ampel Hysterese",
+        "Glättung (gleitender Mittelwert)"],
  "EN": ["Enable time schedule", "Air quality actual", "Room temperature", "Room setpoint", "Outdoor temperature",
         "Limit good air quality", "Limit bad air quality",
         "Recirc. damper at good", "Recirc. damper at bad", "Outdoor damper at good", "Outdoor damper at bad",
@@ -297,15 +322,17 @@ IN_NAMES = {
         "Minimum speed", "Maximum speed",
         "Outdoor temperature minimum", "ΔT correction start", "ΔT correction end", "Correction at ΔT end",
         "Supply lower limit", "Recirc. damper when OFF", "Traffic light yellow from", "Traffic light red from",
-        "Traffic light hysteresis"],
+        "Traffic light hysteresis", "Smoothing (moving average)"],
 }
 OUT_NAMES = {
  "DE": ["Zuluftventilator", "Abluftventilator", "Umluftklappe", "Außenluftklappe", "Fortluftklappe",
         "Anlage EIN / Freigabe Temperaturregelung", "Übertemperatur aktiv", "Freecooling aktiv",
-        "Freecooling-Zuluftkorrektur", "Luftqualität Anteil schlecht", "Status", "Ampel Luftqualität"],
+        "Freecooling-Zuluftkorrektur", "Luftqualität Anteil schlecht", "Status", "Ampel Luftqualität",
+        "Luftqualität geglättet"],
  "EN": ["Supply fan", "Exhaust fan", "Recirculation damper", "Outdoor air damper", "Exhaust air damper",
         "Plant ON / enable temperature control", "Overtemperature active", "Free cooling active",
-        "Free cooling supply correction", "Air quality share bad", "Status", "Air quality traffic light"],
+        "Free cooling supply correction", "Air quality share bad", "Status", "Air quality traffic light",
+        "Air quality smoothed"],
 }
 IO_TXT = {
  "DE": dict(std="Standard", unit="Einheit", empty="leer", sbc_all="Alle Ausgänge senden nur bei Änderung (sbc = send by change).",
@@ -372,7 +399,8 @@ def page(M, de, lang, version, figs):
     a('<div class="topic">')
     head(2)
     for key_s, key_t, f in (("s1", "t1", None), ("s2", "t2", ("dampers", "cap_d")), ("s21", "t21", ("ot", "cap_ot")),
-                            ("s3", "t3", ("fans", "cap_f")), ("s4", "t4", ("fc", "cap_fc")), ("s5", "t5", ("amp", "cap_amp"))):
+                            ("s3", "t3", ("fans", "cap_f")), ("s4", "t4", ("fc", "cap_fc")), ("s5", "t5", ("amp", "cap_amp")),
+                            ("s6", "t6", None)):
         a('<h3>%s</h3><div class="descr">%s</div>' % (t[key_s], t[key_t]))
         if f:
             fig(f[0], t[f[1]])

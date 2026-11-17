@@ -134,5 +134,55 @@ d["aq"] = 1400
 m.on_calc(Slots(d, ("enable",)))
 check("Aenderung -> Ausgaenge gesendet", dict(fw.out[n:]).get("supply") == 100.0, fw.out[n:])
 
+# 6. Glaettung (v1.7)
+f = M.AqFilter()
+check("Filter leer -> None", f.avg(100, 600) is None)
+f.reset(0, 1200)
+check("ein Wert -> Wert", f.avg(300, 600) == 1200)
+f.add(300, 1440)                       # nach 5 min Sprung auf 1440
+check("5 min 1200 + 5 min 1440 -> 1320", abs(f.avg(600, 600) - 1320) < 0.01, f.avg(600, 600))
+check("nach 10 min nur noch 1440", abs(f.avg(900, 600) - 1440) < 0.01, f.avg(900, 600))
+check("Fenster 0 -> letzter Wert", f.avg(900, 0) == 1440)
+f2 = M.AqFilter(); f2.reset(1000, 1000)
+check("Start: nur vorhandene Zeit (kein Einbruch)", f2.avg(1060, 600) == 1000)
+
+
+class FW2(FW):
+    def __init__(self):
+        FW.__init__(self)
+        self.timers = []
+
+    def set_timer(self, k, s):
+        self.timers.append((k, s))
+
+
+T = [10000.0]
+fw = FW2()
+m = M.LogicModule(fw)
+m.now = lambda: T[0]
+d = {i[0]: i[1] for i in M.INPUTS}
+d.update(enable=1, aq=0, aq_avg_min=10, aq_good=1200, aq_bad=2500, fan_max=60)
+m.on_init(Slots(d), None)
+check("Timer gestartet", fw.timers and fw.timers[0] == ("tick", M.TICK_S), fw.timers)
+check("Start mit KO-Wert 0: Filter wartet", m.flt.empty())
+d["aq"] = 1200
+m.on_calc(Slots(d, ("aq",)))
+check("erster Wert -> 30 %", dict(fw.out)["supply"] == 30.0, dict(fw.out)["supply"])
+T[0] += 300
+d["aq"] = 2500
+m.on_calc(Slots(d, ("aq",)))
+check("Sprung 1200 -> 2500: sofort noch 30 %", dict(fw.out)["supply"] == 30.0, dict(fw.out)["supply"])
+T[0] += 300
+m.on_timer(None)
+o = dict(fw.out)
+check("nach 5 min Halbwert 1850 -> 45 %", o["supply"] == 45.0 and o["aq_eff"] == 1850.0, (o["supply"], o["aq_eff"]))
+T[0] += 300
+m.on_timer(None)
+check("nach 10 min voll 2500 -> 60 %", dict(fw.out)["supply"] == 60.0)
+d["aq_avg_min"] = 0
+d["aq"] = 1200
+m.on_calc(Slots(d, ("aq", "aq_avg_min")))
+check("E27 = 0 -> sofort ungeglaettet", dict(fw.out)["supply"] == 30.0 and dict(fw.out)["aq_eff"] == 1200.0)
+
 print("\nALLES OK" if ok else "\nFEHLER")
 sys.exit(0 if ok else 1)

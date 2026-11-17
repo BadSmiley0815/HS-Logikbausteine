@@ -13,10 +13,17 @@
 #   4. Freecooling: bei Soll < Raum und Grenze < Aussen < Raum wird nur die
 #      Zuluft ueber eine LINEA-Kennlinie aus dT = Raum - Soll reduziert
 #   5. Ampel Luftqualitaet als 8-Bit-Wert (DPT 5.010): 0 gruen, 1 gelb, 2 rot
+#   6. (ab v1.7) Glaettung: gleitender, zeitgewichteter Mittelwert des
+#      Luftqualitaet-Istwerts ueber E27 Minuten (0 = aus). Kennlinien,
+#      Klappen, Ventilatoren und Ampel rechnen mit dem geglaetteten Wert.
 # ---------------------------------------------------------------------------
 
 BLOCK_ID = 14775
-BLOCK_VERSION = "1.6"
+BLOCK_VERSION = "1.7"
+
+import time
+
+TICK_S = 30          # Neuberechnung der Glaettung alle 30 s
 
 
 def _f(v, default=0.0):
@@ -75,6 +82,8 @@ INPUTS = [
     ("amp_yellow", 1000, "E24 Ampel gelb ab [ppm]", "I24 Traffic light yellow from [ppm]"),
     ("amp_red", 1400, "E25 Ampel rot ab [ppm]", "I25 Traffic light red from [ppm]"),
     ("amp_hyst", 50, "E26 Ampel Hysterese [ppm]", "I26 Traffic light hysteresis [ppm]"),
+    ("aq_avg_min", 0, "E27 Glaettung Luftqualitaet gleitender Mittelwert [min] (0=aus)",
+     "I27 Air quality smoothing moving average [min] (0=off)"),
 ]
 
 OUTPUTS = [
@@ -90,6 +99,7 @@ OUTPUTS = [
     ("aq_level", 0, "A10 Luftqualitaet Anteil schlecht [%]", "O10 Air quality share bad [%]"),
     ("status", "", "A11 Status", "O11 Status"),
     ("amp", 0, "A12 Ampel Luftqualitaet (0=gruen 1=gelb 2=rot)", "O12 Air quality traffic light (0=green 1=yellow 2=red)"),
+    ("aq_eff", 0, "A13 Luftqualitaet geglaettet [ppm]", "O13 Air quality smoothed [ppm]"),
 ]
 
 AMP_NAMES = ("gruen", "gelb", "rot")
@@ -192,6 +202,52 @@ def _compute(p, ot_state):
     return o, ot_state
 
 
+class AqFilter:
+    """Gleitender, zeitgewichteter Mittelwert (Treppenfunktion der Messwerte).
+    Zeitgewichtet, damit seltene und haeufige Telegramme gleich zaehlen.
+    Liegt noch nicht das ganze Fenster vor (z. B. nach dem Start), wird ueber
+    die vorhandene Zeit gemittelt - kein Einbruch auf 0."""
+
+    def __init__(self):
+        self.h = []                       # [(t, wert)] aufsteigend
+
+    def empty(self):
+        return not self.h
+
+    def reset(self, t, v):
+        self.h = [(t, v)]
+
+    def add(self, t, v):
+        if not self.h:
+            self.reset(t, v)
+        else:
+            self.h.append((t, v))
+
+    def last(self):
+        return self.h[-1][1] if self.h else None
+
+    def avg(self, t, win_s):
+        if not self.h:
+            return None
+        if win_s <= 0:
+            return self.h[-1][1]
+        start = t - win_s
+        # alles vor dem Fenster bis auf den letzten Wert davor verwerfen
+        while len(self.h) > 1 and self.h[1][0] <= start:
+            self.h.pop(0)
+        t0 = max(start, self.h[0][0])
+        if t <= t0:
+            return self.h[-1][1]
+        area = 0.0
+        for i, (ti, vi) in enumerate(self.h):
+            a = max(ti, t0)
+            b = self.h[i + 1][0] if i + 1 < len(self.h) else t
+            b = min(b, t)
+            if b > a:
+                area += vi * (b - a)
+        return area / (t - t0)
+
+
 class LogicModule:
 
     def __init__(self, hsl3):
@@ -200,25 +256,58 @@ class LogicModule:
         self.p = {}
         self.st = None
         self.last = {}
+        self.flt = AqFilter()
+        self.now = time.time
 
     def on_init(self, inputs, store):
         self.debug.set("Baustein", "%d v%s" % (BLOCK_ID, BLOCK_VERSION))
         self._read(inputs)
+        # KO-belegte Eingaenge haben beim Start oft noch 0 -> erst einen echten Wert abwarten
+        self._feed()
         self._run()
+        self._timer()
 
     def on_calc(self, inputs):
         self._read(inputs)
+        self._feed()
         self._run()
 
+    def _feed(self):
+        """Neuen Messwert in die Glaettung uebernehmen. Solange noch kein echter
+        Wert da war, wird 0 (Startwert eines unbelegten KOs) ignoriert."""
+        v = self.p["aq"]
+        if self.flt.empty():
+            if v != 0:
+                self.flt.reset(self.now(), v)
+        elif v != self.flt.last():
+            self.flt.add(self.now(), v)
+
     def on_timer(self, timer):
-        pass
+        self._run()
+        self._timer()
+
+    def _timer(self):
+        try:
+            self.fw.set_timer("tick", TICK_S)
+        except Exception:
+            pass
 
     def _read(self, inputs):
         for ident, init, _de, _en in INPUTS:
             self.p[ident] = _f(inputs.value(ident), init)
 
+    def _smoothed(self):
+        win = max(0.0, self.p.get("aq_avg_min", 0.0)) * 60.0
+        v = self.flt.avg(self.now(), win)
+        return self.p["aq"] if v is None else v
+
     def _run(self):
-        out, self.st = compute(self.p, self.st)
+        p = dict(self.p)
+        p["aq"] = self._smoothed()
+        out, self.st = compute(p, self.st)
+        out["aq_eff"] = round(p["aq"], 1)
+        if self.p.get("aq_avg_min", 0) > 0:
+            out["status"] += " | LQ %.0f min-Mittel %.0f (Ist %.0f)" % (self.p["aq_avg_min"], p["aq"], self.p["aq"])
         for ident, _init, _de, _en in OUTPUTS:
             v = out[ident]
             if ident == "status":

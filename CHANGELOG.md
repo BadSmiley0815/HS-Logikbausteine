@@ -7,7 +7,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 |---|---|---|
 | [14770](#14770-visu-server) | Visu-Server | 1.13 |
 | [14771](#14771-verlaufsspeicher-für-diagramme) | Verlaufsspeicher für Diagramme | 2.7 |
-| [14775](#14775-rlt-luftqualitätsregelung) | RLT Luftqualitätsregelung | 1.6 |
+| [14775](#14775-rlt-luftqualitätsregelung) | RLT Luftqualitätsregelung | 1.7 |
 | [14776](#14776-wrg-pumpenregelung) | WRG-Pumpenregelung | 1.0 |
 | [14777](#14777-kompressor-klappensteuerung) | Kompressor-Klappensteuerung | 1.2 |
 | [14778](#14778-szenen-server) | Szenen-Server | 4.3 |
@@ -44,6 +44,7 @@ Wird bei jeder Änderung an einem Baustein fortgeschrieben.
 - **2.0** – Anbindung an den Visu-Server, Kalenderansichten (als 19105).
 
 ## 14775 RLT Luftqualitätsregelung
+- **1.7** (2026-11-17) – E27 Glättung: gleitender, zeitgewichteter Mittelwert der Luftqualität über E27 Minuten (0 = aus, Verhalten wie 1.6). Kennlinie, Klappen, Ventilatoren und Ampel rechnen mit dem geglätteten Wert, damit kurze Spitzen (Tor auf, Stapler) die Anlage nicht ständig nachregeln lassen. Nach dem Start kein Einbruch auf 0. Neuer Ausgang A13 Luftqualität geglättet; Status zeigt Mittel und Istwert.
 - **1.6** (2026-11-10) – Einheit bzw. Datentyp in jeder Ein- und Ausgangsbezeichnung (z. B. `[ppm]`, `[degC]`, `[%]`); Regelung unverändert.
 - **1.5** – erste veröffentlichte Version: Ventilatoren und Klappen nach Luftqualität, Übertemperatur, Freecooling, Ampel.
 
