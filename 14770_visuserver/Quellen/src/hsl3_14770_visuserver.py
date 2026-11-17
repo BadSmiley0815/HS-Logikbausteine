@@ -56,6 +56,8 @@ Diagramm als Bild (v1.9):
        v1.10 chart.svg: mehrere Verläufe in einem Bild; zweite Einheit (z. B. %) auf eigener rechter Achse
        (gestrichelt); % mit 0–100 fest; ymin2/ymax2 für die rechte Achse; hide=<Kennung,…> blendet aus;
        14771 E11 = 0 blendet ebenfalls aus (grau „(aus)“ in der Legende)
+       v1.14: ax2=<Einheit,…> legt fest, welche Einheiten auf die rechte Achse kommen (chart, chart.svg/png),
+       z. B. ax2=°C,% → links ppm (CO₂ + VOC), rechts Temperatur und Prozent; ohne ax2 wie bisher
   GET  chart.png?…  (v1.10) dasselbe Diagramm als PNG – für das Kamera-Element der Experten-Visu,
        das sein Bild zyklisch neu lädt (Live-Diagramm); 4 s Zwischenspeicher je Aufruf
        fertiges SVG-Bild – für die Experten-/Firmware-Visu (/hsvisu/), die kein HTML im Text
@@ -81,7 +83,7 @@ import urllib.parse
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.13"
+VERSION = "1.14"
 CFG_STORES = 10          # 10 × 9.900 Zeichen ≈ 99 KB komprimiert
 CHUNK = 9900
 MAX_BODY = 4 * 1024 * 1024
@@ -273,7 +275,11 @@ var G=null;
 function draw(){var W=C.clientWidth,H=C.clientHeight;if(!W||!H)return;
  var V=S.filter(function(s){return s.on;}),units=[];
  V.forEach(function(s){if(s.pts.some(function(p){return p[1]!==null;})&&units.indexOf(s.unit)<0)units.push(s.unit);});
- S.forEach(function(s){s.ax=(units.length>1&&s.unit===units[1])?1:0;});
+ var A2=(P.get('ax2')||'').split(',').map(function(x){return x.trim().replace('°','');}).filter(Boolean),uL=[],uR=[];  /* v1.14: ax2=Einheiten der rechten Achse */
+ if(A2.length){units.forEach(function(u){(A2.indexOf((u||'').replace('°',''))>=0?uR:uL).push(u);});if(!uL.length){uL=uR;uR=[];}}
+ else units.forEach(function(u,i){(i===1?uR:uL).push(u);});
+ S.forEach(function(s){s.ax=(uR.length&&uR.indexOf(s.unit)>=0)?1:0;});
+ units=uR.length?[uL.join(' / '),uR.join(' / ')]:[uL.join(' / ')];
  var t0=Infinity,t1=-Infinity,lo=[Infinity,Infinity],hi=[-Infinity,-Infinity];
  V.forEach(function(s){s.pts.forEach(function(p){if(p[0]<t0)t0=p[0];if(p[0]>t1)t1=p[0];if(p[1]!==null){if(p[1]<lo[s.ax])lo[s.ax]=p[1];if(p[1]>hi[s.ax])hi[s.ax]=p[1];}});});
  if(REQ&&isFinite(t0)){t0=Math.min(t0,REQ.t0);t1=Math.max(t1,REQ.t1);}
@@ -759,7 +765,18 @@ def render_chart(series, u, p, fmt="svg"):
     for s, pts in zip(series, pts_all):
         if pts and s.get("unit", "") not in units:
             units.append(s.get("unit", ""))
-    side = [1 if (len(units) > 1 and s.get("unit", "") == units[1]) else 0 for s in series]
+    # v1.14: ax2=<Einheit,…> legt fest, welche Einheiten auf die rechte Achse kommen (z. B. ax2=°C,%)
+    a2 = [x.strip().replace("°", "") for x in p.get("ax2", "").split(",") if x.strip()]
+    if a2:
+        u_r = [x for x in units if x.replace("°", "") in a2]
+        u_l = [x for x in units if x not in u_r]
+        if not u_l:
+            u_l, u_r = u_r, []
+    else:
+        u_l = [x for i, x in enumerate(units) if i != 1]
+        u_r = units[1:2]
+    side = [1 if s.get("unit", "") in u_r else 0 for s in series]
+    units = [" / ".join(u_l)] + ([" / ".join(u_r)] if u_r else [])
     two = len(units) > 1
     L, T, B = fs * 4.2, fs * (4.8 if two else 4.0), fs * 2
     R = fs * 4.2 if two else 10
